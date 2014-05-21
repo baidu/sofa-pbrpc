@@ -28,7 +28,7 @@ Extrally, './unit-test' and './sample/mock_sample' also depends on gtest:
 
 ### Build
 1. Modify the file './depends.mk' to specify depending libs.<br>
-  The necessary libs is boost, protobuf, and snappy.
+  The necessary libs is boost, protobuf, snappy, and zlib.
 2. Run 'make' to build sofa-pbrpc.<br>
   The default optimization level is 'O2'.<br>
   To change it, modify the 'OPT' variable in file './Makefile'.
