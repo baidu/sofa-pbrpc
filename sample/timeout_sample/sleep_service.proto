@@ -1,0 +1,25 @@
+import "sofa/pbrpc/rpc_option.proto";
+
+package sofa.pbrpc.test;
+
+option cc_generic_services = true;
+
+message SleepRequest {
+    required int32 sleep_time = 1; // in seconds
+}
+
+message SleepResponse {
+    required string message = 1;
+}
+
+service SleepServer {
+    // The service timeout is 2 seconds.
+    option (sofa.pbrpc.service_timeout) = 2000;
+
+    rpc SleepWithServiceTimeout(SleepRequest) returns(SleepResponse);
+
+    // The method timeout is 4 seconds.
+    rpc SleepWithMethodTimeout(SleepRequest) returns(SleepResponse) {
+        option (sofa.pbrpc.method_timeout) = 4000;
+    }
+}

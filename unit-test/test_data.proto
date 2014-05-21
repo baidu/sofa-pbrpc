@@ -1,0 +1,9 @@
+package sofa.pbrpc.test;
+
+message TestData {
+    required int32  v1 = 1;
+    optional int64  v2 = 2;
+    optional bool   v3 = 3;
+    optional bytes  v4 = 4;
+    optional string v5 = 5;
+}

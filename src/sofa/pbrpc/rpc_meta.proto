@@ -1,0 +1,39 @@
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
+import "sofa/pbrpc/rpc_option.proto";
+
+package sofa.pbrpc;
+
+message RpcMeta {
+  enum Type {
+    REQUEST = 0;
+    RESPONSE = 1;
+  };
+
+  // Required fields for both request and response, tag starts from 1.
+  required Type type = 1;
+  required uint64 sequence_id = 2;
+
+  // Field for request type, tag starts from 100.
+  // The fully-qualified name of the method, scope delimited by periods.
+  // It includes the full name of service.
+  // For example: "test.HelloService.GreetMethod"
+  optional string method = 100;
+
+  // Field for response type, tag starts from 200.
+  // If the request is failed.
+  optional bool failed = 200;
+  // Set the error code if failed.
+  optional int32 error_code = 201;
+  // Set the reason if failed.
+  optional string reason = 202;
+
+  // Set the request/response compress type.
+  optional CompressType compress_type = 300;
+  // Set the response compress type of user expected.
+  optional CompressType expected_response_compress_type = 301;
+}
