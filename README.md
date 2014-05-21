@@ -2,7 +2,7 @@ sofa-pbrpc
 ==========
 A light-weight RPC implement of google protobuf RPC framework.
 
-Wiki: https://github.com/BaiduPS/sofa-pbrpc/wiki
+WIKI: https://github.com/BaiduPS/sofa-pbrpc/wiki
 
 ### Features
 * High performace.
