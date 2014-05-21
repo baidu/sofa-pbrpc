@@ -21,7 +21,7 @@ This lib depends on boost-1.53.0 (only need header), protobuf-2.4.1, snappy and 
 * snappy - http://code.google.com/p/snappy/
 * zlib - http://zlib.net/
 
-Attention: boost header is only needed when compiling the lib, but no need for user code.
+ATTENTION: boost header is only needed when compiling the lib, but no need for user code.
 
 Extrally, './unit-test' and './sample/mock_sample' also depends on gtest:
 * gtest - http://code.google.com/p/googletest/
