@@ -2,6 +2,8 @@ sofa-pbrpc
 ==========
 A light-weight RPC implement of google protobuf RPC framework.
 
+Wiki: https://github.com/BaiduPS/sofa-pbrpc/wiki
+
 ### Features
 * High performace.
 * Easy to use. Refer to sample codes in './sample'.
@@ -36,13 +38,13 @@ Extrally, './unit-test' and './sample/mock_sample' also depends on gtest:
   The default install directory is './output'.<br>
   To change it, modify the 'PREFIX' variable in file './Makefile'.
 
+For more details, please refer to the wiki.
+
 ### Sample
-For sample codes, please refer to './sample' and the wiki:<br>
-https://github.com/BaiduPS/sofa-pbrpc/wiki
+For sample codes, please refer to './sample' and the wiki.
 
 ### Performance
-For performace details, please refer to the wiki:<br>
-https://github.com/BaiduPS/sofa-pbrpc/wiki
+For performace details, please refer to the wiki.
 
 ### Support
 qinzuoyan01@baidu.com (Qin Zuoyan, qinzuoyan@gmail.com)
