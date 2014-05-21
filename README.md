@@ -1,6 +1,6 @@
 sofa-pbrpc
 ==========
-A light-weight RPC implement of protobuf RPC framework.
+A light-weight RPC implement of google protobuf RPC framework.
 
 ### Features
 * High performace.
