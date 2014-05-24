@@ -47,5 +47,5 @@ For sample codes, please refer to './sample' and the wiki.
 For performace details, please refer to the wiki.
 
 ### Support
-qinzuoyan01@baidu.com (Qin Zuoyan, qinzuoyan@gmail.com)
+openps@baidu.com
 
