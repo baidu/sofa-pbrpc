@@ -23,10 +23,8 @@ class ThreadGroupImpl;
 class ThreadGroup
 {
 public:
-    // Constructor.  User should specify the "thread_num", which can not be
-    // changed afterwards.  User can optionally give a "name", which may be used
-    // as key of the thread group.  All the threads will start running after
-    // contruct done.
+    // Constructor.  User should specify the "thread_num", which can not be changed
+    // afterwards.  All the threads will start running after contruct done.
     ThreadGroup(int thread_num);
 
     // Destructor.  It will join all threads, so user must ensure that all threads
