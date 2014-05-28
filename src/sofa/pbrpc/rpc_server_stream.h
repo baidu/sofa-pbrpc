@@ -22,7 +22,7 @@ typedef boost::function<void(
         const RpcMeta& /* meta */,
         const RpcServerStreamWPtr& /* stream */,
         const ReadBufferPtr& /* buffer */,
-        int64 data_size)> ReceivedRequestCallback;
+        int64 /*data_size*/)> ReceivedRequestCallback;
 
 /// Callback function when send response message done.
 //  * if "status" == RPC_SUCCESS, means send response succeed;
