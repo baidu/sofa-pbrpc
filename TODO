@@ -1,6 +1,6 @@
 Http support
 ------------
-Support http protocal, then user can call methods through http, e.g., by browser.
+Support http protocol, then user can call methods through http, e.g., by browser.
 Request and response message may be serialized/deserialized in json format. 
 This will provide better usability.
 
