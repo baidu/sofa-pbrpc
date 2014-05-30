@@ -10,7 +10,6 @@
 #include <sofa/pbrpc/rpc_message_stream.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/rpc_meta.pb.h>
-#include <sofa/pbrpc/string_utils.h>
 
 namespace sofa {
 namespace pbrpc {

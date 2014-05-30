@@ -27,8 +27,8 @@ INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closur
 	src/sofa/pbrpc/ext_closure.h src/sofa/pbrpc/common.h src/sofa/pbrpc/rpc_channel.h \
 	src/sofa/pbrpc/rpc_client.h src/sofa/pbrpc/rpc_controller.h src/sofa/pbrpc/rpc_error_code.h \
 	src/sofa/pbrpc/rpc_option.pb.h src/sofa/pbrpc/rpc_option.proto src/sofa/pbrpc/rpc_server.h \
-	src/sofa/pbrpc/string_utils.h src/sofa/pbrpc/mock_test_helper.h src/sofa/pbrpc/atomic.h \
-	src/sofa/pbrpc/counter.h src/sofa/pbrpc/thread_group.h src/sofa/pbrpc/timeout_manager.h \
+	src/sofa/pbrpc/mock_test_helper.h src/sofa/pbrpc/atomic.h src/sofa/pbrpc/counter.h \
+	src/sofa/pbrpc/thread_group.h src/sofa/pbrpc/timeout_manager.h \
 	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
 	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
 	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h \
