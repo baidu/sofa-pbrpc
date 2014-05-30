@@ -39,7 +39,6 @@ TESTS = \
 	test_closure \
 	test_ext_closure \
 	test_thread_group \
-	test_timeout_queue \
 	test_timeout_manager
 
 all: check_depends $(TESTS)
