@@ -71,7 +71,7 @@ $(LIB): $(LIB_OBJ)
 	ar crs $@ $(LIB_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
-	$(CXX) $(LDFLAGS) $(BIN_OBJ) -o $@ $(LIB) $(LIBRARY)
+	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LIBRARY) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c$< -o $@
