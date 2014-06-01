@@ -1,0 +1,5 @@
+*.o
+*.a
+
+sofa-pbrpc-client
+output/*
