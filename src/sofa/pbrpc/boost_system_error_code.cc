@@ -45,7 +45,6 @@ using namespace boost::system::errc;
 # endif
 
 //----------------------------------------------------------------------------//
-#define WEAK __attribute__((weak))
 
 namespace
 {
@@ -73,12 +72,12 @@ namespace
 
   //  generic_error_category implementation  ---------------------------------//
 
-  WEAK const char * generic_error_category::name() const
+  const char * generic_error_category::name() const
   {
     return "generic";
   }
 
-  WEAK std::string generic_error_category::message( int ev ) const
+  std::string generic_error_category::message( int ev ) const
   {
     static std::string unknown_err( "Unknown error" );
   // strerror_r is preferred because it is always thread safe,
@@ -164,12 +163,12 @@ namespace
   }
   //  system_error_category implementation  --------------------------------// 
 
-  WEAK const char * system_error_category::name() const
+  const char * system_error_category::name() const
   {
     return "system";
   }
 
-  WEAK error_condition system_error_category::default_error_condition( int ev ) const
+  error_condition system_error_category::default_error_condition( int ev ) const
   {
     switch ( ev )
     {
@@ -350,13 +349,13 @@ namespace
 
 # if !defined( BOOST_WINDOWS_API )
 
-  WEAK std::string system_error_category::message( int ev ) const
+  std::string system_error_category::message( int ev ) const
   {
     return generic_category().message( ev );
   }
 # else
 
-  WEAK std::string system_error_category::message( int ev ) const
+  std::string system_error_category::message( int ev ) const
   {
 # ifndef BOOST_NO_ANSI_APIS  
     LPVOID lpMsgBuf = 0;
