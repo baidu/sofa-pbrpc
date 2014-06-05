@@ -84,9 +84,6 @@ test_ext_closure: test_ext_closure.o libgtest.a
 test_thread_group: test_thread_group.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-test_timeout_queue: test_timeout_queue.o libgtest.a
-	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
-
 test_timeout_manager: test_timeout_manager.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
