@@ -60,11 +60,11 @@ clean:
 
 rebuild: clean all
 
-server: server.o $(PROTO_OBJ)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+server: $(PROTO_OBJ) server.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client: client.o $(PROTO_OBJ)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+client: $(PROTO_OBJ) client.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
