@@ -61,34 +61,34 @@ clean:
 rebuild: clean all
 
 test_common: test_common.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_atomic: test_atomic.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_epoll_support: test_epoll_support.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX)  $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_tran_buf_pool: test_tran_buf_pool.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_buffer: test_buffer.o test_data.pb.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_closure: test_closure.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_ext_closure: test_ext_closure.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_thread_group: test_thread_group.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_timeout_queue: test_timeout_queue.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_timeout_manager: test_timeout_manager.o libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
