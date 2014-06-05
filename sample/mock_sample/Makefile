@@ -62,8 +62,8 @@ clean:
 
 rebuild: clean all
 
-mock_test_sample: mock_test_sample.o $(PROTO_OBJ) libgtest.a
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY) libgtest.a
+mock_test_sample: $(PROTO_OBJ) mock_test_sample.o libgtest.a
+	$(CXX) $^ -o $@ $(LIBRARY) libgtest.a $(LDFLAGS)
 
 %.pb.o: %.pb.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -60,14 +60,14 @@ clean:
 
 rebuild: clean all
 
-server: server.o $(PROTO_OBJ)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+server: $(PROTO_OBJ) server.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_sync: client_sync.o $(PROTO_OBJ)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+client_sync: $(PROTO_OBJ) client_sync.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_async: client_async.o $(PROTO_OBJ)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBRARY)
+client_async: $(PROTO_OBJ) client_async.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@

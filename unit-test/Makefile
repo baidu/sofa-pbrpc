@@ -72,7 +72,7 @@ test_epoll_support: test_epoll_support.o libgtest.a
 test_tran_buf_pool: test_tran_buf_pool.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-test_buffer: test_buffer.o test_data.pb.o libgtest.a
+test_buffer: test_data.pb.o test_buffer.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_closure: test_closure.o libgtest.a
