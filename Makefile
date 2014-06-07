@@ -43,13 +43,30 @@ BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
 BIN_OBJ=$(patsubst %.cc,%.o,$(BIN_SRC))
 
 #-----------------------------------------------
+ifeq ($(OS),Windows_NT)
+    LDFLAGS += -lrt
+    TARGET_DIRECTORY := --target-directory
+else
+    UNAME_S := $(shell uname -s)
+    
+    ifeq ($(UNAME_S),Linux)
+        LDFLAGS += -lrt
+        TARGET_DIRECTORY := --target-directory
+    endif
+    
+    ifeq ($(UNAME_S),Darwin)
+        TARGET_DIRECTORY := 
+    endif
+endif
+
+#-----------------------------------------------
 
 CXX=g++
 INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
 LIBRARY=$(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lrt -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
 
 all: build
 
@@ -82,7 +99,7 @@ build: check_depends $(LIB) $(BIN)
 
 install: $(LIB) $(BIN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
-	cp -r $(INC) --target-directory $(PREFIX)/include/sofa/pbrpc/
+	cp -r $(INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail

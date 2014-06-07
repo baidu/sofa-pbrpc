@@ -9,6 +9,8 @@
 
 class EpollSupportTest: public ::testing::Test {};
 
+#ifndef __APPLE__
+
 TEST_F(EpollSupportTest, test)
 {
     std::string output;
@@ -25,6 +27,8 @@ TEST_F(EpollSupportTest, test)
 #endif
     ASSERT_EQ("epoll", output);
 }
+
+#endif
 
 int main(int argc, char **argv)
 {

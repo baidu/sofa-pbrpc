@@ -18,13 +18,25 @@ OPT ?= -g2        # (B) Debug mode, w/ full line-level debugging symbols
 include ../depends.mk
 include depends.mk
 
+#-----------------------------------------------
+ifeq ($(OS),Windows_NT)
+    LDFLAGS += -lrt
+else
+    UNAME_S := $(shell uname -s)
+
+    ifeq ($(UNAME_S),Linux)
+        LDFLAGS += -lrt
+    endif
+endif
+
+#-----------------------------------------------
 CXX=g++
 INCPATH=-I. -I../src -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -Dprivate=public $(INCPATH)
 
 LIBRARY=../libsofa-pbrpc.a $(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lrt -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
 
 PROTO_SRC=test_data.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
