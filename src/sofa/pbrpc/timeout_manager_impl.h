@@ -9,14 +9,15 @@
 
 #include <vector>
 
-#include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/timeout_manager.h>
-#include <sofa/pbrpc/thread_group_impl.h>
-#include <sofa/pbrpc/timer_worker.h>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/indexed_by.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
+
+#include <sofa/pbrpc/common_internal.h>
+#include <sofa/pbrpc/timeout_manager.h>
+#include <sofa/pbrpc/thread_group_impl.h>
+#include <sofa/pbrpc/timer_worker.h>
 
 namespace sofa {
 namespace pbrpc {

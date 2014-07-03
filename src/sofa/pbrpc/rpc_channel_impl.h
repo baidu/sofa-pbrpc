@@ -9,51 +9,31 @@
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_channel.h>
-#include <sofa/pbrpc/rpc_client_impl.h>
-#include <sofa/pbrpc/rpc_controller_impl.h>
-#include <sofa/pbrpc/rpc_endpoint.h>
 
 namespace sofa {
 namespace pbrpc {
 
-class RpcChannelImpl : public sofa::pbrpc::enable_shared_from_this<RpcChannelImpl>
+class RpcChannelImpl : public ::google::protobuf::RpcChannel
 {
 public:
-    RpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,
-                   const std::string& server_address,
-                   const RpcChannelOptions& options);
+    virtual ~RpcChannelImpl() {}
 
-    virtual ~RpcChannelImpl();
+    // Init the channel.
+    virtual bool Init() = 0;
 
-    bool IsAddressValid();
+    // Stop the channel.
+    virtual void Stop() = 0;
 
-    void CallMethod(const ::google::protobuf::MethodDescriptor* method,
-                    ::google::protobuf::RpcController* controller,
-                    const ::google::protobuf::Message* request,
-                    ::google::protobuf::Message* response,
-                    ::google::protobuf::Closure* done);
+    // Call method.
+    virtual void CallMethod(const ::google::protobuf::MethodDescriptor* method,
+                            ::google::protobuf::RpcController* controller,
+                            const ::google::protobuf::Message* request,
+                            ::google::protobuf::Message* response,
+                            ::google::protobuf::Closure* done) = 0;
 
-private:
-    static void WaitDone(const RpcControllerImplPtr& cntl);
-
-    void DoneCallback(google::protobuf::Closure* done,
-                      const RpcControllerImplPtr& cntl);
-
-    static void MockDoneCallback(RpcControllerImplPtr cntl,
-            const ::google::protobuf::Message* request,
-            ::google::protobuf::Message* response);
-
-private:
-    RpcClientImplPtr _client_impl;
-    std::string _server_address;
-    RpcChannelOptions _options;
-
-    bool _is_mock;
-    bool _resolve_address_succeed;
-    RpcEndpoint _remote_endpoint;
-
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcChannelImpl);
-}; // class RpcChannelImpl
+    // Get the count of calls which are not done yet.
+    virtual uint32 WaitCount() = 0;
+};
 
 } // namespace pbrpc
 } // namespace sofa

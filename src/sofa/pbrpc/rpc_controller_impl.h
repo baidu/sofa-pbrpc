@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <list>
+
 #include <google/protobuf/descriptor.h>
 
 #include <sofa/pbrpc/common_internal.h>

@@ -11,9 +11,10 @@
 #include <pthread.h>
 #include <cstdio>
 
+#include <boost/bind.hpp>
+
 #include <sofa/pbrpc/io_service.h>
 #include <sofa/pbrpc/ext_closure.h>
-#include <boost/bind.hpp>
 
 namespace sofa {
 namespace pbrpc {

@@ -36,11 +36,6 @@ bool HttpAgent::Init(const std::string& server_address)
 {
     _server_address = server_address;
     _rpc_channel = new RpcChannel(_rpc_client, _server_address);
-    if (!_rpc_channel->IsAddressValid()) {
-        delete _rpc_channel;
-        _rpc_channel = NULL;
-        return false;
-    }
     _stub = new sofa::pbrpc::builtin::BuiltinService_Stub(_rpc_channel);
     return UpdateServiceInfo();
 }

@@ -5,9 +5,9 @@
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sstream>
-
 #include <sofa/pbrpc/rpc_channel.h>
-#include <sofa/pbrpc/rpc_channel_impl.h>
+#include <sofa/pbrpc/simple_rpc_channel_impl.h>
+#include <sofa/pbrpc/dynamic_rpc_channel_impl.h>
 #include <sofa/pbrpc/rpc_client.h>
 
 namespace sofa {
@@ -16,8 +16,9 @@ namespace pbrpc {
 RpcChannel::RpcChannel(RpcClient* rpc_client,
         const std::string& server_address,
         const RpcChannelOptions& options)
-    : _impl(new RpcChannelImpl(rpc_client->impl(), server_address, options))
+    : _impl(new SimpleRpcChannelImpl(rpc_client->impl(), server_address, options))
 {
+    _impl->Init();
 }
 
 RpcChannel::RpcChannel(RpcClient* rpc_client,
@@ -27,16 +28,29 @@ RpcChannel::RpcChannel(RpcClient* rpc_client,
 {
     std::ostringstream os;
     os << server_ip << ":" << server_port;
-    _impl.reset(new RpcChannelImpl(rpc_client->impl(), os.str(), options));
+    _impl.reset(new SimpleRpcChannelImpl(rpc_client->impl(), os.str(), options));
+    _impl->Init();
+}
+
+RpcChannel::RpcChannel(RpcClient* rpc_client,
+        const std::vector<std::string>& address_list,
+        const RpcChannelOptions& options)
+    : _impl(new DynamicRpcChannelImpl(rpc_client->impl(), address_list, options))
+{
+    _impl->Init();
+}
+
+RpcChannel::RpcChannel(RpcClient* rpc_client,
+        AddressProvider* address_provider,
+        const RpcChannelOptions& options)
+    : _impl(new DynamicRpcChannelImpl(rpc_client->impl(), address_provider, options))
+{
+    _impl->Init();
 }
 
 RpcChannel::~RpcChannel()
 {
-}
-
-bool RpcChannel::IsAddressValid()
-{
-    return _impl->IsAddressValid();
+    _impl->Stop();
 }
 
 void RpcChannel::CallMethod(const ::google::protobuf::MethodDescriptor* method,

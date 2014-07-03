@@ -464,12 +464,10 @@ RpcErrorCode DynamicRpcChannelImpl::ChooseServer(ServerContextPtr& choosed_serve
         }
     }
     
-    if (choosed_server)
-    {
+    if (choosed_server) {
         return RPC_SUCCESS;
     }
-    else
-    {
+    else {
 #if defined( LOG )
         LOF(ERROR) << "ChooseServer(): no server choosed: try_num=" << try_num
                    << ", live_map_size=" << _live_map.size()

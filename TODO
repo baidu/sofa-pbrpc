@@ -5,7 +5,7 @@ Request and response message may be serialized/deserialized in json format.
 This will provide better usability.
 
 
-Multi-server load balance
+Multi-server load balance (done)
 -------------------------
 By providing multi-server addresses (statically or dynamically), one client stub
 can access services deployed on different servers, with intelligent load balance.

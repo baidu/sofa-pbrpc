@@ -8,6 +8,7 @@
 #define _SOFA_PBRPC_COMMON_H_
 
 #include <google/protobuf/stubs/common.h>
+
 #include <sofa/pbrpc/smart_ptr/smart_ptr.hpp>
 
 namespace std {}
