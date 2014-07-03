@@ -4,80 +4,89 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
-#include <sofa/pbrpc/rpc_channel_impl.h>
+#include <sofa/pbrpc/simple_rpc_channel_impl.h>
 #include <sofa/pbrpc/mock_test_helper.h>
 #include <sofa/pbrpc/closure.h>
 
 namespace sofa {
 namespace pbrpc {
 
-RpcChannelImpl::RpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,
-                               const std::string& server_address,
-                               const RpcChannelOptions& options)
+SimpleRpcChannelImpl::SimpleRpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,
+                                           const std::string& server_address,
+                                           const RpcChannelOptions& options)
     : _client_impl(rpc_client_impl)
     , _server_address(server_address)
     , _options(options)
     , _is_mock(false)
     , _resolve_address_succeed(false)
 {
+}
+
+SimpleRpcChannelImpl::~SimpleRpcChannelImpl()
+{
+}
+
+bool SimpleRpcChannelImpl::Init()
+{
     if (g_enable_mock && _server_address.find(SOFA_PBRPC_MOCK_CHANNEL_ADDRESS_PREFIX) == 0)
     {
 #if defined( LOG )
-        LOG(INFO) << "RpcChannelImpl(): use mock channel";
+        LOG(INFO) << "Init(): use mock channel";
 #else
-        SLOG(INFO, "RpcChannelImpl(): use mock channel");
+        SLOG(INFO, "Init(): use mock channel");
 #endif
         _is_mock = true;
-        return;
+        return true;
     }
 
     if (_client_impl->ResolveAddress(_server_address, &_remote_endpoint))
     {
 #if defined( LOG )
-        LOG(INFO) << "RpcChannelImpl(): resolve address succeed: " << _server_address
+        LOG(INFO) << "Init(): resolve address succeed: " << _server_address
                   << " [" << RpcEndpointToString(_remote_endpoint) << "]";
 #else
-        SLOG(INFO, "RpcChannelImpl(): resolve address succeed: %s [%s]",
+        SLOG(INFO, "Init(): resolve address succeed: %s [%s]",
                 _server_address.c_str(), RpcEndpointToString(_remote_endpoint).c_str());
 #endif
         _resolve_address_succeed = true;
+        return true;
     }
     else
     {
 #if defined( LOG )
-        LOG(ERROR) << "RpcChannelImpl(): resolve address failed: " << _server_address;
+        LOG(ERROR) << "Init(): resolve address failed: " << _server_address;
 #else
-        SLOG(ERROR, "RpcChannelImpl(): resolve address failed: %s",
+        SLOG(ERROR, "Init(): resolve address failed: %s",
                 _server_address.c_str());
 #endif
+        _resolve_address_succeed = false;
+        return false;
     }
 }
 
-RpcChannelImpl::~RpcChannelImpl()
+void SimpleRpcChannelImpl::Stop()
 {
+#if defined( LOG )
+    LOG(INFO) << "Stop(): simple rpc channel stopped: " << _server_address;
+#else
+    SLOG(INFO, "Stop(): simple rpc channel stopped: %s", _server_address.c_str());
+#endif
 }
 
-bool RpcChannelImpl::IsAddressValid()
+void SimpleRpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor* method,
+                                      ::google::protobuf::RpcController* controller,
+                                      const ::google::protobuf::Message* request,
+                                      ::google::protobuf::Message* response,
+                                      ::google::protobuf::Closure* done)
 {
-    return _resolve_address_succeed;
-}
-
-void RpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor* method,
-                                ::google::protobuf::RpcController* controller,
-                                const ::google::protobuf::Message* request,
-                                ::google::protobuf::Message* response,
-                                ::google::protobuf::Closure* done)
-{
-    SCHECK(method != NULL);
-    SCHECK(controller != NULL);
-    SCHECK(request != NULL);
-    SCHECK(response != NULL);
+    ++_wait_count;
 
     // prepare controller
     RpcController* sofa_controller = dynamic_cast<RpcController*>(controller);
-    SCHECK(sofa_controller != NULL); // should pass sofa::pbrpc::RpcController to CallMethod
+    SCHECK(sofa_controller != NULL); // should be sofa::pbrpc::RpcController
     RpcControllerImplPtr cntl = sofa_controller->impl();
-    cntl->PushDoneCallback(boost::bind(&RpcChannelImpl::DoneCallback, shared_from_this(), done, _1));
+    cntl->PushDoneCallback(boost::bind(&SimpleRpcChannelImpl::DoneCallback,
+                shared_from_this(), done, _1));
     cntl->FillFromMethodDescriptor(method);
     if (done == NULL)
     {
@@ -94,23 +103,20 @@ void RpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor* meth
         {
             // mock method registered
 #if defined( LOG )
-            LOG(INFO) << "CallMethod(): mock method ["
-                      << method->full_name() << "] called";
+            LOG(INFO) << "CallMethod(): mock method [" << method->full_name() << "] called";
 #else
-            SLOG(INFO, "CallMethod(): mock method [%s] called",
-                    method->full_name().c_str());
+            SLOG(INFO, "CallMethod(): mock method [%s] called", method->full_name().c_str());
 #endif
             ::google::protobuf::Closure* mock_done =
-                NewClosure(&RpcChannelImpl::MockDoneCallback, cntl, request, response);
+                NewClosure(&SimpleRpcChannelImpl::MockDoneCallback, cntl, request, response);
             mock_closure->Run(controller, request, response, mock_done);
         }
         else
         {
             // mock method not registered, but it is in mock channel
 #if defined( LOG )
-            LOG(ERROR) << "CallMethod(): mock method ["
-                       << method->full_name() << "] not registered"
-                       << ", but used in mock channel";
+            LOG(ERROR) << "CallMethod(): mock method [" << method->full_name()
+                       << "] not registered, but used in mock channel";
 #else
             SLOG(ERROR, "CallMethod(): mock method [%s] not registered"
                     ", but used in mock channel", method->full_name().c_str());
@@ -142,7 +148,12 @@ void RpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor* meth
     WaitDone(cntl);
 }
 
-void RpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)
+uint32 SimpleRpcChannelImpl::WaitCount()
+{
+    return _wait_count;
+}
+
+void SimpleRpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)
 {
     // if sync, wait for callback done
     if (cntl->IsSync())
@@ -152,9 +163,11 @@ void RpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)
     }
 }
 
-void RpcChannelImpl::DoneCallback(google::protobuf::Closure* done,
-        const RpcControllerImplPtr& cntl)
+void SimpleRpcChannelImpl::DoneCallback(google::protobuf::Closure* done,
+                                        const RpcControllerImplPtr& cntl)
 {
+    --_wait_count;
+
     if (cntl->IsSync())
     {
         SCHECK(done == NULL);
@@ -168,9 +181,9 @@ void RpcChannelImpl::DoneCallback(google::protobuf::Closure* done,
     }
 }
 
-void RpcChannelImpl::MockDoneCallback(RpcControllerImplPtr cntl,
-        const ::google::protobuf::Message* request,
-        ::google::protobuf::Message* /*response*/)
+void SimpleRpcChannelImpl::MockDoneCallback(RpcControllerImplPtr cntl,
+                                            const ::google::protobuf::Message* request,
+                                            ::google::protobuf::Message* /*response*/)
 {
     if (!cntl->Failed())
     {
