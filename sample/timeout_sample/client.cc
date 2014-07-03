@@ -1,13 +1,8 @@
-/***************************************************************************
- * 
- * Copyright (c) 2013 Baidu.com, Inc. All Rights Reserved
- *
- * Author: qinzuoyan01@baidu.com (Qin Zuoyan)
- * CreateTime: 2013-02-22
- * 
- * Description: 
- * 
- **************************************************************************/
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/pbrpc.h>
 #include "sleep_service.pb.h"

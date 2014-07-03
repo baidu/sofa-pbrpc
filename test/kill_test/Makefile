@@ -35,11 +35,11 @@ CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS $(IN
 LIBRARY=$(SOFA_PBRPC)/lib/libsofa-pbrpc.a $(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
 LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lrt -lz
 
-PROTO_SRC=sleep_service.proto
+PROTO_SRC=echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=$(SOFA_PBRPC)/include --proto_path=$(PROTOBUF_DIR)/include
 
-BIN=server client
+BIN=echo_server client_parallel
 
 all: check_depends $(BIN)
 
@@ -59,10 +59,10 @@ clean:
 
 rebuild: clean all
 
-server: $(PROTO_OBJ) server.o
+echo_server: $(PROTO_OBJ) echo_server.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client: $(PROTO_OBJ) client.o
+client_parallel: $(PROTO_OBJ) client_parallel.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc

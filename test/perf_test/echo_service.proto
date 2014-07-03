@@ -1,0 +1,20 @@
+import "sofa/pbrpc/rpc_option.proto";
+
+package sofa.pbrpc.test;
+
+option cc_generic_services = true;
+
+message EchoRequest {
+    required string message = 1;
+}
+
+message EchoResponse {
+    required string message = 1;
+}
+
+service EchoServer {
+    rpc Echo(EchoRequest) returns(EchoResponse) {
+        option (sofa.pbrpc.request_compress_type) = CompressTypeNone;
+        option (sofa.pbrpc.response_compress_type) = CompressTypeNone;
+    }
+}

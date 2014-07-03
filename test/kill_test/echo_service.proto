@@ -1,0 +1,15 @@
+package sofa.pbrpc.test;
+
+option cc_generic_services = true;
+
+message EchoRequest {
+    required string message = 1;
+}
+
+message EchoResponse {
+    required string message = 1;
+}
+
+service EchoServer {
+    rpc Echo(EchoRequest) returns(EchoResponse);
+}
