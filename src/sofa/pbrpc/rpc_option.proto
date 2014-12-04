@@ -9,7 +9,7 @@ import "google/protobuf/descriptor.proto";
 package sofa.pbrpc;
 
 extend google.protobuf.ServiceOptions {
-    // Timeout in milliseconds, at service level.
+    // Timeout in milli-seconds at service level. Default is 10 seconds.
     optional int64 service_timeout = 20000 [default = 10000];
 }
 
@@ -22,12 +22,11 @@ enum CompressType {
 }
 
 extend google.protobuf.MethodOptions {
-    // Timeout in milliseconds, at method level.
-    // It doesn't have a default value as method without method_timeout set would
-    // use service_timeout.
+    // Timeout in milli-seconds at method level. There is no default value because 
+    // method without method_timeout set will use service_timeout.
     optional int64 method_timeout = 20000;
 
-    // Compress type.
+    // Compress type. Default is no compression.
     optional CompressType request_compress_type = 20001 [default = CompressTypeNone];
     optional CompressType response_compress_type = 20002 [default = CompressTypeNone];
 }

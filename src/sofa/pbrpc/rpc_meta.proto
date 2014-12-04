@@ -9,31 +9,45 @@ import "sofa/pbrpc/rpc_option.proto";
 package sofa.pbrpc;
 
 message RpcMeta {
+
+  /////////////////////////////////////////////////////
+  // The following fields are used both for request and response.
+
+  // Message type.
   enum Type {
     REQUEST = 0;
     RESPONSE = 1;
   };
-
-  // Required fields for both request and response, tag starts from 1.
   required Type type = 1;
+
+  // Message sequence id.
   required uint64 sequence_id = 2;
 
-  // Field for request type, tag starts from 100.
-  // The fully-qualified name of the method, scope delimited by periods.
-  // It includes the full name of service.
+  /////////////////////////////////////////////////////
+  // The following fields are used only for response.
+
+  // Method full name.
   // For example: "test.HelloService.GreetMethod"
   optional string method = 100;
 
-  // Field for response type, tag starts from 200.
-  // If the request is failed.
+  /////////////////////////////////////////////////////
+  // The following fields are used only for response.
+
+  // Set as true if the call is failed.
   optional bool failed = 200;
-  // Set the error code if failed.
+
+  // The error code if the call is failed.
   optional int32 error_code = 201;
-  // Set the reason if failed.
+
+  // The error reason if the call is failed.
   optional string reason = 202;
+
+  /////////////////////////////////////////////////////
+  // Compression related fields.
 
   // Set the request/response compress type.
   optional CompressType compress_type = 300;
+
   // Set the response compress type of user expected.
   optional CompressType expected_response_compress_type = 301;
 }
