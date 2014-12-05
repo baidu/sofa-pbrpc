@@ -1,4 +1,21 @@
 *.o
+.cproject
+.project
+.settings/
+libsofa-pbrpc.a
+output/
+sofa-pbrpc-client
+unit-test/libgtest.a
+unit-test/test_atomic
+unit-test/test_buffer
+unit-test/test_closure
+unit-test/test_common
+unit-test/test_data.pb.h
+unit-test/test_epoll_support
+unit-test/test_ext_closure
+unit-test/test_thread_group
+unit-test/test_timeout_manager
+unit-test/test_tran_buf_pool
 *.a
 sofa-pbrpc-client
 

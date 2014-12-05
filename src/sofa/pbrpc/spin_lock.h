@@ -7,10 +7,35 @@
 #ifndef _SOFA_PBRPC_SPIN_LOCK_H_
 #define _SOFA_PBRPC_SPIN_LOCK_H_
 
+#ifdef __APPLE__
+#include <libkern/OSAtomic.h>
+
+namespace sofa {
+namespace pbrpc {
+
+class SpinLock
+{
+public:
+    SpinLock(): _lock(0) { }
+    ~SpinLock() { }
+    void lock() { OSSpinLockLock(&_lock); }
+    bool try_lock() { return OSSpinLockTry(&_lock); }
+    void unlock() { OSSpinLockUnlock(&_lock); }
+
+private:
+    OSSpinLock _lock;
+}; // class SpinLock
+
+}
+}
+
+#else
+
 #include <pthread.h>
 
 namespace sofa {
 namespace pbrpc {
+
 class SpinLock
 {
 public:
@@ -26,6 +51,7 @@ private:
 
 } // namespace pbrpc
 } // namespace sofa
+#endif
 
 #endif // _SOFA_PBRPC_SPIN_LOCK_H_
 

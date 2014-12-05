@@ -31,8 +31,11 @@
 #endif // defined(__linux__)
 
 **************************************************************************/
-
+#if __APPLE__
+#undef BOOST_ASIO_HAS_EPOLL
+#else
 #define BOOST_ASIO_HAS_EPOLL 1
+#endif
 
 #include <boost/asio.hpp>
 #include <sofa/pbrpc/common.h>
