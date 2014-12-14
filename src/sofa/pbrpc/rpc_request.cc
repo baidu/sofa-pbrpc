@@ -75,37 +75,43 @@ void RpcRequest::SendSucceedResponse(
         const RpcControllerImplPtr& cntl,
         const google::protobuf::Message* response)
 {
-    uint64 sequence_id = cntl->SequenceId();
-    RpcServerStreamPtr real_stream = cntl->RpcServerStream().lock();
-    if (!real_stream)
-    {
-#if defined( LOG )
-        LOG(ERROR) << "SendSucceedResponse(): " << RpcEndpointToString(_remote_endpoint)
-                   << " {" << sequence_id << "}"
-                   << ": stream already closed, ignore";
-#else
-        SLOG(ERROR, "SendSucceedResponse(): %s {%lu}: stream already closed, ignore",
-                RpcEndpointToString(_remote_endpoint).c_str(), sequence_id);
-#endif
-        return;
-    }
-
     std::string err;
     ReadBufferPtr read_buffer = AssembleSucceedResponse(cntl, response, err);
     if (!read_buffer)
     {
 #if defined( LOG )
         LOG(ERROR) << "SendSucceedResponse(): " << RpcEndpointToString(_remote_endpoint)
-                   << " {" << sequence_id << "}"
+                   << " {" << SequenceId() << "}"
                    << ": assemble response buffer failed: " << err;
 #else
         SLOG(ERROR, "SendSucceedResponse(): %s {%lu}: assemble response buffer failed: %s",
-                RpcEndpointToString(_remote_endpoint).c_str(), sequence_id, err.c_str());
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), err.c_str());
 #endif
         return;
     }
 
-    real_stream->send_response(read_buffer,
+    SendSucceedResponse(cntl->RpcServerStream(), read_buffer);
+}
+
+void RpcRequest::SendSucceedResponse(
+        const RpcServerStreamWPtr& stream,
+        const ReadBufferPtr& buffer)
+{
+    RpcServerStreamPtr real_stream = stream.lock();
+    if (!real_stream)
+    {
+#if defined( LOG )
+        LOG(ERROR) << "SendSucceedResponse(): " << RpcEndpointToString(_remote_endpoint)
+                   << " {" << SequenceId() << "}"
+                   << ": stream already closed, ignore";
+#else
+        SLOG(ERROR, "SendSucceedResponse(): %s {%lu}: stream already closed, ignore",
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
+#endif
+        return;
+    }
+
+    real_stream->send_response(buffer,
             boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
 }
 

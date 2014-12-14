@@ -20,6 +20,16 @@ std::string RpcEndpointToString(const RpcEndpoint& endpoint)
     return ss.str();
 }
 
+std::string HostOfRpcEndpoint(const RpcEndpoint& endpoint)
+{
+    return endpoint.address().to_string();
+}
+
+uint32 PortOfRpcEndpoint(const RpcEndpoint& endpoint)
+{
+    return endpoint.port();
+}
+
 bool ResolveAddress(IOService& io_service,
         const std::string& host, const std::string& svc,
         RpcEndpoint* endpoint)

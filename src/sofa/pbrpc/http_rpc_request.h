@@ -52,9 +52,17 @@ private:
     // @return false if parse failed.
     bool ParsePath();
 
+    void OnHome(
+            const RpcServerStreamWPtr& server_stream,
+            const ServicePoolPtr& service_pool);
+
     static bool RenderJsonResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& json);
+
+    static bool RenderHtmlResponse(
+            google::protobuf::io::ZeroCopyOutputStream* output,
+            const std::string& html);
 
     rapidjson::Value* ParseJson(
             const char* str,

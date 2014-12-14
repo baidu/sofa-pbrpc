@@ -16,6 +16,8 @@ namespace std {}
 namespace sofa {
 namespace pbrpc {
 
+#define SOFA_PBRPC_VERSION "1.0.1"
+
 /////////////// types /////////////
 typedef ::google::protobuf::uint uint;
 

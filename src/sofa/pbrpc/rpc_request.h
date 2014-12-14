@@ -78,6 +78,10 @@ public:
             const RpcControllerImplPtr& cntl,
             const google::protobuf::Message* response);
 
+    void SendSucceedResponse(
+            const RpcServerStreamWPtr& stream,
+            const ReadBufferPtr& buffer);
+
     void SendFailedResponse(
             const RpcServerStreamWPtr& stream,
             int32 error_code,

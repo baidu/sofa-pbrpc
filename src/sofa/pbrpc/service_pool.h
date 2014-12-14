@@ -18,6 +18,7 @@
 #include <sofa/pbrpc/builtin_service.pb.h>
 #include <sofa/pbrpc/counter.h>
 #include <sofa/pbrpc/murmurhash.h>
+#include <sofa/pbrpc/ptime.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -37,6 +38,7 @@ struct StatSlot
     int64 failed_max_process_time;
 };
 
+class RpcServerImpl;
 class ServiceBoard;
 
 class MethodBoard
@@ -270,8 +272,9 @@ private:
 class ServicePool
 {
 public:
-    ServicePool() : _head(NULL), _count(0)
+    ServicePool(RpcServerImpl* rpc_server) : _rpc_server(rpc_server), _head(NULL), _count(0)
     {
+        _start_time = ptime_now();
         memset(_cache, 0, sizeof(_cache));
     }
 
@@ -281,6 +284,16 @@ public:
                 it != _service_map.end(); ++it) {
             delete it->second;
         }
+    }
+
+    RpcServerImpl* RpcServer()
+    {
+        return _rpc_server;
+    }
+
+    const PTime& StartTime()
+    {
+        return _start_time;
     }
 
     bool RegisterService(google::protobuf::Service* service, bool take_ownership = true)
@@ -404,6 +417,10 @@ private:
     }
 
 private:
+    RpcServerImpl* _rpc_server;
+    std::string _version;
+    PTime _start_time;
+
     typedef std::map<std::string, ServiceBoard*> ServiceMap;
     ServiceMap _service_map;
     FastLock _service_map_lock;

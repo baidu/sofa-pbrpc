@@ -10,6 +10,8 @@
 #include <cstdio> // for snprintf()
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
 
 namespace sofa {
 namespace pbrpc {
@@ -29,9 +31,12 @@ inline PTime ptime_infin()
 
 inline std::string ptime_to_string(const PTime& t)
 {
-    PTime::date_type date = t.date();
-    TimeDuration tod = t.time_of_day();
-    char buf[100];
+    // see <http://www.boost.org/doc/libs/1_40_0/doc/html/date_time/examples.html>
+    typedef boost::date_time::c_local_adjustor<PTime> local_adj;
+    PTime lt = local_adj::utc_to_local(t);
+    PTime::date_type date = lt.date();
+    TimeDuration tod = lt.time_of_day();
+    char buf[64];
     snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%06ld", 
             (int)date.year(),
             (int)date.month(),
@@ -40,7 +45,7 @@ inline std::string ptime_to_string(const PTime& t)
             tod.minutes(),
             tod.seconds(),
             tod.fractional_seconds());
-    return buf;
+    return buf; 
 }
 
 inline TimeDuration time_duration_hours(int64_t n)

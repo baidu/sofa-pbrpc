@@ -37,6 +37,19 @@ void ReadBuffer::Append(const BufHandle& buf_handle)
     _cur_it = _buf_list.begin();
 }
 
+void ReadBuffer::Append(const ReadBuffer* read_buffer)
+{
+    SCHECK(read_buffer != NULL);
+    BufHandleList::const_iterator it = read_buffer->_buf_list.begin();
+    BufHandleList::const_iterator end = read_buffer->_buf_list.end();
+    for (; it != end; ++it) {
+        _buf_list.push_back(*it);
+        TranBufPool::add_ref(it->data);
+    }
+    _total_bytes += read_buffer->_total_bytes;
+    _cur_it = _buf_list.begin();
+}
+
 int64 ReadBuffer::TotalCount() const
 {
     return _total_bytes;
@@ -51,7 +64,7 @@ std::string ReadBuffer::ToString() const
 {
     std::string str;
     str.reserve(_total_bytes);
-    for (std::deque<BufHandle>::const_iterator it = _buf_list.begin();
+    for (BufHandleList::const_iterator it = _buf_list.begin();
             it != _buf_list.end(); ++it)
     {
         str.append(it->data + it->offset, it->size);

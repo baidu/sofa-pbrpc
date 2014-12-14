@@ -39,7 +39,10 @@ public:
     // Preconditions:
     // * No method Next(), Backup() or Skip() have been called before.
     // * The size of "buf_handle" should be greater than 0.
+    // * For the first one, size of "buf_handle" should be greater than 0.
+    // * For the second one, "read_buffer" should not be NULL.
     void Append(const BufHandle& buf_handle);
+    void Append(const ReadBuffer* read_buffer);
 
     // Get the total byte count of the buffer.
     int64 TotalCount() const;

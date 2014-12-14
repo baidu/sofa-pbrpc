@@ -29,7 +29,7 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,
     , _last_print_connection_ticks(0)
     , _live_stream_count(0)
 {
-    _service_pool.reset(new ServicePool());
+    _service_pool.reset(new ServicePool(this));
 
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
     _slice_quota_in = _options.max_throughput_in == -1 ?
