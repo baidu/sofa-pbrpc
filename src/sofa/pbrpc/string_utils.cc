@@ -274,7 +274,6 @@ static int unescape_c_escape_sequences(const char* source, char* dest)
                         break;
                     }
                     unsigned int ch = 0;
-                    const char *hex_start = p;
                     while (isxdigit(p[1])) { // arbitrarily many hex digits
                         ch = (ch << 4) + hex_digit_to_int(*++p);
                     }

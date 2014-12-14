@@ -1,12 +1,6 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-//
-// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
-
 // This file is modified from `protobuf-zerocopy-compression':
 //   https://github.com/JohannesEbke/protobuf-zerocopy-compression
-//
+
 // Copyright (c) 2013, Johannes Ebke and Peter Waller.  All rights reserved.
 // Author: peter.waller@gmail.com (Peter Waller)
 // Author: johannes@ebke.org (Johannes Ebke)

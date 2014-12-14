@@ -478,7 +478,6 @@ static int parse_json(const rapidjson::Value* json, Message* msg, std::string& e
             field = ref->FindKnownExtensionByName(name);
         if (!field)
             RETURN_ERR(ERR_UNKNOWN_FIELD, "Unknown field");
-        int r = 0;
         if (field->is_repeated())
         {
             if (itr->value.GetType() != rapidjson::kArrayType)

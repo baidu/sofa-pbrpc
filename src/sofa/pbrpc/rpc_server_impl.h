@@ -61,50 +61,15 @@ private:
 
     void OnAccepted(const RpcServerStreamPtr& stream);
 
-    void OnAcceptFailed(
-            RpcErrorCode error_code,
-            const std::string& error_text);
+    void OnAcceptFailed(RpcErrorCode error_code, const std::string& error_text);
 
-    void OnReceived(
-            const RpcEndpoint& local_endpoint,
-            const RpcEndpoint& remote_endpoint,
-            const RpcMeta& meta,
-            const RpcServerStreamWPtr& stream,
-            const ReadBufferPtr& buffer,
-            int64 data_size);
-
-    static void OnCallMethodDone(
-            RpcController* controller,
-            google::protobuf::Message* request,
-            google::protobuf::Message* response,
-            MethodBoard* method_board,
-            PTime start_time);
-
-    static void SendFailedResponse(
-            const RpcServerStreamWPtr& stream,
-            uint64 sequence_id,
-            int32 error_code,
-            const std::string& reason);
-
-    static void SendSucceedResponse(
-            const RpcServerStreamWPtr& stream,
-            uint64 sequence_id,
-            CompressType compress_type,
-            google::protobuf::Message* response);
-
-    static void OnSendResponseDone(
-            const RpcEndpoint& remote_endpoint,
-            uint64 sequence_id,
-            RpcErrorCode error_code);
+    void OnReceived(const RpcServerStreamWPtr& stream, const RpcRequestPtr& request);
 
     void StopStreams();
 
     void ClearStreams();
 
     void TimerMaintain(const PTime& now);
-
-    static bool ParseMethodFullName(const std::string& method_full_name,
-            std::string* service_full_name, std::string* method_name);
 
 private:
     struct FlowControlItem

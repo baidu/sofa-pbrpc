@@ -48,10 +48,12 @@ public:
             std::string& err);
 
 private:
+    // Parse http path.
+    // @return false if parse failed.
     bool ParsePath();
 
     static bool RenderJsonResponse(
-            google::protobuf::io::ZeroCopyOutputStream* os,
+            google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& json);
 
     rapidjson::Value* ParseJson(

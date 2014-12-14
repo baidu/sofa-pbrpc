@@ -37,15 +37,27 @@ struct StatSlot
     int64 failed_max_process_time;
 };
 
+class ServiceBoard;
+
 class MethodBoard
 {
 public:
-    MethodBoard() : _desc(NULL), _slot_index(0)
+    MethodBoard() : _service_board(NULL), _desc(NULL), _slot_index(0)
     {
         memset(_stat_slots, 0, sizeof(_stat_slots));
     }
 
     ~MethodBoard() {}
+
+    void SetServiceBoard(ServiceBoard* service_board)
+    {
+        _service_board = service_board;
+    }
+
+    ServiceBoard* GetServiceBoard()
+    {
+        return _service_board;
+    }
 
     void SetDescriptor(const google::protobuf::MethodDescriptor* desc)
     {
@@ -127,6 +139,7 @@ public:
     }
 
 private:
+    ServiceBoard* _service_board;
     const google::protobuf::MethodDescriptor* _desc;
     StatSlot _stat_slots[STAT_SLOT_COUNT];
     volatile int _slot_index;
@@ -142,6 +155,7 @@ public:
         _method_count = _svc_desc->method_count();
         _method_boards = new MethodBoard[_method_count];
         for (int i = 0; i < _method_count; ++i) {
+            _method_boards[i].SetServiceBoard(this);
             _method_boards[i].SetDescriptor(_svc_desc->method(i));
         }
     }
@@ -162,6 +176,11 @@ public:
     const std::string& ServiceName()
     {
         return _svc_desc->full_name();
+    }
+
+    const google::protobuf::ServiceDescriptor* Descriptor()
+    {
+        return _svc_desc;
     }
 
     google::protobuf::Service* Service()

@@ -8,6 +8,7 @@
 #define _SOFA_PBRPC_BUFFER_H_
 
 #include <deque>
+#include <string>
 
 #include <google/protobuf/io/zero_copy_stream.h>
 
@@ -45,6 +46,9 @@ public:
 
     // Get the block count occupied by the buffer.
     int BlockCount() const;
+
+    // Trans buffer to string.
+    std::string ToString() const;
 
     // implements ZeroCopyInputStream ----------------------------------
     bool Next(const void** data, int* size);

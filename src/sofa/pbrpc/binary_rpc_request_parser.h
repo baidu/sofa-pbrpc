@@ -35,7 +35,8 @@ private:
         PS_MAGIC_STRING,
         PS_MSG_HEADER,
         PS_MSG_BODY
-    } _state; // temp variables for receiving message
+    };
+    ParseState _state; // current parsing state
     int _bytes_recved; // bytes received in current state
     BinaryRpcRequestPtr _req;
 }; // class BinaryRpcRequestParser

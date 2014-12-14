@@ -5,6 +5,8 @@
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/rpc_request.h>
+#include <sofa/pbrpc/rpc_server_stream.h>
+#include <sofa/pbrpc/closure.h>
 
 namespace sofa {
 namespace pbrpc{
@@ -19,7 +21,7 @@ void RpcRequest::CallMethod(
     google::protobuf::Closure* done = NewClosure(
             shared_from_this(), &RpcRequest::OnCallMethodDone,
             method_board, controller, request, response);
-    method_board->ServiceBoard()->Service()->CallMethod(
+    method_board->GetServiceBoard()->Service()->CallMethod(
             method_board->Descriptor(), controller, request, response, done);
 }
 
@@ -104,7 +106,7 @@ void RpcRequest::SendSucceedResponse(
     }
 
     real_stream->send_response(read_buffer,
-            boost::bind(&RpcRequest::OnSendResponseDone, _remote_endpoint, sequence_id, _1));
+            boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
 }
 
 void RpcRequest::SendFailedResponse(
@@ -143,33 +145,31 @@ void RpcRequest::SendFailedResponse(
     }
 
     real_stream->send_response(read_buffer,
-            boost::bind(&RpcRequest::OnSendResponseDone, _remote_endpoint, sequence_id, _1));
+            boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
 }
 
 void RpcRequest::OnSendResponseDone(
-        const RpcEndpoint& remote_endpoint,
-        uint64 sequence_id,
         RpcErrorCode error_code)
 {
     if (error_code == RPC_SUCCESS)
     {
 #if defined( LOG )
-        LOG(DEBUG) << "OnSendResponseDone(): " << RpcEndpointToString(remote_endpoint)
-                   << " {" << sequence_id << "}: send succeed";
+        LOG(DEBUG) << "OnSendResponseDone(): " << RpcEndpointToString(_remote_endpoint)
+                   << " {" << SequenceId() << "}: send succeed";
 #else
         SLOG(DEBUG, "OnSendResponseDone(): %s {%lu}: send succeed",
-                RpcEndpointToString(remote_endpoint).c_str(), sequence_id);
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
 #endif
     }
     else
     {
 #if defined( LOG )
-        LOG(ERROR) << "OnSendResponseDone(): " << RpcEndpointToString(remote_endpoint)
-                   << " {" << sequence_id << "}"
+        LOG(ERROR) << "OnSendResponseDone(): " << RpcEndpointToString(_remote_endpoint)
+                   << " {" << SequenceId() << "}"
                    << ": send failed: " << RpcErrorCodeToString(error_code);
 #else
         SLOG(ERROR, "OnSendResponseDone(): %s {%lu}: send failed: %s",
-                RpcEndpointToString(remote_endpoint).c_str(), sequence_id,
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(),
                 RpcErrorCodeToString(error_code));
 #endif
     }

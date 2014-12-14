@@ -1,3 +1,9 @@
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
 #ifndef _SOFA_PBRPC_HTTP_RPC_REQUEST_PARSER_H_
 #define _SOFA_PBRPC_HTTP_RPC_REQUEST_PARSER_H_
 
@@ -28,8 +34,8 @@ private:
     //
     // @retval 1  request data ready
     // @retval 0  there are more bytes to be read
-    // @retval -1  parse request fail
-    int ParseInternal(char c);
+    // @retval -1  parse request fail, and the error message is returned by err.
+    int ParseInternal(char c, std::string& err);
 
 private:
     enum ParseState

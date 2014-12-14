@@ -7,6 +7,8 @@
 #include <sofa/pbrpc/http_rpc_request.h>
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/rpc_server_stream.h>
+#include <sofa/pbrpc/pbjson.h>
+#include <sofa/pbrpc/string_utils.h>
 
 #include <google/protobuf/io/printer.h>
 
@@ -52,6 +54,13 @@ void HTTPRpcRequest::ProcessRequest(
     std::string method_name;
     if (!ParseMethodFullName(_method, &service_name, &method_name))
     {
+#if defined( LOG )
+        LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                   << ": {" << SequenceId() << "}: parse request message failed";
+#else
+        SLOG(ERROR, "ProcessRequest(): %s: {%lu}: parse request message failed",
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
+#endif
         SendFailedResponse(server_stream,
                 RPC_ERROR_PARSE_METHOD_NAME, "invalid method name: " + _method);
         return;
@@ -64,6 +73,13 @@ void HTTPRpcRequest::ProcessRequest(
         _req_json = ParseJson(json_str.c_str(), err);
         if (_req_json == NULL)
         {
+#if defined( LOG )
+            LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                       << ": {" << SequenceId() << "}: parse json failed: " << err;
+#else
+            SLOG(ERROR, "ProcessRequest(): %s: {%lu}: parse json failed: %s",
+                    RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), err.c_str());
+#endif
             SendFailedResponse(server_stream,
                     RPC_ERROR_PARSE_REQUEST_MESSAGE, "parse json failed: " + err);
             return;
@@ -74,6 +90,13 @@ void HTTPRpcRequest::ProcessRequest(
         std::map<std::string, std::string>::iterator find = _query_params.find("request");
         if (find == _query_params.end())
         {
+#if defined( LOG )
+            LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                       << ": {" << SequenceId() << "}: no request param specified";
+#else
+            SLOG(ERROR, "ProcessRequest(): %s: {%lu}: no request param specified",
+                    RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
+#endif
             SendFailedResponse(server_stream,
                     RPC_ERROR_PARSE_REQUEST_MESSAGE, "no request param specified");
             return;
@@ -81,6 +104,13 @@ void HTTPRpcRequest::ProcessRequest(
         _req_json = ParseJson(find->second.c_str(), err);
         if (_req_json == NULL)
         {
+#if defined( LOG )
+            LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                       << ": {" << SequenceId() << "}: parse json failed: " << err;
+#else
+            SLOG(ERROR, "ProcessRequest(): %s: {%lu}: parse json failed: %s",
+                    RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), err.c_str());
+#endif
             SendFailedResponse(server_stream,
                     RPC_ERROR_PARSE_REQUEST_MESSAGE, "parse json failed: " + err);
             return;
@@ -90,31 +120,45 @@ void HTTPRpcRequest::ProcessRequest(
     MethodBoard* method_board = FindMethodBoard(service_pool, service_name, method_name);
     if (method_board == NULL)
     {
+#if defined( LOG )
+        LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                   << ": {" << SequenceId() << "}: method not found: " << _method;
+#else
+        SLOG(ERROR, "ProcessRequest(): %s: {%lu}: method not found: %s",
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), _method.c_str());
+#endif
         SendFailedResponse(server_stream,
                 RPC_ERROR_FOUND_METHOD, "method not found: " + _method);
         return;
     }
 
-    google::protobuf::Service* service = method_board->ServiceBoard()->Service();
+    google::protobuf::Service* service = method_board->GetServiceBoard()->Service();
     const google::protobuf::MethodDescriptor* method_desc = method_board->Descriptor();
 
     google::protobuf::Message* request = service->GetRequestPrototype(method_desc).New();
     if (jsonobject2pb(_req_json, request, err) < 0)
     {
+#if defined( LOG )
+        LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                   << ": {" << SequenceId() << "}: parse json to pb failed: " << err;
+#else
+        SLOG(ERROR, "ProcessRequest(): %s: {%lu}: parse json to pb failed: %s",
+                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), err.c_str());
+#endif
         SendFailedResponse(server_stream,
                 RPC_ERROR_PARSE_REQUEST_MESSAGE, "parse json to pb failed: " + err);
         return;
     }
 
-    google::protobuf::Message* response = service->GetResponsePrototype(method).New();
+    google::protobuf::Message* response = service->GetResponsePrototype(method_desc).New();
 
     RpcController* controller = new RpcController();
     const RpcControllerImplPtr& cntl = controller->impl();
-    cntl->SetSequenceId(_sequence_id);
+    cntl->SetSequenceId(0);
     cntl->SetMethodId(_method);
     cntl->SetLocalEndpoint(_local_endpoint);
     cntl->SetRemoteEndpoint(_remote_endpoint);
-    cntl->SetRpcServerStream(stream);
+    cntl->SetRpcServerStream(server_stream);
     cntl->SetRequestReceivedTime(_received_time);
     cntl->SetStartProcessTime(ptime_now());
     cntl->SetResponseCompressType(CompressTypeNone);
@@ -123,7 +167,7 @@ void HTTPRpcRequest::ProcessRequest(
 }
 
 ReadBufferPtr HTTPRpcRequest::AssembleSucceedResponse(
-        const RpcControllerImplPtr& cntl,
+        const RpcControllerImplPtr& /*cntl*/,
         const google::protobuf::Message* response,
         std::string& err)
 {
@@ -234,16 +278,16 @@ bool HTTPRpcRequest::RenderJsonResponse(
         google::protobuf::io::ZeroCopyOutputStream* output,
         const std::string& json)
 {
-    google::protobuf::io::Printer printer(output);
+    google::protobuf::io::Printer printer(output, '$');
     std::ostringstream oss;
     oss << json.size();
-    printer->Print("HTTP/1.1 200 OK\r\n");
-    printer->Print("Content-Type: application/json\r\n");
-    printer->Print("Access-Control-Allow-Origin: *\r\n");
-    printer->Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
-    printer->Print("\r\n");
-    printer->PrintRaw(json);
-    return !priner->failed();
+    printer.Print("HTTP/1.1 200 OK\r\n");
+    printer.Print("Content-Type: application/json\r\n");
+    printer.Print("Access-Control-Allow-Origin: *\r\n");
+    printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
+    printer.Print("\r\n");
+    printer.PrintRaw(json);
+    return !printer.failed();
 }
 
 rapidjson::Value* HTTPRpcRequest::ParseJson(

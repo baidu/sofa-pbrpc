@@ -5,15 +5,14 @@
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/http_rpc_request_parser.h>
-#include <sofa/rpc/http_rpc_protocol.h>
 
 namespace sofa {
 namespace pbrpc {
 
 HTTPRpcRequestParser::HTTPRpcRequestParser() :
     _state(PS_METHOD),
-    _req(new HTTPRpcRequest()),
-    _content_length(0)
+    _content_length(0),
+    _req(new HTTPRpcRequest())
 {
 }
 
@@ -70,9 +69,11 @@ int HTTPRpcRequestParser::Parse(const char* buf,
             if (ret < 0)
             {
 #if defined( LOG )
-                LOG(ERROR) << "Parse(): parse error: " << err;
+                LOG(ERROR) << "Parse(): " << RpcEndpointToString(_req->_remote_endpoint)
+                           << ": parse error: " << err;
 #else
-                SLOG(ERROR, "Parse(): parse error: %s", err.c_str());
+                SLOG(ERROR, "Parse(): %s: parse error: %s",
+                        RpcEndpointToString(_req->_remote_endpoint).c_str(), err.c_str());
 #endif
                 return ret;
             }
@@ -131,7 +132,7 @@ int HTTPRpcRequestParser::ParseInternal(char c, std::string& err)
         {
             if (!_req->ParsePath())
             {
-                err = "invalid path: " + _req->path;
+                err = "invalid path: " + _req->_path;
                 return -1;
             }
             _state = PS_HTTP_VERSION;

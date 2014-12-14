@@ -47,6 +47,18 @@ int ReadBuffer::BlockCount() const
     return _buf_list.size();
 }
 
+std::string ReadBuffer::ToString() const
+{
+    std::string str;
+    str.reserve(_total_bytes);
+    for (std::deque<BufHandle>::const_iterator it = _buf_list.begin();
+            it != _buf_list.end(); ++it)
+    {
+        str.append(it->data + it->offset, it->size);
+    }
+    return str;
+}
+
 bool ReadBuffer::Next(const void** data, int* size)
 {
     if (_cur_it != _buf_list.end())

@@ -104,20 +104,6 @@ int BinaryRpcRequestParser::Parse(const char* buf,
 #endif
                     return -1;
                 }
-                if (!ParseMethodFullName(_req->_req_meta.method(),
-                            &_req->_service_name, &_req->_method_name))
-                {
-#if defined( LOG )
-                    LOG(ERROR) << "Parse(): " << RpcEndpointToString(_req->_remote_endpoint)
-                               << ": {" << _req->_req_meta.sequenc_id() << "}"
-                               << ": invalid method full name: " << _req->_req_meta.method();
-#else
-                    SLOG(ERROR, "Parse(): %s: {%lu}: invalid method full name: %s",
-                            RpcEndpointToString(_req->_remote_endpoint).c_str(),
-                            _req->_req_meta.sequence_id(), _req->_req_meta.method().c_str());
-#endif
-                    return -1;
-                }
                 return 1;
             }
             return 0;

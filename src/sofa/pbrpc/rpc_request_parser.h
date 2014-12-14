@@ -1,9 +1,15 @@
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
 #ifndef _SOFA_PBRPC_RPC_REQUEST_PARSER_H_
 #define _SOFA_PBRPC_RPC_REQUEST_PARSER_H_
 
-#include <sofa/pbrpc/rpc_request.h>
-
 #include <vector>
+
+#include <sofa/pbrpc/rpc_request.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -45,10 +51,6 @@ public:
     virtual RpcRequestPtr GetRequest() = 0;
 
 public:
-    // Parse service & method name from method full name.
-    static bool ParseMethodFullName(const std::string& method_full_name,
-            std::string* service_name, std::string* method_name);
-
     // Get all registered parsers.
     static void RegisteredParsers(std::vector<RpcRequestParserPtr>* parsers);
 }; // class RpcRequestParser

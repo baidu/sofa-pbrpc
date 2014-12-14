@@ -373,7 +373,7 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        _swapped_calls.push_back(PendingItem(message, cookie));
+        _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
         _swapped_buffer_size += message->BlockCount() * TranBufPool::block_size();
@@ -418,6 +418,9 @@ private:
         }
 
         // no message found
+        SCHECK_EQ(0, _swapped_message_count);
+        SCHECK_EQ(0, _swapped_data_size);
+        SCHECK_EQ(0, _swapped_buffer_size);
         return false;
     }
 
@@ -557,9 +560,9 @@ private:
                 if (identify_result > 0)
                 {
                     _receiving_header_identified = true;
-                    if (consumed == size)
+                    if (consumed == size && _receiving_header.message_size > 0)
                     {
-                        // all the data is consumed by header
+                        // all the data is consumed by header, and message data is not null
                         return true;
                     }
                     else
@@ -589,7 +592,10 @@ private:
             }
 
             int64 consume_size = message_size - _received_message_size;
-            _receiving_message->Append(BufHandle(_tran_buf, consume_size, data - _tran_buf));
+            if (consume_size > 0)
+            {
+                _receiving_message->Append(BufHandle(_tran_buf, consume_size, data - _tran_buf));
+            }
             received_messages->push_back(ReceivedItem(_receiving_message, 
                         _receiving_header.meta_size, _receiving_header.data_size));
             reset_receiving_env();

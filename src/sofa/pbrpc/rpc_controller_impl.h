@@ -357,6 +357,26 @@ public:
         return _request_received_time;
     }
 
+    void SetStartProcessTime(const PTime& time)
+    {
+        _start_process_time = time;
+    }
+
+    const PTime& StartProcessTime()
+    {
+        return _start_process_time;
+    }
+
+    void SetFinishProcessTime(const PTime& time)
+    {
+        _finish_process_time = time;
+    }
+
+    const PTime& FinishProcessTime()
+    {
+        return _finish_process_time;
+    }
+
 private:
     uint64 _sequence_id;
     std::string _method_id;
@@ -397,6 +417,8 @@ private:
     // used only in server side
     RpcServerStreamWPtr _server_stream;
     PTime _request_received_time;
+    PTime _start_process_time;
+    PTime _finish_process_time;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcControllerImpl);
 }; // class RpcControllerImpl

@@ -13,6 +13,7 @@
 // See library home page at http://www.boost.org/libs/system
 
 #include <sofa/pbrpc/smart_ptr/scoped_ptr.hpp>
+#include <sofa/pbrpc/smart_ptr/scoped_array.hpp>
 #include <sofa/pbrpc/smart_ptr/weak_ptr.hpp>
 #include <sofa/pbrpc/smart_ptr/shared_ptr.hpp>
 #include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
