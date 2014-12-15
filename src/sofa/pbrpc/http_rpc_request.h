@@ -52,9 +52,9 @@ private:
     // @return false if parse failed.
     bool ParsePath();
 
-    void OnHome(
+    void SendPage(
             const RpcServerStreamWPtr& server_stream,
-            const ServicePoolPtr& service_pool);
+            const std::string& page);
 
     static bool RenderJsonResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
@@ -64,9 +64,29 @@ private:
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& html);
 
-    rapidjson::Value* ParseJson(
+    static rapidjson::Value* ParseJson(
             const char* str,
             std::string& err);
+
+    static void PageHeader(std::ostream& out);
+
+    static void PageFooter(std::ostream& out);
+
+    void ServerBrief(
+            std::ostream& out,
+            const ServicePoolPtr& service_pool);
+
+    static void ServerOptions(
+            std::ostream& out,
+            const ServicePoolPtr& service_pool);
+
+    static void ServerStatus(
+            std::ostream& out,
+            const ServicePoolPtr& service_pool);
+
+    static void ServiceList(
+            std::ostream& out,
+            const ServicePoolPtr& service_pool);
 
 private:
     friend class HTTPRpcRequestParser;

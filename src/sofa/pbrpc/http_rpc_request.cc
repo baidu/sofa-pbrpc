@@ -23,8 +23,6 @@
 namespace sofa {
 namespace pbrpc {
 
-static std::string GetHostName(const std::string& ip);
-
 HTTPRpcRequest::HTTPRpcRequest() :
     _type(GET),
     _req_body(new ReadBuffer()),
@@ -60,9 +58,43 @@ void HTTPRpcRequest::ProcessRequest(
         const RpcServerStreamWPtr& server_stream,
         const ServicePoolPtr& service_pool)
 {
-    if (_method == "")
+    if (_method == "" || _method == "home")
     {
-        OnHome(server_stream, service_pool);
+        std::ostringstream oss;
+        PageHeader(oss);
+        ServerBrief(oss, service_pool);
+        ServerOptions(oss, service_pool);
+        ServerStatus(oss, service_pool);
+        ServiceList(oss, service_pool);
+        PageFooter(oss);
+        SendPage(server_stream, oss.str());
+        return;
+    }
+    else if (_method == "options")
+    {
+        std::ostringstream oss;
+        PageHeader(oss);
+        ServerOptions(oss, service_pool);
+        PageFooter(oss);
+        SendPage(server_stream, oss.str());
+        return;
+    }
+    else if (_method == "status")
+    {
+        std::ostringstream oss;
+        PageHeader(oss);
+        ServerStatus(oss, service_pool);
+        PageFooter(oss);
+        SendPage(server_stream, oss.str());
+        return;
+    }
+    else if (_method == "services")
+    {
+        std::ostringstream oss;
+        PageHeader(oss);
+        ServiceList(oss, service_pool);
+        PageFooter(oss);
+        SendPage(server_stream, oss.str());
         return;
     }
 
@@ -270,80 +302,19 @@ bool HTTPRpcRequest::ParsePath()
     return true;
 }
 
-void HTTPRpcRequest::OnHome(
+void HTTPRpcRequest::SendPage(
         const RpcServerStreamWPtr& server_stream,
-        const ServicePoolPtr& service_pool)
+        const std::string& page)
 {
-    std::ostringstream oss;
-    oss << "<html>"
-        << "<head><title>SOFA-PBRPC</title></head>"
-        << "<body>";
-
-    std::string ip = HostOfRpcEndpoint(_local_endpoint);
-    uint32 port = PortOfRpcEndpoint(_local_endpoint);
-    std::string host = GetHostName(ip);
-
-    oss << "<h1>" << host << "</h1>";
-    oss << "<b>IP:</b> " << ip << "<br>";
-    oss << "<b>Port:</b> " << port << "<br>";
-    oss << "<b>Started:</b> " << ptime_to_string(service_pool->StartTime()) << "<br>";
-    oss << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>";
-
-    RpcServerOptions options = service_pool->RpcServer()->GetOptions();
-    oss << "<h3>ServerOptions</h3>"
-        << "<table border=\"2\">"
-        << "<tr><td>Name</td><td>Value</td></tr>"
-        << "<tr><td>work_thread_num</td><td>"
-        << options.work_thread_num << "</td></tr>"
-        << "<tr><td>keep_alive_time (seconds)</td><td>"
-        << options.keep_alive_time << "</td></tr>"
-        << "<tr><td>max_pending_buffer_size (MB)</td><td>"
-        << options.max_pending_buffer_size << "</td></tr>"
-        << "<tr><td>max_throughput_in (MB)</td><td>"
-        << options.max_throughput_in << "</td></tr>"
-        << "<tr><td>max_throughput_out (MB)</td><td>"
-        << options.max_throughput_out << "</td></tr>"
-        << "<tr><td>disable_builtin_services</td><td>"
-        << (options.disable_builtin_services ? "true" : "false") << "</td></tr>"
-        << "<tr><td>disable_list_service</td><td>"
-        << (options.disable_list_service ? "true" : "false") << "</td></tr>"
-        << "</table>";
-
-    oss << "<h3>Services</h3>"
-        << "<table border=\"2\">"
-        << "<tr>"
-        << "<td>ServiceName</td>"
-        << "<td>SucceedCount (last minite)</td>"
-        << "<td>FailedCount (last minite)</td>"
-        << "</tr>";
-    std::list<ServiceBoard*> svc_list;
-    service_pool->ListService(&svc_list);
-    for (std::list<ServiceBoard*>::iterator it = svc_list.begin();
-            it != svc_list.end(); ++it)
-    {
-        ServiceBoard* svc_board = *it;
-        sofa::pbrpc::builtin::ServiceStat stat;
-        svc_board->LatestStats(60, &stat);
-        oss << "<tr>"
-            << "<td>" << stat.service_name() << "</td>"
-            << "<td>" << stat.succeed_count() << "</td>"
-            << "<td>" << stat.failed_count() << "</td>"
-            << "</tr>";
-    }
-    oss << "</table>";
-
-    oss << "</body>"
-        << "</html>";
-
     WriteBuffer write_buffer;
-    if (!RenderHtmlResponse(&write_buffer, oss.str()))
+    if (!RenderHtmlResponse(&write_buffer, page))
     {
 #if defined( LOG )
-        LOG(ERROR) << "OnHome(): " << RpcEndpointToString(_remote_endpoint)
+        LOG(ERROR) << "SendPage(): " << RpcEndpointToString(_remote_endpoint)
                    << ": {" << SequenceId() << "}"
                    << ": render response failed";
 #else
-        SLOG(ERROR, "OnHome(): %s: {%lu}: render response failed",
+        SLOG(ERROR, "SendPage(): %s: {%lu}: render response failed",
                 RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
 #endif
         return;
@@ -402,7 +373,20 @@ rapidjson::Value* HTTPRpcRequest::ParseJson(
     return d;
 }
 
-std::string GetHostName(const std::string& ip)
+void HTTPRpcRequest::PageHeader(std::ostream& out)
+{
+    out << "<html>"
+        << "<head><title>SOFA-PBRPC</title></head>"
+        << "<body>";
+}
+
+void HTTPRpcRequest::PageFooter(std::ostream& out)
+{
+    out << "</body>"
+        << "</html>";
+}
+
+static std::string GetHostName(const std::string& ip)
 {
     struct sockaddr_in addr;
     struct hostent *host;
@@ -422,6 +406,104 @@ std::string GetHostName(const std::string& ip)
     {
         return ip;
     }
+}
+
+void HTTPRpcRequest::ServerBrief(
+        std::ostream& out,
+        const ServicePoolPtr& service_pool)
+{
+    std::string ip = HostOfRpcEndpoint(_local_endpoint);
+    uint32 port = PortOfRpcEndpoint(_local_endpoint);
+    std::string host = GetHostName(ip);
+
+    out << "<h1>" << host << "</h1>";
+    out << "<b>IP:</b> " << ip << "<br>";
+    out << "<b>Port:</b> " << port << "<br>";
+    out << "<b>Started:</b> " << ptime_to_string(service_pool->StartTime()) << "<br>";
+    out << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>";
+}
+
+void HTTPRpcRequest::ServerOptions(
+        std::ostream& out,
+        const ServicePoolPtr& service_pool)
+{
+    RpcServerImpl* server = service_pool->RpcServer();
+    RpcServerOptions options = server->GetOptions();
+    out << "<h3>ServerOptions</h3>"
+        << "<table border=\"2\">"
+        << "<tr><td>Name</td><td>Value</td></tr>"
+        << "<tr><td>work_thread_num</td><td>"
+        << options.work_thread_num << "</td></tr>"
+        << "<tr><td>keep_alive_time (seconds)</td><td>"
+        << options.keep_alive_time << "</td></tr>"
+        << "<tr><td>max_pending_buffer_size (MB)</td><td>"
+        << options.max_pending_buffer_size << "</td></tr>"
+        << "<tr><td>max_throughput_in (MB)</td><td>"
+        << options.max_throughput_in << "</td></tr>"
+        << "<tr><td>max_throughput_out (MB)</td><td>"
+        << options.max_throughput_out << "</td></tr>"
+        << "<tr><td>disable_builtin_services</td><td>"
+        << (options.disable_builtin_services ? "true" : "false") << "</td></tr>"
+        << "<tr><td>disable_list_service</td><td>"
+        << (options.disable_list_service ? "true" : "false") << "</td></tr>"
+        << "</table>";
+}
+
+void HTTPRpcRequest::ServerStatus(
+        std::ostream& out,
+        const ServicePoolPtr& service_pool)
+{
+    RpcServerImpl* server = service_pool->RpcServer();
+    int64 pending_message_count;
+    int64 pending_buffer_size;
+    int64 pending_data_size;
+    server->GetPendingStat(&pending_message_count, &pending_buffer_size, &pending_data_size);
+    out << "<h3>ServerStatus</h3>"
+        << "<table border=\"2\">"
+        << "<tr><td>Name</td><td>Value</td></tr>"
+        << "<tr><td>connection_count</td><td>"
+        << server->ConnectionCount() << "</td></tr>"
+        << "<tr><td>service_count</td><td>"
+        << server->ServiceCount() << "</td></tr>"
+        << "<tr><td>pending_message_count</td><td>"
+        << pending_message_count << "</td></tr>"
+        << "<tr><td>pending_buffer_size</td><td>"
+        << pending_buffer_size << " (" << (pending_buffer_size + 1023 / 1024) << "KB)</td></tr>"
+        << "<tr><td>pending_data_size</td><td>"
+        << pending_data_size << " (" << (pending_data_size + 1023 / 1024) << "KB)</td></tr>"
+        << "</table>";
+}
+
+void HTTPRpcRequest::ServiceList(
+        std::ostream& out,
+        const ServicePoolPtr& service_pool)
+{
+    out << "<h3>Services</h3>"
+        << "<table border=\"2\">"
+        << "<tr>"
+        << "<td>ServiceName</td>"
+        << "<td>TotelCount/SucceedCount/FailedCount (last second)</td>"
+        << "<td>TotelCount/SucceedCount/FailedCount (last minite)</td>"
+        << "</tr>";
+    std::list<ServiceBoard*> svc_list;
+    service_pool->ListService(&svc_list);
+    for (std::list<ServiceBoard*>::iterator it = svc_list.begin();
+            it != svc_list.end(); ++it)
+    {
+        ServiceBoard* svc_board = *it;
+        sofa::pbrpc::builtin::ServiceStat stat1;
+        sofa::pbrpc::builtin::ServiceStat stat60;
+        svc_board->LatestStats(1, &stat1);
+        svc_board->LatestStats(60, &stat60);
+        out << "<tr>"
+            << "<td>" << stat1.service_name() << "</td>"
+            << "<td>" << (stat1.succeed_count() + stat1.failed_count()) << "/"
+            << stat1.succeed_count() << "/" << stat1.failed_count() << "</td>"
+            << "<td>" << (stat60.succeed_count() + stat60.failed_count()) << "/"
+            << stat60.succeed_count() << "/" << stat60.failed_count() << "</td>"
+            << "</tr>";
+    }
+    out << "</table>";
 }
 
 } // namespace pbrpc
