@@ -16,6 +16,7 @@ Wiki: https://github.com/BaiduPS/sofa-pbrpc/wiki
 * Support keep alive time of idle connections.
 * Support statistics for profiling.
 * Support multi-server load balance and fault tolerance.
+* Support http protocol.
 
 ### Dependings
 This lib depends on boost-1.53.0 (only need header), protobuf-2.4.1, snappy and zlib:
