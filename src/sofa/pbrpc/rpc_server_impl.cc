@@ -21,7 +21,7 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,
     : _options(options)
     , _event_handler(handler)
     , _is_running(false)
-    , _epoch_time(ptime_now())
+    , _start_time(ptime_now())
     , _ticks_per_second(time_duration_seconds(1).ticks())
     , _last_maintain_ticks(0)
     , _last_restart_listen_ticks(0)
@@ -198,6 +198,11 @@ void RpcServerImpl::Stop()
 #else
     SLOG(INFO, "Stop(): rpc server stopped");
 #endif
+}
+
+PTime RpcServerImpl::GetStartTime()
+{
+    return _start_time;
 }
 
 RpcServerOptions RpcServerImpl::GetOptions()
@@ -378,7 +383,7 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
     }
 
     stream->set_max_pending_buffer_size(_max_pending_buffer_size);
-    stream->reset_ticks((ptime_now() - _epoch_time).ticks());
+    stream->reset_ticks((ptime_now() - _start_time).ticks());
 
     ScopedLocker<FastLock> _(_stream_list_lock);
     _stream_list.push_back(stream);
@@ -433,7 +438,7 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
 {
     SOFA_PBRPC_FUNCTION_TRACE;
 
-    int64 now_ticks = (now - _epoch_time).ticks();
+    int64 now_ticks = (now - _start_time).ticks();
 
     // check listener, if closed, then try to restart it every interval.
     if (_listener->is_closed()

@@ -37,6 +37,8 @@ public:
 
     void Stop();
 
+    PTime GetStartTime();
+
     RpcServerOptions GetOptions();
 
     void ResetOptions(const RpcServerOptions& options);
@@ -91,7 +93,7 @@ private:
     volatile bool _is_running;
     MutexLock _start_stop_lock;
 
-    PTime _epoch_time;
+    PTime _start_time;
     int64 _ticks_per_second;
     int64 _last_maintain_ticks;
     int64 _last_restart_listen_ticks;

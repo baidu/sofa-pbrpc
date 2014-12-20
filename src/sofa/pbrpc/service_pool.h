@@ -36,6 +36,7 @@ struct StatSlot
     int64 failed_count;
     int64 failed_process_time;
     int64 failed_max_process_time;
+    int64 slot_id;
 };
 
 class RpcServerImpl;
@@ -44,7 +45,7 @@ class ServiceBoard;
 class MethodBoard
 {
 public:
-    MethodBoard() : _service_board(NULL), _desc(NULL), _slot_index(0)
+    MethodBoard() : _service_board(NULL), _desc(NULL), _slot_index(0), _slot_id(0)
     {
         memset(_stat_slots, 0, sizeof(_stat_slots));
     }
@@ -96,8 +97,10 @@ public:
 
     void NextSlot()
     {
-        _slot_index = ((_slot_index + 1 == STAT_SLOT_COUNT) ?  0 : _slot_index + 1);
-        memset(&_stat_slots[_slot_index], 0, sizeof(StatSlot));
+        int index = ((_slot_index + 1 == STAT_SLOT_COUNT) ?  0 : _slot_index + 1);
+        memset(&_stat_slots[index], 0, sizeof(StatSlot));
+        _slot_index = index;
+        ++_slot_id;
     }
 
     void LatestStats(int slot_count, StatSlot* stat_out)
@@ -106,7 +109,8 @@ public:
         SCHECK(stat_out != NULL);
         memset(stat_out, 0, sizeof(StatSlot));
         int index = (_slot_index == 0 ? STAT_SLOT_COUNT - 1 : _slot_index - 1);
-        while (slot_count > 0) {
+        int64 slot_id = _slot_id - 1;
+        while (slot_count > 0 && slot_id >= 0) {
             volatile StatSlot* slot = &_stat_slots[index];
             stat_out->succeed_count += slot->succeed_count;
             stat_out->succeed_process_time += slot->succeed_process_time;
@@ -118,8 +122,10 @@ public:
             if (stat_out->failed_max_process_time < slot->failed_max_process_time) {
                 stat_out->failed_max_process_time = slot->failed_max_process_time;
             }
+            stat_out->slot_id = slot_id;
             --slot_count;
             index = (index == 0 ? STAT_SLOT_COUNT - 1 : index - 1);
+            --slot_id;
         }
     }
 
@@ -138,6 +144,7 @@ public:
         stat_out->set_failed_avg_time_us(stat.failed_count > 0 ?
                 (float)stat.failed_process_time / stat.failed_count : 0);
         stat_out->set_failed_max_time_us(stat.failed_max_process_time);
+        stat_out->set_slot_id(stat.slot_id);
     }
 
 private:
@@ -145,6 +152,7 @@ private:
     const google::protobuf::MethodDescriptor* _desc;
     StatSlot _stat_slots[STAT_SLOT_COUNT];
     volatile int _slot_index;
+    volatile int64 _slot_id;
 };
 
 class ServiceBoard
@@ -274,7 +282,6 @@ class ServicePool
 public:
     ServicePool(RpcServerImpl* rpc_server) : _rpc_server(rpc_server), _head(NULL), _count(0)
     {
-        _start_time = ptime_now();
         memset(_cache, 0, sizeof(_cache));
     }
 
@@ -289,11 +296,6 @@ public:
     RpcServerImpl* RpcServer()
     {
         return _rpc_server;
-    }
-
-    const PTime& StartTime()
-    {
-        return _start_time;
     }
 
     bool RegisterService(google::protobuf::Service* service, bool take_ownership = true)
@@ -418,8 +420,6 @@ private:
 
 private:
     RpcServerImpl* _rpc_server;
-    std::string _version;
-    PTime _start_time;
 
     typedef std::map<std::string, ServiceBoard*> ServiceMap;
     ServiceMap _service_map;

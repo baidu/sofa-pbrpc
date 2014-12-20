@@ -51,6 +51,8 @@ void BuiltinServiceImpl::Health(::google::protobuf::RpcController* /* controller
     } else {
         response->set_health("NotOK");
     }
+    response->set_version(SOFA_PBRPC_VERSION);
+    response->set_start_time(ptime_to_string(server->GetStartTime()));
     done->Run();
 }
 
@@ -181,6 +183,7 @@ void BuiltinServiceImpl::Stat(::google::protobuf::RpcController* controller,
         done->Run();
         return;
     }
+    response->set_server_start_time(ptime_to_string(pool->RpcServer()->GetStartTime()));
     if (request->service_name() == "all") {
         std::list<ServiceBoard*> svc_list;
         pool->ListService(&svc_list);

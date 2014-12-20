@@ -90,8 +90,10 @@ void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(HealthRequest));
   HealthResponse_descriptor_ = file->message_type(1);
-  static const int HealthResponse_offsets_[1] = {
+  static const int HealthResponse_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HealthResponse, health_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HealthResponse, version_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HealthResponse, start_time_),
   };
   HealthResponse_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -249,7 +251,7 @@ void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ListServiceResponse));
   MethodStat_descriptor_ = file->message_type(11);
-  static const int MethodStat_offsets_[7] = {
+  static const int MethodStat_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, method_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, succeed_count_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, succeed_avg_time_us_),
@@ -257,6 +259,7 @@ void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, failed_count_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, failed_avg_time_us_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, failed_max_time_us_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodStat, slot_id_),
   };
   MethodStat_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -305,8 +308,9 @@ void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(StatRequest));
   StatResponse_descriptor_ = file->message_type(14);
-  static const int StatResponse_offsets_[1] = {
+  static const int StatResponse_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatResponse, service_stats_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatResponse, server_start_time_),
   };
   StatResponse_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -411,55 +415,57 @@ void protobuf_AddDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto() {
     "\n sofa/pbrpc/builtin_service.proto\022\022sofa"
     ".pbrpc.builtin\032 google/protobuf/descript"
     "or.proto\032\033sofa/pbrpc/rpc_option.proto\"\017\n"
-    "\rHealthRequest\" \n\016HealthResponse\022\016\n\006heal"
-    "th\030\001 \001(\t\"\331\001\n\rServerOptions\022\027\n\017work_threa"
-    "d_num\030\001 \001(\003\022\027\n\017keep_alive_time\030\002 \001(\003\022\037\n\027"
-    "max_pending_buffer_size\030\003 \001(\003\022\031\n\021max_thr"
-    "oughput_in\030\004 \001(\003\022\032\n\022max_throughput_out\030\005"
-    " \001(\003\022 \n\030disable_builtin_services\030\006 \001(\010\022\034"
-    "\n\024disable_list_service\030\007 \001(\010\"\026\n\024ServerOp"
-    "tionsRequest\"K\n\025ServerOptionsResponse\0222\n"
-    "\007options\030\001 \001(\0132!.sofa.pbrpc.builtin.Serv"
-    "erOptions\"J\n\024UpdateOptionsRequest\0222\n\007opt"
-    "ions\030\001 \001(\0132!.sofa.pbrpc.builtin.ServerOp"
-    "tions\"K\n\025UpdateOptionsResponse\0222\n\007option"
+    "\rHealthRequest\"E\n\016HealthResponse\022\016\n\006heal"
+    "th\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\022\022\n\nstart_time\030"
+    "\003 \001(\t\"\331\001\n\rServerOptions\022\027\n\017work_thread_n"
+    "um\030\001 \001(\003\022\027\n\017keep_alive_time\030\002 \001(\003\022\037\n\027max"
+    "_pending_buffer_size\030\003 \001(\003\022\031\n\021max_throug"
+    "hput_in\030\004 \001(\003\022\032\n\022max_throughput_out\030\005 \001("
+    "\003\022 \n\030disable_builtin_services\030\006 \001(\010\022\034\n\024d"
+    "isable_list_service\030\007 \001(\010\"\026\n\024ServerOptio"
+    "nsRequest\"K\n\025ServerOptionsResponse\0222\n\007op"
+    "tions\030\001 \001(\0132!.sofa.pbrpc.builtin.ServerO"
+    "ptions\"J\n\024UpdateOptionsRequest\0222\n\007option"
     "s\030\001 \001(\0132!.sofa.pbrpc.builtin.ServerOptio"
-    "ns\"\025\n\023ServerStatusRequest\"\264\001\n\024ServerStat"
-    "usResponse\022\024\n\014is_listening\030\001 \001(\010\022\030\n\020conn"
-    "ection_count\030\002 \001(\003\022\025\n\rservice_count\030\003 \001("
-    "\003\022\035\n\025pending_message_count\030\004 \001(\003\022\033\n\023pend"
-    "ing_buffer_size\030\005 \001(\003\022\031\n\021pending_data_si"
-    "ze\030\006 \001(\003\"\024\n\022ListServiceRequest\"\\\n\023ListSe"
-    "rviceResponse\022\020\n\010services\030\001 \003(\t\0223\n\005files"
-    "\030\002 \003(\0132$.google.protobuf.FileDescriptorP"
-    "roto\"\300\001\n\nMethodStat\022\023\n\013method_name\030\001 \001(\t"
-    "\022\025\n\rsucceed_count\030\002 \001(\003\022\033\n\023succeed_avg_t"
-    "ime_us\030\003 \001(\002\022\033\n\023succeed_max_time_us\030\004 \001("
-    "\003\022\024\n\014failed_count\030\005 \001(\003\022\032\n\022failed_avg_ti"
-    "me_us\030\006 \001(\002\022\032\n\022failed_max_time_us\030\007 \001(\003\""
-    "\236\001\n\013ServiceStat\022\024\n\014service_name\030\001 \001(\t\022\026\n"
-    "\016period_seconds\030\002 \001(\003\022\025\n\rsucceed_count\030\003"
-    " \001(\003\022\024\n\014failed_count\030\004 \001(\003\0224\n\014method_sta"
-    "ts\030\005 \003(\0132\036.sofa.pbrpc.builtin.MethodStat"
-    "\"D\n\013StatRequest\022\031\n\014service_name\030\001 \001(\t:\003a"
-    "ll\022\032\n\016period_seconds\030\002 \001(\003:\00260\"F\n\014StatRe"
-    "sponse\0226\n\rservice_stats\030\001 \003(\0132\037.sofa.pbr"
-    "pc.builtin.ServiceStat2\310\004\n\016BuiltinServic"
-    "e\022O\n\006Health\022!.sofa.pbrpc.builtin.HealthR"
-    "equest\032\".sofa.pbrpc.builtin.HealthRespon"
-    "se\022d\n\rServerOptions\022(.sofa.pbrpc.builtin"
-    ".ServerOptionsRequest\032).sofa.pbrpc.built"
-    "in.ServerOptionsResponse\022d\n\rUpdateOption"
-    "s\022(.sofa.pbrpc.builtin.UpdateOptionsRequ"
-    "est\032).sofa.pbrpc.builtin.UpdateOptionsRe"
-    "sponse\022a\n\014ServerStatus\022\'.sofa.pbrpc.buil"
-    "tin.ServerStatusRequest\032(.sofa.pbrpc.bui"
-    "ltin.ServerStatusResponse\022d\n\013ListService"
-    "\022&.sofa.pbrpc.builtin.ListServiceRequest"
-    "\032\'.sofa.pbrpc.builtin.ListServiceRespons"
-    "e\"\004\220\342\t\001\022I\n\004Stat\022\037.sofa.pbrpc.builtin.Sta"
-    "tRequest\032 .sofa.pbrpc.builtin.StatRespon"
-    "se\032\005\200\342\t\270\027B\003\200\001\001", 2054);
+    "ns\"K\n\025UpdateOptionsResponse\0222\n\007options\030\001"
+    " \001(\0132!.sofa.pbrpc.builtin.ServerOptions\""
+    "\025\n\023ServerStatusRequest\"\264\001\n\024ServerStatusR"
+    "esponse\022\024\n\014is_listening\030\001 \001(\010\022\030\n\020connect"
+    "ion_count\030\002 \001(\003\022\025\n\rservice_count\030\003 \001(\003\022\035"
+    "\n\025pending_message_count\030\004 \001(\003\022\033\n\023pending"
+    "_buffer_size\030\005 \001(\003\022\031\n\021pending_data_size\030"
+    "\006 \001(\003\"\024\n\022ListServiceRequest\"\\\n\023ListServi"
+    "ceResponse\022\020\n\010services\030\001 \003(\t\0223\n\005files\030\002 "
+    "\003(\0132$.google.protobuf.FileDescriptorProt"
+    "o\"\321\001\n\nMethodStat\022\023\n\013method_name\030\001 \001(\t\022\025\n"
+    "\rsucceed_count\030\002 \001(\003\022\033\n\023succeed_avg_time"
+    "_us\030\003 \001(\002\022\033\n\023succeed_max_time_us\030\004 \001(\003\022\024"
+    "\n\014failed_count\030\005 \001(\003\022\032\n\022failed_avg_time_"
+    "us\030\006 \001(\002\022\032\n\022failed_max_time_us\030\007 \001(\003\022\017\n\007"
+    "slot_id\030\010 \001(\003\"\236\001\n\013ServiceStat\022\024\n\014service"
+    "_name\030\001 \001(\t\022\026\n\016period_seconds\030\002 \001(\003\022\025\n\rs"
+    "ucceed_count\030\003 \001(\003\022\024\n\014failed_count\030\004 \001(\003"
+    "\0224\n\014method_stats\030\005 \003(\0132\036.sofa.pbrpc.buil"
+    "tin.MethodStat\"D\n\013StatRequest\022\031\n\014service"
+    "_name\030\001 \001(\t:\003all\022\032\n\016period_seconds\030\002 \001(\003"
+    ":\00260\"a\n\014StatResponse\0226\n\rservice_stats\030\001 "
+    "\003(\0132\037.sofa.pbrpc.builtin.ServiceStat\022\031\n\021"
+    "server_start_time\030\002 \001(\t2\310\004\n\016BuiltinServi"
+    "ce\022O\n\006Health\022!.sofa.pbrpc.builtin.Health"
+    "Request\032\".sofa.pbrpc.builtin.HealthRespo"
+    "nse\022d\n\rServerOptions\022(.sofa.pbrpc.builti"
+    "n.ServerOptionsRequest\032).sofa.pbrpc.buil"
+    "tin.ServerOptionsResponse\022d\n\rUpdateOptio"
+    "ns\022(.sofa.pbrpc.builtin.UpdateOptionsReq"
+    "uest\032).sofa.pbrpc.builtin.UpdateOptionsR"
+    "esponse\022a\n\014ServerStatus\022\'.sofa.pbrpc.bui"
+    "ltin.ServerStatusRequest\032(.sofa.pbrpc.bu"
+    "iltin.ServerStatusResponse\022d\n\013ListServic"
+    "e\022&.sofa.pbrpc.builtin.ListServiceReques"
+    "t\032\'.sofa.pbrpc.builtin.ListServiceRespon"
+    "se\"\004\220\342\t\001\022I\n\004Stat\022\037.sofa.pbrpc.builtin.St"
+    "atRequest\032 .sofa.pbrpc.builtin.StatRespo"
+    "nse\032\005\200\342\t\270\027B\003\200\001\001", 2135);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "sofa/pbrpc/builtin_service.proto", &protobuf_RegisterTypes);
   HealthRequest::default_instance_ = new HealthRequest();
@@ -662,6 +668,8 @@ void HealthRequest::Swap(HealthRequest* other) {
 
 #ifndef _MSC_VER
 const int HealthResponse::kHealthFieldNumber;
+const int HealthResponse::kVersionFieldNumber;
+const int HealthResponse::kStartTimeFieldNumber;
 #endif  // !_MSC_VER
 
 HealthResponse::HealthResponse()
@@ -681,6 +689,8 @@ HealthResponse::HealthResponse(const HealthResponse& from)
 void HealthResponse::SharedCtor() {
   _cached_size_ = 0;
   health_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  start_time_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -691,6 +701,12 @@ HealthResponse::~HealthResponse() {
 void HealthResponse::SharedDtor() {
   if (health_ != &::google::protobuf::internal::kEmptyString) {
     delete health_;
+  }
+  if (version_ != &::google::protobuf::internal::kEmptyString) {
+    delete version_;
+  }
+  if (start_time_ != &::google::protobuf::internal::kEmptyString) {
+    delete start_time_;
   }
   if (this != default_instance_) {
   }
@@ -723,6 +739,16 @@ void HealthResponse::Clear() {
         health_->clear();
       }
     }
+    if (has_version()) {
+      if (version_ != &::google::protobuf::internal::kEmptyString) {
+        version_->clear();
+      }
+    }
+    if (has_start_time()) {
+      if (start_time_ != &::google::protobuf::internal::kEmptyString) {
+        start_time_->clear();
+      }
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -742,6 +768,40 @@ bool HealthResponse::MergePartialFromCodedStream(
                 input, this->mutable_health()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->health().data(), this->health().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_version;
+        break;
+      }
+      
+      // optional string version = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_version:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_version()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->version().data(), this->version().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_start_time;
+        break;
+      }
+      
+      // optional string start_time = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_start_time:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_start_time()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->start_time().data(), this->start_time().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
@@ -777,6 +837,24 @@ void HealthResponse::SerializeWithCachedSizes(
       1, this->health(), output);
   }
   
+  // optional string version = 2;
+  if (has_version()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->version().data(), this->version().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->version(), output);
+  }
+  
+  // optional string start_time = 3;
+  if (has_start_time()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->start_time().data(), this->start_time().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->start_time(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -795,6 +873,26 @@ void HealthResponse::SerializeWithCachedSizes(
         1, this->health(), target);
   }
   
+  // optional string version = 2;
+  if (has_version()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->version().data(), this->version().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->version(), target);
+  }
+  
+  // optional string start_time = 3;
+  if (has_start_time()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->start_time().data(), this->start_time().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->start_time(), target);
+  }
+  
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -811,6 +909,20 @@ int HealthResponse::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->health());
+    }
+    
+    // optional string version = 2;
+    if (has_version()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->version());
+    }
+    
+    // optional string start_time = 3;
+    if (has_start_time()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->start_time());
     }
     
   }
@@ -843,6 +955,12 @@ void HealthResponse::MergeFrom(const HealthResponse& from) {
     if (from.has_health()) {
       set_health(from.health());
     }
+    if (from.has_version()) {
+      set_version(from.version());
+    }
+    if (from.has_start_time()) {
+      set_start_time(from.start_time());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -867,6 +985,8 @@ bool HealthResponse::IsInitialized() const {
 void HealthResponse::Swap(HealthResponse* other) {
   if (other != this) {
     std::swap(health_, other->health_);
+    std::swap(version_, other->version_);
+    std::swap(start_time_, other->start_time_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -3093,6 +3213,7 @@ const int MethodStat::kSucceedMaxTimeUsFieldNumber;
 const int MethodStat::kFailedCountFieldNumber;
 const int MethodStat::kFailedAvgTimeUsFieldNumber;
 const int MethodStat::kFailedMaxTimeUsFieldNumber;
+const int MethodStat::kSlotIdFieldNumber;
 #endif  // !_MSC_VER
 
 MethodStat::MethodStat()
@@ -3118,6 +3239,7 @@ void MethodStat::SharedCtor() {
   failed_count_ = GOOGLE_LONGLONG(0);
   failed_avg_time_us_ = 0;
   failed_max_time_us_ = GOOGLE_LONGLONG(0);
+  slot_id_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3166,6 +3288,7 @@ void MethodStat::Clear() {
     failed_count_ = GOOGLE_LONGLONG(0);
     failed_avg_time_us_ = 0;
     failed_max_time_us_ = GOOGLE_LONGLONG(0);
+    slot_id_ = GOOGLE_LONGLONG(0);
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -3285,6 +3408,22 @@ bool MethodStat::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(64)) goto parse_slot_id;
+        break;
+      }
+      
+      // optional int64 slot_id = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_slot_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &slot_id_)));
+          set_has_slot_id();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3346,6 +3485,11 @@ void MethodStat::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(7, this->failed_max_time_us(), output);
   }
   
+  // optional int64 slot_id = 8;
+  if (has_slot_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(8, this->slot_id(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -3392,6 +3536,11 @@ void MethodStat::SerializeWithCachedSizes(
   // optional int64 failed_max_time_us = 7;
   if (has_failed_max_time_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(7, this->failed_max_time_us(), target);
+  }
+  
+  // optional int64 slot_id = 8;
+  if (has_slot_id()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(8, this->slot_id(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -3450,6 +3599,13 @@ int MethodStat::ByteSize() const {
           this->failed_max_time_us());
     }
     
+    // optional int64 slot_id = 8;
+    if (has_slot_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->slot_id());
+    }
+    
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -3498,6 +3654,9 @@ void MethodStat::MergeFrom(const MethodStat& from) {
     if (from.has_failed_max_time_us()) {
       set_failed_max_time_us(from.failed_max_time_us());
     }
+    if (from.has_slot_id()) {
+      set_slot_id(from.slot_id());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -3528,6 +3687,7 @@ void MethodStat::Swap(MethodStat* other) {
     std::swap(failed_count_, other->failed_count_);
     std::swap(failed_avg_time_us_, other->failed_avg_time_us_);
     std::swap(failed_max_time_us_, other->failed_max_time_us_);
+    std::swap(slot_id_, other->slot_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -4196,6 +4356,7 @@ void StatRequest::Swap(StatRequest* other) {
 
 #ifndef _MSC_VER
 const int StatResponse::kServiceStatsFieldNumber;
+const int StatResponse::kServerStartTimeFieldNumber;
 #endif  // !_MSC_VER
 
 StatResponse::StatResponse()
@@ -4214,6 +4375,7 @@ StatResponse::StatResponse(const StatResponse& from)
 
 void StatResponse::SharedCtor() {
   _cached_size_ = 0;
+  server_start_time_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4222,6 +4384,9 @@ StatResponse::~StatResponse() {
 }
 
 void StatResponse::SharedDtor() {
+  if (server_start_time_ != &::google::protobuf::internal::kEmptyString) {
+    delete server_start_time_;
+  }
   if (this != default_instance_) {
   }
 }
@@ -4247,6 +4412,13 @@ StatResponse* StatResponse::New() const {
 }
 
 void StatResponse::Clear() {
+  if (_has_bits_[1 / 32] & (0xffu << (1 % 32))) {
+    if (has_server_start_time()) {
+      if (server_start_time_ != &::google::protobuf::internal::kEmptyString) {
+        server_start_time_->clear();
+      }
+    }
+  }
   service_stats_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -4269,6 +4441,23 @@ bool StatResponse::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(10)) goto parse_service_stats;
+        if (input->ExpectTag(18)) goto parse_server_start_time;
+        break;
+      }
+      
+      // optional string server_start_time = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_server_start_time:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_server_start_time()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->server_start_time().data(), this->server_start_time().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -4297,6 +4486,15 @@ void StatResponse::SerializeWithCachedSizes(
       1, this->service_stats(i), output);
   }
   
+  // optional string server_start_time = 2;
+  if (has_server_start_time()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->server_start_time().data(), this->server_start_time().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->server_start_time(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -4312,6 +4510,16 @@ void StatResponse::SerializeWithCachedSizes(
         1, this->service_stats(i), target);
   }
   
+  // optional string server_start_time = 2;
+  if (has_server_start_time()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->server_start_time().data(), this->server_start_time().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->server_start_time(), target);
+  }
+  
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -4322,6 +4530,15 @@ void StatResponse::SerializeWithCachedSizes(
 int StatResponse::ByteSize() const {
   int total_size = 0;
   
+  if (_has_bits_[1 / 32] & (0xffu << (1 % 32))) {
+    // optional string server_start_time = 2;
+    if (has_server_start_time()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->server_start_time());
+    }
+    
+  }
   // repeated .sofa.pbrpc.builtin.ServiceStat service_stats = 1;
   total_size += 1 * this->service_stats_size();
   for (int i = 0; i < this->service_stats_size(); i++) {
@@ -4356,6 +4573,11 @@ void StatResponse::MergeFrom(const ::google::protobuf::Message& from) {
 void StatResponse::MergeFrom(const StatResponse& from) {
   GOOGLE_CHECK_NE(&from, this);
   service_stats_.MergeFrom(from.service_stats_);
+  if (from._has_bits_[1 / 32] & (0xffu << (1 % 32))) {
+    if (from.has_server_start_time()) {
+      set_server_start_time(from.server_start_time());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -4379,6 +4601,7 @@ bool StatResponse::IsInitialized() const {
 void StatResponse::Swap(StatResponse* other) {
   if (other != this) {
     service_stats_.Swap(&other->service_stats_);
+    std::swap(server_start_time_, other->server_start_time_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

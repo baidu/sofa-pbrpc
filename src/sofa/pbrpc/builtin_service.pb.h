@@ -192,17 +192,45 @@ class HealthResponse : public ::google::protobuf::Message {
   inline ::std::string* mutable_health();
   inline ::std::string* release_health();
   
+  // optional string version = 2;
+  inline bool has_version() const;
+  inline void clear_version();
+  static const int kVersionFieldNumber = 2;
+  inline const ::std::string& version() const;
+  inline void set_version(const ::std::string& value);
+  inline void set_version(const char* value);
+  inline void set_version(const char* value, size_t size);
+  inline ::std::string* mutable_version();
+  inline ::std::string* release_version();
+  
+  // optional string start_time = 3;
+  inline bool has_start_time() const;
+  inline void clear_start_time();
+  static const int kStartTimeFieldNumber = 3;
+  inline const ::std::string& start_time() const;
+  inline void set_start_time(const ::std::string& value);
+  inline void set_start_time(const char* value);
+  inline void set_start_time(const char* value, size_t size);
+  inline ::std::string* mutable_start_time();
+  inline ::std::string* release_start_time();
+  
   // @@protoc_insertion_point(class_scope:sofa.pbrpc.builtin.HealthResponse)
  private:
   inline void set_has_health();
   inline void clear_has_health();
+  inline void set_has_version();
+  inline void clear_has_version();
+  inline void set_has_start_time();
+  inline void clear_has_start_time();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::std::string* health_;
+  ::std::string* version_;
+  ::std::string* start_time_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   friend void  protobuf_AddDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
   friend void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
@@ -1161,6 +1189,13 @@ class MethodStat : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 failed_max_time_us() const;
   inline void set_failed_max_time_us(::google::protobuf::int64 value);
   
+  // optional int64 slot_id = 8;
+  inline bool has_slot_id() const;
+  inline void clear_slot_id();
+  static const int kSlotIdFieldNumber = 8;
+  inline ::google::protobuf::int64 slot_id() const;
+  inline void set_slot_id(::google::protobuf::int64 value);
+  
   // @@protoc_insertion_point(class_scope:sofa.pbrpc.builtin.MethodStat)
  private:
   inline void set_has_method_name();
@@ -1177,6 +1212,8 @@ class MethodStat : public ::google::protobuf::Message {
   inline void clear_has_failed_avg_time_us();
   inline void set_has_failed_max_time_us();
   inline void clear_has_failed_max_time_us();
+  inline void set_has_slot_id();
+  inline void clear_has_slot_id();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -1187,9 +1224,10 @@ class MethodStat : public ::google::protobuf::Message {
   float failed_avg_time_us_;
   ::google::protobuf::int64 failed_count_;
   ::google::protobuf::int64 failed_max_time_us_;
+  ::google::protobuf::int64 slot_id_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   friend void  protobuf_AddDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
   friend void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
@@ -1492,15 +1530,29 @@ class StatResponse : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::sofa::pbrpc::builtin::ServiceStat >*
       mutable_service_stats();
   
+  // optional string server_start_time = 2;
+  inline bool has_server_start_time() const;
+  inline void clear_server_start_time();
+  static const int kServerStartTimeFieldNumber = 2;
+  inline const ::std::string& server_start_time() const;
+  inline void set_server_start_time(const ::std::string& value);
+  inline void set_server_start_time(const char* value);
+  inline void set_server_start_time(const char* value, size_t size);
+  inline ::std::string* mutable_server_start_time();
+  inline ::std::string* release_server_start_time();
+  
   // @@protoc_insertion_point(class_scope:sofa.pbrpc.builtin.StatResponse)
  private:
+  inline void set_has_server_start_time();
+  inline void clear_has_server_start_time();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::google::protobuf::RepeatedPtrField< ::sofa::pbrpc::builtin::ServiceStat > service_stats_;
+  ::std::string* server_start_time_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   friend void  protobuf_AddDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
   friend void protobuf_AssignDesc_sofa_2fpbrpc_2fbuiltin_5fservice_2eproto();
@@ -1673,6 +1725,122 @@ inline ::std::string* HealthResponse::release_health() {
   } else {
     ::std::string* temp = health_;
     health_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string version = 2;
+inline bool HealthResponse::has_version() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void HealthResponse::set_has_version() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void HealthResponse::clear_has_version() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void HealthResponse::clear_version() {
+  if (version_ != &::google::protobuf::internal::kEmptyString) {
+    version_->clear();
+  }
+  clear_has_version();
+}
+inline const ::std::string& HealthResponse::version() const {
+  return *version_;
+}
+inline void HealthResponse::set_version(const ::std::string& value) {
+  set_has_version();
+  if (version_ == &::google::protobuf::internal::kEmptyString) {
+    version_ = new ::std::string;
+  }
+  version_->assign(value);
+}
+inline void HealthResponse::set_version(const char* value) {
+  set_has_version();
+  if (version_ == &::google::protobuf::internal::kEmptyString) {
+    version_ = new ::std::string;
+  }
+  version_->assign(value);
+}
+inline void HealthResponse::set_version(const char* value, size_t size) {
+  set_has_version();
+  if (version_ == &::google::protobuf::internal::kEmptyString) {
+    version_ = new ::std::string;
+  }
+  version_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* HealthResponse::mutable_version() {
+  set_has_version();
+  if (version_ == &::google::protobuf::internal::kEmptyString) {
+    version_ = new ::std::string;
+  }
+  return version_;
+}
+inline ::std::string* HealthResponse::release_version() {
+  clear_has_version();
+  if (version_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = version_;
+    version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string start_time = 3;
+inline bool HealthResponse::has_start_time() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void HealthResponse::set_has_start_time() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void HealthResponse::clear_has_start_time() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void HealthResponse::clear_start_time() {
+  if (start_time_ != &::google::protobuf::internal::kEmptyString) {
+    start_time_->clear();
+  }
+  clear_has_start_time();
+}
+inline const ::std::string& HealthResponse::start_time() const {
+  return *start_time_;
+}
+inline void HealthResponse::set_start_time(const ::std::string& value) {
+  set_has_start_time();
+  if (start_time_ == &::google::protobuf::internal::kEmptyString) {
+    start_time_ = new ::std::string;
+  }
+  start_time_->assign(value);
+}
+inline void HealthResponse::set_start_time(const char* value) {
+  set_has_start_time();
+  if (start_time_ == &::google::protobuf::internal::kEmptyString) {
+    start_time_ = new ::std::string;
+  }
+  start_time_->assign(value);
+}
+inline void HealthResponse::set_start_time(const char* value, size_t size) {
+  set_has_start_time();
+  if (start_time_ == &::google::protobuf::internal::kEmptyString) {
+    start_time_ = new ::std::string;
+  }
+  start_time_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* HealthResponse::mutable_start_time() {
+  set_has_start_time();
+  if (start_time_ == &::google::protobuf::internal::kEmptyString) {
+    start_time_ = new ::std::string;
+  }
+  return start_time_;
+}
+inline ::std::string* HealthResponse::release_start_time() {
+  clear_has_start_time();
+  if (start_time_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = start_time_;
+    start_time_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
@@ -2349,6 +2517,28 @@ inline void MethodStat::set_failed_max_time_us(::google::protobuf::int64 value) 
   failed_max_time_us_ = value;
 }
 
+// optional int64 slot_id = 8;
+inline bool MethodStat::has_slot_id() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void MethodStat::set_has_slot_id() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void MethodStat::clear_has_slot_id() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void MethodStat::clear_slot_id() {
+  slot_id_ = GOOGLE_LONGLONG(0);
+  clear_has_slot_id();
+}
+inline ::google::protobuf::int64 MethodStat::slot_id() const {
+  return slot_id_;
+}
+inline void MethodStat::set_slot_id(::google::protobuf::int64 value) {
+  set_has_slot_id();
+  slot_id_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ServiceStat
@@ -2613,6 +2803,64 @@ StatResponse::service_stats() const {
 inline ::google::protobuf::RepeatedPtrField< ::sofa::pbrpc::builtin::ServiceStat >*
 StatResponse::mutable_service_stats() {
   return &service_stats_;
+}
+
+// optional string server_start_time = 2;
+inline bool StatResponse::has_server_start_time() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void StatResponse::set_has_server_start_time() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void StatResponse::clear_has_server_start_time() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void StatResponse::clear_server_start_time() {
+  if (server_start_time_ != &::google::protobuf::internal::kEmptyString) {
+    server_start_time_->clear();
+  }
+  clear_has_server_start_time();
+}
+inline const ::std::string& StatResponse::server_start_time() const {
+  return *server_start_time_;
+}
+inline void StatResponse::set_server_start_time(const ::std::string& value) {
+  set_has_server_start_time();
+  if (server_start_time_ == &::google::protobuf::internal::kEmptyString) {
+    server_start_time_ = new ::std::string;
+  }
+  server_start_time_->assign(value);
+}
+inline void StatResponse::set_server_start_time(const char* value) {
+  set_has_server_start_time();
+  if (server_start_time_ == &::google::protobuf::internal::kEmptyString) {
+    server_start_time_ = new ::std::string;
+  }
+  server_start_time_->assign(value);
+}
+inline void StatResponse::set_server_start_time(const char* value, size_t size) {
+  set_has_server_start_time();
+  if (server_start_time_ == &::google::protobuf::internal::kEmptyString) {
+    server_start_time_ = new ::std::string;
+  }
+  server_start_time_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* StatResponse::mutable_server_start_time() {
+  set_has_server_start_time();
+  if (server_start_time_ == &::google::protobuf::internal::kEmptyString) {
+    server_start_time_ = new ::std::string;
+  }
+  return server_start_time_;
+}
+inline ::std::string* StatResponse::release_server_start_time() {
+  clear_has_server_start_time();
+  if (server_start_time_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = server_start_time_;
+    server_start_time_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 

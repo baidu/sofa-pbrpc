@@ -16,6 +16,8 @@ message HealthRequest {
 
 message HealthResponse {
     optional string health = 1;
+    optional string version = 2;
+    optional string start_time = 3;
 }
 
 message ServerOptions {
@@ -91,6 +93,7 @@ message MethodStat {
     optional int64 failed_count = 5;
     optional float failed_avg_time_us = 6;
     optional int64 failed_max_time_us = 7;
+    optional int64 slot_id = 8;
 }
 
 message ServiceStat {
@@ -108,6 +111,7 @@ message StatRequest {
 
 message StatResponse {
     repeated ServiceStat service_stats = 1;
+    optional string server_start_time = 2;
 }
 
 service BuiltinService {
