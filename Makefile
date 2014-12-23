@@ -37,6 +37,8 @@ INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closur
 LIB=libsofa-pbrpc.a
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
+PROTO_SRC=$(wildcard src/sofa/pbrpc/*.pb.cc)
+PROTO_HEADER=$(wildcard src/sofa/pbrpc/*.pb.h)
 
 BIN=sofa-pbrpc-client
 BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
@@ -72,7 +74,7 @@ all: build
 .PHONY: proto build install clean
 
 clean:
-	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ)
+	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
 proto:
 	cd src && sh compile_proto.sh
