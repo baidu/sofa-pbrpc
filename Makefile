@@ -65,22 +65,17 @@ CXX=g++
 INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
-LIBRARY=$(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -lpthread -lz
 
 all: build
 
-.PHONY: check_depends build install clean
-
-check_depends:
-	@if [ ! -f "$(BOOST_HEADER_DIR)/boost/smart_ptr.hpp" ]; then echo "ERROR: need boost header"; exit 1; fi
-	@if [ ! -f "$(PROTOBUF_DIR)/include/google/protobuf/message.h" ]; then echo "ERROR: need protobuf header"; exit 1; fi
-	@if [ ! -f "$(PROTOBUF_DIR)/lib/libprotobuf.a" ]; then echo "ERROR: need protobuf lib"; exit 1; fi
-	@if [ ! -f "$(SNAPPY_DIR)/include/snappy.h" ]; then echo "ERROR: need snappy header"; exit 1; fi
-	@if [ ! -f "$(SNAPPY_DIR)/lib/libsnappy.a" ]; then echo "ERROR: need snappy lib"; exit 1; fi
+.PHONY: proto build install clean
 
 clean:
 	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ)
+
+proto:
+	cd src && sh compile_proto.sh
 
 rebuild: clean all
 
@@ -88,12 +83,12 @@ $(LIB): $(LIB_OBJ)
 	ar crs $@ $(LIB_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
-	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LIBRARY) $(LDFLAGS)
+	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c$< -o $@
 
-build: check_depends $(LIB) $(BIN)
+build: proto $(LIB) $(BIN)
 	@echo
 	@echo 'Build succeed, run "make install" to install sofa-pbrpc.'
 
