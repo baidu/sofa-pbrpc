@@ -3,6 +3,7 @@ compiler: gcc
 env:
     - PROTOBUF_VERSION=2.6.0
 install:
+    - apt-get install libboost-dev
     - wget https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protobuf-$PROTOBUF_VERSION.tar.gz
     - tar xf protobuf-$PROTOBUF_VERSION.tar.gz
     - ( cd protobuf-$PROTOBUF_VERSION && ./configure && make -j2 && sudo make install && sudo ldconfig )
