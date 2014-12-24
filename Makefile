@@ -90,7 +90,7 @@ $(BIN): $(LIB) $(BIN_OBJ)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c$< -o $@
 
-build: proto $(LIB) $(BIN)
+build: $(LIB) $(BIN)
 	@echo
 	@echo 'Build succeed, run "make install" to install sofa-pbrpc.'
 
