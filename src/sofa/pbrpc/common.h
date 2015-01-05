@@ -18,6 +18,8 @@ namespace pbrpc {
 
 #define SOFA_PBRPC_VERSION "1.0.1"
 
+const char* compile_info();
+
 /////////////// types /////////////
 typedef ::google::protobuf::uint uint;
 
@@ -39,6 +41,9 @@ static const uint32 kuint32max = ::google::protobuf::kuint32max;
 static const uint64 kuint64max = ::google::protobuf::kuint64max;
 
 /////////////// util macros /////////////
+#define SOFA_PBRPC_STR_I(var) #var
+#define SOFA_PBRPC_STR(var) SOFA_PBRPC_STR_I(var)
+
 #define SOFA_PBRPC_PP_CAT(a, b) SOFA_PBRPC_PP_CAT_I(a, b)
 #define SOFA_PBRPC_PP_CAT_I(a, b) a ## b
 
