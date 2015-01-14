@@ -16,6 +16,9 @@ Features
 * Support auto connecting and reconnecting.
 * Support keep alive time of idle connections.
 * Support statistics for profiling.
+* Support multi-server load balance and fault tolerance.
+* Support http protocol.
+* Provide web monitor.
 
 Dependings
 ----------
