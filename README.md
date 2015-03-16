@@ -1,6 +1,6 @@
 sofa-pbrpc
 ==========
-[![Build Status](https://travis-ci.org/koalademo/sofa-pbrpc.svg)](https://travis-ci.org/koalademo/sofa-pbrpc)
+[![Build Status](https://travis-ci.org/BaiduPS/sofa-pbrpc.svg)](https://travis-ci.org/BaiduPS/sofa-pbrpc)
 
 A light-weight RPC implement of google protobuf RPC framework.
 
