@@ -37,6 +37,8 @@ INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closur
 LIB=libsofa-pbrpc.a
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
+PROTO_SRC=$(wildcard src/sofa/pbrpc/*.pb.cc)
+PROTO_HEADER=$(wildcard src/sofa/pbrpc/*.pb.h)
 
 BIN=sofa-pbrpc-client
 BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
@@ -65,12 +67,11 @@ CXX=g++
 INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
-LIBRARY=$(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -lpthread -lz
 
 all: build
 
-.PHONY: check_depends build install clean
+.PHONY: check_depends proto build install clean
 
 check_depends:
 	@if [ ! -f "$(BOOST_HEADER_DIR)/boost/smart_ptr.hpp" ]; then echo "ERROR: need boost header"; exit 1; fi
@@ -80,7 +81,10 @@ check_depends:
 	@if [ ! -f "$(SNAPPY_DIR)/lib/libsnappy.a" ]; then echo "ERROR: need snappy lib"; exit 1; fi
 
 clean:
-	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ)
+	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
+
+proto:
+	cd src && sh compile_proto.sh
 
 rebuild: clean all
 
@@ -88,12 +92,12 @@ $(LIB): $(LIB_OBJ)
 	ar crs $@ $(LIB_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
-	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LIBRARY) $(LDFLAGS)
+	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c$< -o $@
 
-build: check_depends $(LIB) $(BIN)
+build: $(LIB) $(BIN)
 	@echo
 	@echo 'Build succeed, run "make install" to install sofa-pbrpc.'
 
