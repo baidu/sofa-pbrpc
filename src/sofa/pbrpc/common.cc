@@ -13,6 +13,14 @@
 
 namespace sofa {
 namespace pbrpc {
+
+const char* compile_info()
+{
+    return __DATE__ " " __TIME__ " by gcc "
+        SOFA_PBRPC_STR(__GNUC__) "." SOFA_PBRPC_STR(__GNUC_MINOR__)
+        "." SOFA_PBRPC_STR(__GNUC_PATCHLEVEL__);
+}
+
 namespace internal {
 
 static LogLevel s_log_level = ::sofa::pbrpc::LOG_LEVEL_ERROR;

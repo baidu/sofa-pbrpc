@@ -19,9 +19,10 @@
 #include <sofa/pbrpc/closure.h>
 #include <sofa/pbrpc/ext_closure.h>
 #include <sofa/pbrpc/locks.h>
-#include <sofa/pbrpc/wait_event.h>
+#include <sofa/pbrpc/string_utils.h>
 #include <sofa/pbrpc/thread_group.h>
 #include <sofa/pbrpc/timeout_manager.h>
+#include <sofa/pbrpc/wait_event.h>
 
 #endif  // _SOFA_PBRPC_PBRPC_H_
 

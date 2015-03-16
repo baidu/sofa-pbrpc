@@ -491,7 +491,8 @@ void HTTPRpcRequest::ServerBrief(
         << "<b>IP:</b> " << ip << "<br>"
         << "<b>Port:</b> " << port << "<br>"
         << "<b>Started:</b> " << ptime_to_string(service_pool->RpcServer()->GetStartTime()) << "<br>"
-        << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>";
+        << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>"
+        << "<b>Compiled:</b> " << compile_info() << "<br>";
 }
 
 void HTTPRpcRequest::ServerOptions(
