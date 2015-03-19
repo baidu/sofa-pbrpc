@@ -84,7 +84,7 @@ clean:
 	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
 proto:
-	cd src && sh compile_proto.sh
+	cd src && sh compile_proto.sh ${PROTOBUF_DIR}/include
 
 rebuild: clean all
 
