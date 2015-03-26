@@ -104,7 +104,7 @@ $(BIN): $(LIB) $(BIN_OBJ)
 %.pb.cc %.pb.h: %.proto
 	$(PROTOC) --proto_path=${PROTOBUF_DIR}/include --proto_path=/usr/local/include \
 		  --proto_path=./src/sofa/pbrpc \
-		  --cpp_out=./src/proto $<j
+		  --cpp_out=./src/proto $<
 
 build: $(LIB) $(BIN)
 	@echo
