@@ -35,11 +35,12 @@ INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closur
 	src/sofa/pbrpc/builtin_service.proto src/sofa/pbrpc/builtin_service.pb.h
 
 LIB=libsofa-pbrpc.a
-LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
-LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
 PROTO_FILE=$(wildcard src/sofa/pbrpc/*.proto)
 PROTO_SRC=$(PROTO_FILE:.proto=.pb.cc)
 PROTO_HEADER=$(PROTO_FILE:.proto=.pb.h)
+
+LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc) $(PROTO_SRC)
+LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
 
 BIN=sofa-pbrpc-client
 BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
@@ -84,7 +85,9 @@ check_depends:
 clean:
 	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
-proto:
+proto: $(PROTO_SRC) $(PROTO_HEADER)
+
+last:
 	cd src && sh compile_proto.sh ${PROTOBUF_DIR}/include
 
 rebuild: clean all
@@ -97,6 +100,11 @@ $(BIN): $(LIB) $(BIN_OBJ)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c$< -o $@
+
+%.pb.cc %.pb.h: %.proto
+	$(PROTOC) --proto_path=${PROTOBUF_DIR}/include --proto_path=/usr/local/include \
+		  --proto_path=./src/sofa/pbrpc \
+		  --cpp_out=./src/proto $<j
 
 build: $(LIB) $(BIN)
 	@echo
