@@ -16,6 +16,7 @@
 #include <sofa/pbrpc/tran_buf_pool.h>
 #include <sofa/pbrpc/flow_controller.h>
 #include <sofa/pbrpc/rpc_request_parser.h>
+#include <sofa/pbrpc/string_utils.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -625,15 +626,13 @@ private:
             }
         }
         // no parser match, print error
-        uint32 magic_num = *(reinterpret_cast<uint32*>(_magic_string));
-        char magic_buf[20];
-        sprintf(magic_buf, "0x%8x", magic_num);
+        std::string magic_str = StringUtils::c_escape_string(_magic_string, sizeof(_magic_string));
 #if defined( LOG )
         LOG(ERROR) << "choose_rpc_request_parser(): " << RpcEndpointToString(_remote_endpoint)
-                   << ": un-identified magic string: " << magic_buf;
+                   << ": un-identified magic string: " << magic_str;
 #else
         SLOG(ERROR, "choose_rpc_request_parser(): %s: un-identified magic string: %s",
-                RpcEndpointToString(_remote_endpoint).c_str(), magic_buf);
+                RpcEndpointToString(_remote_endpoint).c_str(), magic_str.c_str());
 #endif
         _current_rpc_request_parser.reset();
         return false;
