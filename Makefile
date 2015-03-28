@@ -24,11 +24,7 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 include depends.mk
 
 LIB=libsofa-pbrpc.a
-PROTO_FILE=$(wildcard src/sofa/pbrpc/*.proto)
-PROTO_SRC=$(PROTO_FILE:.proto=.pb.cc)
-PROTO_HEADER=$(PROTO_FILE:.proto=.pb.h)
-
-LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc) $(PROTO_SRC)
+LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
 PROTO=$(wildcard src/sofa/pbrpc/*.proto)
 PROTO_SRC=$(patsubst %.proto,%.pb.cc,$(PROTO))
@@ -105,11 +101,6 @@ $(BIN): $(LIB) $(BIN_OBJ)
 
 %.o: %.cc $(PROTO_OBJ)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-%.pb.cc %.pb.h: %.proto
-	$(PROTOC) --proto_path=${PROTOBUF_DIR}/include --proto_path=/usr/local/include \
-		  --proto_path=./src/sofa/pbrpc \
-		  --cpp_out=./src/proto $<
 
 build: $(LIB) $(BIN)
 	@echo
