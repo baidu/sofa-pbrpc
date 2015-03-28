@@ -80,7 +80,7 @@ public:
         {
             std::string::size_type length;
             std::string::size_type capacity;
-            _Atomic_word           refcount;
+            int refcount; // _Atomic_word
         };
         // We need always call reserve() for two reasons:
         //   - if new_size > capacity, to realloc space.

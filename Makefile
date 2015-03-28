@@ -23,17 +23,6 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 
 include depends.mk
 
-INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closure.h \
-	src/sofa/pbrpc/ext_closure.h src/sofa/pbrpc/common.h src/sofa/pbrpc/rpc_channel.h \
-	src/sofa/pbrpc/rpc_client.h src/sofa/pbrpc/rpc_controller.h src/sofa/pbrpc/rpc_error_code.h \
-	src/sofa/pbrpc/rpc_option.pb.h src/sofa/pbrpc/rpc_option.proto src/sofa/pbrpc/rpc_server.h \
-	src/sofa/pbrpc/mock_test_helper.h src/sofa/pbrpc/atomic.h src/sofa/pbrpc/counter.h \
-	src/sofa/pbrpc/thread_group.h src/sofa/pbrpc/timeout_manager.h src/sofa/pbrpc/string_utils.h \
-	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
-	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
-	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h \
-	src/sofa/pbrpc/builtin_service.proto src/sofa/pbrpc/builtin_service.pb.h
-
 LIB=libsofa-pbrpc.a
 PROTO_FILE=$(wildcard src/sofa/pbrpc/*.proto)
 PROTO_SRC=$(PROTO_FILE:.proto=.pb.cc)
@@ -41,10 +30,25 @@ PROTO_HEADER=$(PROTO_FILE:.proto=.pb.h)
 
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc) $(PROTO_SRC)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
+PROTO=$(wildcard src/sofa/pbrpc/*.proto)
+PROTO_SRC=$(patsubst %.proto,%.pb.cc,$(PROTO))
+PROTO_HEADER=$(patsubst %.proto,%.pb.h,$(PROTO))
+PROTO_OBJ=$(patsubst %.cc,%.o,$(PROTO_SRC))
 
 BIN=sofa-pbrpc-client
 BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
 BIN_OBJ=$(patsubst %.cc,%.o,$(BIN_SRC))
+
+PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closure.h \
+	src/sofa/pbrpc/ext_closure.h src/sofa/pbrpc/common.h src/sofa/pbrpc/rpc_channel.h \
+	src/sofa/pbrpc/rpc_server.h src/sofa/pbrpc/rpc_client.h \
+	src/sofa/pbrpc/rpc_controller.h src/sofa/pbrpc/rpc_error_code.h \
+	src/sofa/pbrpc/mock_test_helper.h src/sofa/pbrpc/atomic.h src/sofa/pbrpc/counter.h \
+	src/sofa/pbrpc/thread_group.h src/sofa/pbrpc/timeout_manager.h src/sofa/pbrpc/string_utils.h \
+	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
+	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
+	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h \
+	$(PROTO) $(PROTO_HEADER)
 
 #-----------------------------------------------
 ifeq ($(OS),Windows_NT)
@@ -71,9 +75,9 @@ CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHA
 
 LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -lpthread -lz
 
-all: build
+.PHONY: check_depends build rebuild install clean
 
-.PHONY: check_depends proto build install clean
+all: build
 
 check_depends:
 	@if [ ! -f "$(BOOST_HEADER_DIR)/boost/smart_ptr.hpp" ]; then echo "ERROR: need boost header"; exit 1; fi
@@ -83,23 +87,24 @@ check_depends:
 	@if [ ! -f "$(SNAPPY_DIR)/lib/libsnappy.a" ]; then echo "ERROR: need snappy lib"; exit 1; fi
 
 clean:
-	rm -f $(LIB) $(LIB_OBJ) $(BIN) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
-
-proto: $(PROTO_SRC) $(PROTO_HEADER)
-
-last:
-	cd src && sh compile_proto.sh ${PROTOBUF_DIR}/include
+	rm -f $(LIB) $(BIN) $(LIB_OBJ) $(PROTO_OBJ) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
 rebuild: clean all
 
-$(LIB): $(LIB_OBJ)
-	ar crs $@ $(LIB_OBJ)
+$(LIB): $(LIB_OBJ) $(PROTO_OBJ)
+	ar crs $@ $(LIB_OBJ) $(PROTO_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
 	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c$< -o $@
+%.pb.o: %.pb.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+%.pb.cc: %.proto
+	${PROTOBUF_DIR}/bin/protoc --proto_path=./src --proto_path=${PROTOBUF_DIR}/include --cpp_out=./src $<
+
+%.o: %.cc $(PROTO_OBJ)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.pb.cc %.pb.h: %.proto
 	$(PROTOC) --proto_path=${PROTOBUF_DIR}/include --proto_path=/usr/local/include \
@@ -108,11 +113,11 @@ $(BIN): $(LIB) $(BIN_OBJ)
 
 build: $(LIB) $(BIN)
 	@echo
-	@echo 'Build succeed, run "make install" to install sofa-pbrpc.'
+	@echo 'Build succeed, run "make install" to install sofa-pbrpc to "'$(PREFIX)'".'
 
 install: $(LIB) $(BIN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
-	cp -r $(INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
+	cp -r $(PUB_INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
