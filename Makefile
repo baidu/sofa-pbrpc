@@ -87,19 +87,20 @@ clean:
 
 rebuild: clean all
 
+$(PROTO_OBJ): $(PROTO_HEADER)
+
+$(LIB_OBJ): $(PROTO_HEADER)
+
 $(LIB): $(LIB_OBJ) $(PROTO_OBJ)
 	ar crs $@ $(LIB_OBJ) $(PROTO_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
 	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
-%.pb.o: %.pb.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-%.pb.cc: %.proto
+%.pb.cc %.pb.h: %.proto
 	${PROTOBUF_DIR}/bin/protoc --proto_path=./src --proto_path=${PROTOBUF_DIR}/include --cpp_out=./src $<
 
-%.o: %.cc $(PROTO_OBJ)
+%.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 build: $(LIB) $(BIN)
