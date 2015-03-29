@@ -1,3 +1,5 @@
+# Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #-----------------------------------------------
@@ -94,9 +96,6 @@ $(LIB): $(LIB_OBJ) $(PROTO_OBJ)
 
 $(BIN): $(LIB) $(BIN_OBJ)
 	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
-
-%.pb.o: %.pb.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.pb.cc %.pb.h: %.proto
 	${PROTOBUF_DIR}/bin/protoc --proto_path=./src --proto_path=${PROTOBUF_DIR}/include --cpp_out=./src $<
