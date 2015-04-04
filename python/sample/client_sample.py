@@ -25,5 +25,5 @@ response = service.Echo(controller, request)
 if controller.Failed():
   print "ERROR: [%d] %s" % (controller.ErrorCode(), controller.ErrorText())
 else:
-  print "Response: %s" % response
+  print "Response:\n\n%s" % response
 
