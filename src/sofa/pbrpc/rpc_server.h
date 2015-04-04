@@ -24,7 +24,7 @@ struct RpcServerOptions {
 
     int keep_alive_time;         // keep alive time of idle connections.
                                  // idle connections will be closed if no read/write for this time.
-                                 // in seconds, should >= -1, -1 means for ever, default 65.
+                                 // in seconds, should >= -1, -1 means forever, default -1.
 
     int max_pending_buffer_size; // max buffer size of the pending send queue for one connection.
                                  // in MB, should >= 0, 0 means no buffer, default 2.
@@ -57,7 +57,7 @@ struct RpcServerOptions {
 
     RpcServerOptions()
         : work_thread_num(8)
-        , keep_alive_time(65)
+        , keep_alive_time(-1)
         , max_pending_buffer_size(2)
         , max_throughput_in(-1)
         , max_throughput_out(-1)
