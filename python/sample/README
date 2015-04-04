@@ -1,0 +1,29 @@
+This is a sample code to show how to use python client of sofa-pbrpc.
+
+Guide
+=====
+
+1) Install the python library for protobuf.
+
+     $ cd ${PROTOBUF_SOURCE_DIR}/python
+     $ python setup.py install
+
+2) Install the python client library for sofa-pbrpc.
+
+     $ cd ..
+     $ python setup.py install
+
+3) Generate `echo_service_pb2.py'.
+
+     $ sh compile_proto.sh
+
+4) Start the rpc server.
+
+     $ cd ../../sample/echo
+     $ make
+     $ ./server
+
+5) Run the python client.
+
+     $ python client_sample.py
+

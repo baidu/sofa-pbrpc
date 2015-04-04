@@ -1,0 +1,48 @@
+This directory contains the python client lib for sofa-pbrpc.
+
+Installation
+============
+
+1) Make sure you have Python 2.4 or newer.  If in doubt, run:
+
+     $ python -V
+
+2) If you do not have setuptools installed, note that it will be
+   downloaded and installed automatically as soon as you run setup.py.
+   If you would rather install it manually, you may do so by following
+   the instructions on this page:
+
+     http://peak.telecommunity.com/DevCenter/EasyInstall#installation-instructions
+
+3) Set the proper protobuf directory in `../depends.mk', for example:
+
+     PROTOBUF_DIR=/home/users/qinzuoyan01/libs/protobuf-2.4.1/output
+
+4) Install:
+
+     $ python setup.py install
+
+   This step may require superuser privileges. Or you can install to other
+   directory by using --prefix or --install-dir option:
+   
+     $ python setup.py install --prefix=/path/to/install/dir
+
+Usage
+=====
+
+Sample code:
+
+  from sofa.pbrpc import client
+  channel = client.Channel("remotehost.example.com:1234")
+  service = MyService_Stub(channel)
+  controller = client.Controller()
+  response = service.MyMethod(controller, request)
+  if controller.Failed():
+    print "[%d] %s" % (controller.ErrorCode(), controller.ErrorText())
+
+For more details, see the sample code in `./sample'.
+
+The complete documentation is available via the web at:
+
+  https://github.com/BaiduPS/sofa-pbrpc/wiki
+
