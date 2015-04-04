@@ -19,6 +19,7 @@ Features
 * Support multi-server load balance and fault tolerance.
 * Support http protocol.
 * Provide web monitor.
+* Provide python client library.
 
 Dependings
 ----------

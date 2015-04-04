@@ -4,5 +4,17 @@
 
 2014-07-02 version 1.0.0:
 
-  * Support multi-server load balance
+  * Support multi-server load balance.
+
+2014-11-19 version 1.0.0:
+
+  * Release version 1.0.0.
+
+2014-12-14 version 1.0.1:
+
+  * Support http protocol and web monitor.
+
+2015-04-04 version 1.0.1:
+
+  * Support python client.
 

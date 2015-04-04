@@ -3,14 +3,16 @@ Http support
 Support http protocol, then user can call methods through http, e.g., by browser.
 Request and response message may be serialized/deserialized in json format. 
 This will provide better usability.
+(done)
 
-
-Multi-server load balance (done)
+Multi-server load balance
 -------------------------
 By providing multi-server addresses (statically or dynamically), one client stub
 can access services deployed on different servers, with intelligent load balance.
+(done)
 
 Cross-language client
 ---------------------
 Provide rpc client lib in other languages, e.g., java and python.
+(python done)
 
