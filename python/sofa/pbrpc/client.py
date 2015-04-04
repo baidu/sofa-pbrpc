@@ -6,11 +6,16 @@
 
 '''Python client for sofa-pbrpc.
 
+  Features:
+    * Only support blocking (sync) mode.
+    * Support timeout by controller.SetTimeout().
+
   Example:
     from sofa.pbrpc import client
     channel = client.Channel("remotehost.example.com:1234")
-    controller = client.Controller()
     service = MyService_Stub(channel)
+    controller = client.Controller()
+    controller.SetTimeout(1)
     response = service.MyMethod(controller, request)
     if controller.Failed():
       print "[%d] %s" % (controller.ErrorCode(), controller.ErrorText())
@@ -18,12 +23,16 @@
 
 __author__ = 'qinzuoyan@gmail.com'
 
+import time
+import socket
+import struct
+
 from google.protobuf import service
 from sofa.pbrpc import rpc_meta_pb2
-import struct
-import socket
 
-class Error(Exception): pass
+class Error(service.RpcException): pass
+
+class TimeoutError(Error): pass
 
 class Controller(service.RpcController):
 
@@ -34,6 +43,7 @@ class Controller(service.RpcController):
     self.is_failed = False
     self.error_code = 0
     self.error_text = ''
+    self.timeout = None
 
   def Reset(self):
     """Resets the RpcController to its initial state.
@@ -44,6 +54,14 @@ class Controller(service.RpcController):
     self.is_failed = False
     self.error_code = 0
     self.error_text = ''
+    self.timeout = None
+
+  def SetTimeout(self, timeout):
+    """Set timeout of a positive float expressing seconds.
+    """
+    if timeout <= 0:
+      raise Error('Invalid timeout value, should be a positive float.')
+    self.timeout = timeout
 
   def Failed(self):
     """Returns true if the call failed.
@@ -54,40 +72,33 @@ class Controller(service.RpcController):
     return self.is_failed
 
   def ErrorCode(self):
-    """If Failed is true, returns an interger error code."""
+    """If Failed is true, returns an interger error code.
+    """
     return self.error_code
 
   def ErrorText(self):
-    """If Failed is true, returns a human-readable description of the error."""
+    """If Failed is true, returns a human-readable description of the error.
+    """
     return self.error_text
 
-  def ClientSetSucceed(self):
-    """Internal used method."""
-    self.is_failed = False
-    self.error_code = 0
-    self.error_text = ''
-
-  def ClientSetFailed(self, error_code, error_text):
-    """Internal used method."""
-    self.is_failed = True
-    self.error_code = error_code
-    self.error_text = error_text
-
   def StartCancel(self):
-    """Only need in server side, not implemented."""
+    """Server side interface, not implemented.
+    """
     raise NotImplementedError
 
   def SetFailed(self, reason):
-    """Only need in server side, not implemented."""
+    """Server side interface, not implemented.
+    """
     raise NotImplementedError
 
   def IsCanceled(self):
-    """Only need in server side, not implemented."""
+    """Server side interface, not implemented.
+    """
     raise NotImplementedError
 
 class Connection(object):
 
-  """Socket wrapper.
+  """Socket wrapper. This is a internal class, not for user.
   """
 
   BUFSIZE = 4096
@@ -105,42 +116,75 @@ class Connection(object):
     if self.port < 0 or self.port > 65535:
       raise Error('Invalid address: port out of range: %s' % self.port)
     self.conn = None
+    self.timeout = None
 
-  def WriteData(self, data):
+  def Close(self):
+    """Close the socket.
+    """
+    if self.conn != None:
+      self.conn.close()
+      self.conn = None
+      self.timeout = None
+
+  def UpdateTimeout(self, deadline):
+    """Update the socket timeout according to the deadline.
+    """
+    if deadline != None:
+      now = time.time()
+      if deadline <= now:
+        self.Close()
+        raise TimeoutError('Already timeout')
+      self.timeout = deadline - now
+      self.conn.settimeout(self.timeout)
+    else:
+      if self.timeout != None:
+        self.timeout = None
+        self.conn.settimeout(None)
+
+  def WriteData(self, data, deadline=None):
+    """Write data into the socket.
+    """
     if self.conn == None:
       try:
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       except socket.error as err:
-        self.conn = None
+        self.Close()
         raise Error('Create connection fail: %s' % err)
       try:
         self.conn.connect((self.host, self.port))
       except socket.error as err:
-        self.conn.close()
-        self.conn = None
+        self.Close()
         raise Error('Connect fail: %s' % err)
+    self.UpdateTimeout(deadline)
     try:
       self.conn.sendall(data)
+    except socket.timeout:
+      self.Close()
+      raise TimeoutError('Already timeout')
     except socket.error as err:
-      self.conn.close()
-      self.conn = None
+      self.Close()
       raise Error('Send data fail: %s' % err)
 
-  def ReadData(self):
+  def ReadData(self, deadline=None):
+    """Read data from the socket.
+    """
+    self.UpdateTimeout(deadline)
     try:
       data = self.conn.recv(Connection.BUFSIZE)
+    except socket.timeout:
+      self.Close()
+      raise TimeoutError('Already timeout')
     except socket.error as err:
-      self.conn = None
+      self.Close()
       raise Error('Receive data fail: %s' % err)
     if len(data) == 0:
-      self.conn.close()
-      self.conn = None
+      self.Close()
       raise Error('Connection closed by peer')
     return data
 
 class Protocol(object):
 
-  """Protocol wrapper.
+  """Protocol wrapper. This is a internal class, not for user.
   """
 
   MAGIC_STR = 'SOFA'
@@ -149,7 +193,9 @@ class Protocol(object):
   def __init__(self, address):
     self.connection = Connection(address)
 
-  def SendRequest(self, sequence_id, method_name, request):
+  def SendRequest(self, sequence_id, deadline, method_name, request):
+    """Send request to the remote peer.
+    """
     meta = rpc_meta_pb2.RpcMeta()
     meta.type = rpc_meta_pb2.RpcMeta.REQUEST
     meta.sequence_id = sequence_id
@@ -160,12 +206,14 @@ class Protocol(object):
         '<4siqq', Protocol.MAGIC_STR,
         len(meta_bytes), len(data_bytes), len(meta_bytes)+len(data_bytes))
     bytes = header_bytes + meta_bytes + data_bytes
-    self.connection.WriteData(bytes)
+    self.connection.WriteData(bytes, deadline)
 
-  def ReceiveResponse(self, sequence_id, response_class):
-    bytes = self.connection.ReadData()
+  def ReceiveResponse(self, sequence_id, deadline, response_class):
+    """Receive response from the remote peer.
+    """
+    bytes = self.connection.ReadData(deadline)
     while len(bytes) < Protocol.HEADER_SIZE:
-      bytes += self.connection.ReadData()
+      bytes += self.connection.ReadData(deadline)
     magic_str,meta_size,data_size,message_size = struct.unpack(
         '<4siqq', bytes[0:Protocol.HEADER_SIZE])
     if magic_str != Protocol.MAGIC_STR:
@@ -173,7 +221,7 @@ class Protocol(object):
     if message_size != (meta_size + data_size):
       raise Error('Invalid response header: incorrect message size')
     while len(bytes) < (Protocol.HEADER_SIZE + message_size):
-      bytes += self.connection.ReadData()
+      bytes += self.connection.ReadData(deadline)
     meta = rpc_meta_pb2.RpcMeta()
     meta_start = Protocol.HEADER_SIZE
     meta.ParseFromString(bytes[meta_start:meta_start+meta_size])
@@ -205,19 +253,28 @@ class Channel(service.RpcChannel):
                  request, response_class, done=None):
     """Calls the method identified by the descriptor.
 
-    Call the given method of the remote service.  The signature of this
-    procedure looks the same as Service.CallMethod(), but the requirements
-    are less strict in one important way:  the request object doesn't have to
-    be of any specific class as long as its descriptor is method.input_type.
+    Only blocking mode is supported now, so the `done' param is not used.
+
+    If some rpc error occured, then raise exception. Especially, if timeout the
+    `sofa.pbrpc.TimeoutError' will be raised.
+
+    If no rpc error occurred, but controller.SetFailed() is invoked in the
+    server side, then returns None.
     """
+    if rpc_controller.timeout == None:
+      deadline = None
+    else:
+      deadline = time.time() + rpc_controller.timeout
     self.sequence_id += 1
-    self.protocol.SendRequest(self.sequence_id,
-        method_descriptor.full_name, request)
-    resp = self.protocol.ReceiveResponse(self.sequence_id, response_class)
+    self.protocol.SendRequest(
+        self.sequence_id, deadline, method_descriptor.full_name, request)
+    resp = self.protocol.ReceiveResponse(
+        self.sequence_id, deadline, response_class)
     if resp[0]:
-      rpc_controller.ClientSetSucceed()
       return resp[1]
     else:
-      rpc_controller.ClientSetFailed(resp[1], resp[2])
+      rpc_controller.is_failed = True
+      rpc_controller.error_code = resp[1]
+      rpc_controller.error_text = resp[2]
       return None
 
