@@ -14,7 +14,8 @@ Installation
 
      http://peak.telecommunity.com/DevCenter/EasyInstall#installation-instructions
 
-3) Set the proper protobuf directory in `../depends.mk', for example:
+3) Because this lib depends on the `protoc' tool to compile proto files,
+   you should set the proper protobuf directory in `../depends.mk', for example:
 
      PROTOBUF_DIR=/home/users/qinzuoyan01/libs/protobuf-2.4.1/output
 
@@ -23,9 +24,11 @@ Installation
      $ python setup.py install
 
    This step may require superuser privileges. Or you can install to other
-   directory by using --prefix or --install-dir option:
+   directory by using `--prefix' or `--install-dir' option:
    
      $ python setup.py install --prefix=/path/to/install/dir
+   
+   Make sure that the `/path/to/install/dir' is exist.
 
 Usage
 =====
