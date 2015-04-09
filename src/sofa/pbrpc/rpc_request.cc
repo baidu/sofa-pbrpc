@@ -54,9 +54,6 @@ void RpcRequest::OnCallMethodDone(
     else
     {
 #if defined( LOG )
-        LOG(DEBUG) << "OnCallMethodDone(): " << RpcEndpointToString(_remote_endpoint)
-                   << " {" << cntl->SequenceId() << "}"
-                   << ": call method \"" << cntl->MethodId() << "\" succeed";
 #else
         SLOG(DEBUG, "OnCallMethodDone(): %s {%lu}: call method \"%s\" succeed",
                 RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),
@@ -160,8 +157,6 @@ void RpcRequest::OnSendResponseDone(
     if (error_code == RPC_SUCCESS)
     {
 #if defined( LOG )
-        LOG(DEBUG) << "OnSendResponseDone(): " << RpcEndpointToString(_remote_endpoint)
-                   << " {" << SequenceId() << "}: send succeed";
 #else
         SLOG(DEBUG, "OnSendResponseDone(): %s {%lu}: send succeed",
                 RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());

@@ -469,7 +469,7 @@ RpcErrorCode DynamicRpcChannelImpl::ChooseServer(ServerContextPtr& choosed_serve
     }
     else {
 #if defined( LOG )
-        LOF(ERROR) << "ChooseServer(): no server choosed: try_num=" << try_num
+        LOG(ERROR) << "ChooseServer(): no server choosed: try_num=" << try_num
                    << ", live_map_size=" << _live_map.size()
                    << ", unlive_map_size=" << _unlive_map.size();
 #else

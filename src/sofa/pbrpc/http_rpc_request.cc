@@ -254,8 +254,6 @@ bool HTTPRpcRequest::ParsePath()
     _decoded_path = StringUtils::decode_url(_path,
             (StringUtils::E_DECODE_RESERVED_CHAR | StringUtils::E_DECODE_PERCENT_SIGN_CHAR));
 #if defined( LOG )
-        LOG(DEBUG) << "ParsePath(): path=[" << _path << "]"
-                   << ", decoded_path=[" << _decoded_path << "]";
 #else
         SLOG(DEBUG, "ParsePath(): path=[%s], decoded_path=[%s]",
                 _path.c_str(), _decoded_path.c_str());
