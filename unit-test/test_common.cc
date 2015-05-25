@@ -44,7 +44,28 @@ TEST_F(CommonTest, test_check)
     SCHECK_GE(2, value);
     SCHECK_GT(2, value);
 }
- 
+
+static std::string s_test_log_buf;
+void test_log_handler(
+    sofa::pbrpc::LogLevel level, const char* filename, int,
+    const char *fmt, va_list ap)
+{
+    char buf[1024];
+    vsnprintf(buf, 1024, fmt, ap);
+    char result[1500];
+    snprintf(result, 1024, "level=%d filename=%s %s", level, filename, buf);
+    s_test_log_buf.assign(result);
+}
+
+TEST_F(CommonTest, test_set_log_handler)
+{
+    sofa::pbrpc::LogHandler *old = sofa::pbrpc::set_log_handler(test_log_handler);
+    ASSERT_NE(old, (void*)NULL);
+
+    SLOG(ERROR, "found error %s", "boom!");
+    ASSERT_STREQ(s_test_log_buf.c_str(), "level=1 filename=test_common.cc found error boom!");
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
