@@ -35,15 +35,13 @@ void set_log_level(LogLevel level)
     s_log_level = level;
 }
 
-void log_handler(LogLevel level, const char* filename, int line, const char *fmt, ...)
+void default_log_handler(
+    LogLevel level, const char* filename, int line, const char *fmt, va_list ap)
 {
     static const char* level_names[] = { "FATAL", "ERROR", "WARNNING",
                                          "INFO", "TRACE", "DEBUG" };
     char buf[1024];
-    va_list ap;
-    va_start(ap, fmt);
     vsnprintf(buf, 1024, fmt, ap);
-    va_end(ap);
 #if 0
     fprintf(stderr, "libsofa_pbrpc %s %s %s:%d] %s\n",
             level_names[level],
@@ -62,7 +60,36 @@ void log_handler(LogLevel level, const char* filename, int line, const char *fmt
     }
 }
 
+void null_log_handler(LogLevel, const char*, int, const char *, va_list)
+{
+    // Nothing
+}
+
+static LogHandler* s_log_handler = default_log_handler;
+
+void log_handler(LogLevel level, const char* filename, int line, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    s_log_handler(level, filename, line, fmt, ap);
+    va_end(ap);
+}
+
 } // namespace internal
+
+LogHandler* set_log_handler(LogHandler* new_func) {
+    LogHandler* old = internal::s_log_handler;
+    if (old == &internal::null_log_handler) {
+        old = NULL;
+    }
+    if (new_func == NULL) {
+        internal::s_log_handler = &internal::null_log_handler;
+    } else {
+        internal::s_log_handler = new_func;
+    }
+    return old;
+}
+
 } // namespace pbrpc
 } // namespace sofa
 
