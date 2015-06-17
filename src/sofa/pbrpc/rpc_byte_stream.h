@@ -171,6 +171,9 @@ public:
     // Reset current time ticks.
     void reset_ticks(int64 ticks)
     {
+        if (_ticks == 0 && _last_rw_ticks == 0) {
+            _last_rw_ticks = ticks;
+        }
         _ticks = ticks;
     }
 
@@ -195,7 +198,7 @@ protected:
         SOFA_PBRPC_FUNCTION_TRACE;
 
         _socket.async_read_some(boost::asio::buffer(data, size),
-                boost::bind(&RpcByteStream::on_read_some, 
+                boost::bind(&RpcByteStream::on_read_some,
                     shared_from_this(), _1, _2));
     }
 
@@ -203,9 +206,9 @@ protected:
     void async_write_some(const char* data, size_t size)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        
+
         _socket.async_write_some(boost::asio::buffer(data, size),
-                boost::bind(&RpcByteStream::on_write_some, 
+                boost::bind(&RpcByteStream::on_write_some,
                     shared_from_this(), _1, _2));
     }
 
@@ -243,7 +246,7 @@ private:
                     RpcEndpointToString(_remote_endpoint).c_str(),
                     error.message().c_str());
 #endif
-            
+
             close("init stream failed: " + error.message());
             return;
         }
