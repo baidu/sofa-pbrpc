@@ -169,9 +169,13 @@ public:
     }
 
     // Reset current time ticks.
-    void reset_ticks(int64 ticks)
+    void reset_ticks(int64 ticks, bool update_last_rw_ticks)
     {
         _ticks = ticks;
+        if (update_last_rw_ticks)
+        {
+            _last_rw_ticks = ticks;
+        }
     }
 
     // Get the last time ticks for read or write.

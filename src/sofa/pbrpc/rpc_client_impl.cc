@@ -378,7 +378,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
             stream.reset(new RpcClientStream(_work_thread_group->io_service(), remote_endpoint));
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
-            stream->reset_ticks((ptime_now() - _epoch_time).ticks());
+            stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
 
             _stream_map[remote_endpoint] = stream;
             create = true;
@@ -473,7 +473,7 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             }
             else
             {
-                stream->reset_ticks(now_ticks);
+                stream->reset_ticks(now_ticks, false);
                 live_streams.push_back(stream);
                 ++live_count;
                 ++it;

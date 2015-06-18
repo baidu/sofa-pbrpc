@@ -383,7 +383,7 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
     }
 
     stream->set_max_pending_buffer_size(_max_pending_buffer_size);
-    stream->reset_ticks((ptime_now() - _start_time).ticks());
+    stream->reset_ticks((ptime_now() - _start_time).ticks(), true);
 
     ScopedLocker<FastLock> _(_stream_list_lock);
     _stream_list.push_back(stream);
@@ -472,7 +472,7 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
             }
             else
             {
-                stream->reset_ticks(now_ticks);
+                stream->reset_ticks(now_ticks, false);
                 live_streams.push_back(stream);
                 ++live_count;
                 ++it;
