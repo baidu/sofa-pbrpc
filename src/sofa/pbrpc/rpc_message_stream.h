@@ -545,7 +545,7 @@ private:
     // @return true if no error occured, and found messages are stored
     //              in "received_messages", may be empty.
     // @return false if error occured, for example bad message stream.
-    class ReceivedItem;
+    struct ReceivedItem;
     bool split_and_process_message(char* data, int size,
             std::deque<ReceivedItem>* received_messages)
     {
