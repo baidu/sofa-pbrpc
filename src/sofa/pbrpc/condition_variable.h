@@ -53,6 +53,7 @@ public:
         else
         {
             SLOG(FATAL, "error no: %d", error);
+            return false;
         }
     }
     void signal()
