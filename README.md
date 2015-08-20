@@ -1,10 +1,10 @@
 sofa-pbrpc
 ==========
-[![Build Status](https://travis-ci.org/BaiduPS/sofa-pbrpc.svg)](https://travis-ci.org/BaiduPS/sofa-pbrpc)
+[![Build Status](https://travis-ci.org/baidu/sofa-pbrpc.svg)](https://travis-ci.org/baidu/sofa-pbrpc)
 
 A light-weight RPC implement of google protobuf RPC framework.
 
-Wiki: https://github.com/BaiduPS/sofa-pbrpc/wiki
+Wiki: https://github.com/baidu/sofa-pbrpc/wiki
 
 ### Features
 * High performace.
