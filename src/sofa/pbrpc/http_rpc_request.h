@@ -72,7 +72,7 @@ private:
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& html);
 
-    static rapidjson::Value* ParseJson(
+    static rapidjson::Document* ParseJson(
             const char* str,
             std::string& err);
 
@@ -118,7 +118,7 @@ private:
     std::string                        _http_version;
     std::map<std::string, std::string> _headers;
     ReadBufferPtr                      _req_body;
-    rapidjson::Value*                  _req_json;
+    rapidjson::Document*               _req_json;
 }; // class HTTPRpcRequest
 
 } // namespace pbrpc

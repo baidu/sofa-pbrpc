@@ -18,4 +18,7 @@ unit-test/test_timeout_manager
 unit-test/test_tran_buf_pool
 *.a
 sofa-pbrpc-client
+depends.mk
+src/sofa/pbrpc/*.pb.h
+src/sofa/pbrpc/*.pb.cc
 

@@ -447,7 +447,7 @@ bool HTTPRpcRequest::RenderHtmlResponse(
     return !printer.failed();
 }
 
-rapidjson::Value* HTTPRpcRequest::ParseJson(
+rapidjson::Document* HTTPRpcRequest::ParseJson(
         const char* str,
         std::string& err)
 {
