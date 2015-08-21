@@ -47,7 +47,7 @@ namespace sofa {
 namespace pbrpc {
 
 static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::AllocatorType& allocator);
-static rapidjson::Value* filed2json(const Message *msg, const FieldDescriptor *field,
+static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *field,
         rapidjson::Value::AllocatorType& allocator)
 {
     const Reflection *ref = msg->GetReflection();
@@ -260,7 +260,7 @@ static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::Allocat
         }
         else
         {
-            rapidjson::Value* field_json = filed2json(msg, field, allocator);
+            rapidjson::Value* field_json = field2json(msg, field, allocator);
             root->AddMember(name, *field_json, allocator);
             delete field_json;
         }
