@@ -248,11 +248,17 @@ static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::Allocat
     {
         const FieldDescriptor *field = d->field(i);
         if (!field)
+        {
+            delete root;
             return NULL;
+        }
 
         const Reflection *ref = msg->GetReflection();
         if (!ref)
+        {
+            delete root;
             return NULL;
+        }
         const char *name = field->name().c_str();
         if (field->is_optional() && !ref->HasField(*msg, field))
         {
