@@ -182,7 +182,7 @@ static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *f
                         {
                             value = b64_encode(value);
                         }
-                        rapidjson::Value v(value.c_str(), allocator);
+                        rapidjson::Value v(value.c_str(), value.size(), allocator);
                         json->PushBack(v, allocator);
                     }
                 }
@@ -193,7 +193,7 @@ static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *f
                     {
                         value = b64_encode(value);
                     }
-                    json = new rapidjson::Value(value.c_str(), allocator);
+                    json = new rapidjson::Value(value.c_str(), value.size(), allocator);
                 }
                 break;
             }
