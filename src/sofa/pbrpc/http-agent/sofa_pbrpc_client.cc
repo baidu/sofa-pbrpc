@@ -262,7 +262,7 @@ int run_call(int argc, const char** argv)
     }
     int timeout = 3000;
     if (argc >= 3) {
-        timeout = atoi(argv[3]);
+        timeout = atoi(argv[2]);
     }
     return call_method(argv[0], argv[1], timeout);
 }

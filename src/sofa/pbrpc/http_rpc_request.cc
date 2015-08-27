@@ -447,7 +447,7 @@ bool HTTPRpcRequest::RenderHtmlResponse(
     return !printer.failed();
 }
 
-rapidjson::Value* HTTPRpcRequest::ParseJson(
+rapidjson::Document* HTTPRpcRequest::ParseJson(
         const char* str,
         std::string& err)
 {
@@ -553,7 +553,7 @@ void HTTPRpcRequest::ServiceList(
         << "<tr>"
         << "<th rowspan=\"2\" align=\"left\">Name</th>"
         << "<th colspan=\"3\" align=\"center\">Stat in last second</th>"
-        << "<th colspan=\"3\" align=\"center\">Stat in last minite</th>"
+        << "<th colspan=\"3\" align=\"center\">Stat in last minute</th>"
         << "</tr>"
         << "<tr>"
         << "<th align=\"right\">Requested</th><th align=\"right\">Succeed</th><th align=\"right\">Failed</th>"
@@ -592,7 +592,7 @@ void HTTPRpcRequest::MethodList(
         << "<tr>"
         << "<th rowspan=\"3\" align=\"left\">Name</th>"
         << "<th colspan=\"6\" align=\"center\">Stat in last second</th>"
-        << "<th colspan=\"6\" align=\"center\">Stat in last minite</th>"
+        << "<th colspan=\"6\" align=\"center\">Stat in last minute</th>"
         << "</tr>"
         << "<tr>"
         << "<th colspan=\"3\" align=\"center\">Succeed</th>"

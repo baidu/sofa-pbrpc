@@ -33,7 +33,7 @@ public:
         , _endpoint(endpoint)
         , _endpoint_str(RpcEndpointToString(endpoint))
         , _acceptor(io_service)
-        , _is_closed(false)
+        , _is_closed(true)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcListener);
     }
@@ -152,6 +152,7 @@ public:
 #else
         SLOG(INFO, "start_listen(): listen succeed: %s", _endpoint_str.c_str());
 #endif
+        _is_closed = false;
 
         async_accept();
 

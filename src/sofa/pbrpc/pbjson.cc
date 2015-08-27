@@ -47,7 +47,7 @@ namespace sofa {
 namespace pbrpc {
 
 static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::AllocatorType& allocator);
-static rapidjson::Value* filed2json(const Message *msg, const FieldDescriptor *field,
+static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *field,
         rapidjson::Value::AllocatorType& allocator)
 {
     const Reflection *ref = msg->GetReflection();
@@ -182,7 +182,7 @@ static rapidjson::Value* filed2json(const Message *msg, const FieldDescriptor *f
                         {
                             value = b64_encode(value);
                         }
-                        rapidjson::Value v(value.c_str());
+                        rapidjson::Value v(value.c_str(), value.size(), allocator);
                         json->PushBack(v, allocator);
                     }
                 }
@@ -193,7 +193,7 @@ static rapidjson::Value* filed2json(const Message *msg, const FieldDescriptor *f
                     {
                         value = b64_encode(value);
                     }
-                    json = new rapidjson::Value(value.c_str());
+                    json = new rapidjson::Value(value.c_str(), value.size(), allocator);
                 }
                 break;
             }
@@ -248,11 +248,17 @@ static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::Allocat
     {
         const FieldDescriptor *field = d->field(i);
         if (!field)
+        {
+            delete root;
             return NULL;
+        }
 
         const Reflection *ref = msg->GetReflection();
         if (!ref)
+        {
+            delete root;
             return NULL;
+        }
         const char *name = field->name().c_str();
         if (field->is_optional() && !ref->HasField(*msg, field))
         {
@@ -260,7 +266,7 @@ static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::Allocat
         }
         else
         {
-            rapidjson::Value* field_json = filed2json(msg, field, allocator);
+            rapidjson::Value* field_json = field2json(msg, field, allocator);
             root->AddMember(name, *field_json, allocator);
             delete field_json;
         }
