@@ -99,7 +99,7 @@ void log_handler(LogLevel level, const char* filename, int line, const char *fmt
     !(condition) ? (void)0 : ::sofa::pbrpc::internal::log_handler( \
             ::sofa::pbrpc::LOG_LEVEL_##level, __FILE__, __LINE__, fmt, ##arg)
 
-#if defined( LOG )
+#if defined( _LOGGING_H_ )
 #define SCHECK(expression) CHECK(expression)
 #define SCHECK_EQ(a, b) CHECK_EQ(a, b)
 #define SCHECK_NE(a, b) CHECK_NE(a, b)
