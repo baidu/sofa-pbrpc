@@ -362,7 +362,7 @@ private:
         _pending_calls.push_back(PendingItem(message, cookie));
         ++_pending_message_count;
         _pending_data_size += message->TotalCount();
-        _pending_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _pending_buffer_size += message->TotalBlockSize();
     }
 
     // Insert an item into front of the pending queue.
@@ -377,7 +377,7 @@ private:
         _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
-        _swapped_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _swapped_buffer_size += message->TotalBlockSize();
     }
 
     // Get an item from the pending queue.
@@ -414,7 +414,7 @@ private:
             // update stats
             --_swapped_message_count;
             _swapped_data_size -= (*message)->TotalCount();
-            _swapped_buffer_size -= (*message)->BlockCount() * TranBufPool::block_size();
+            _swapped_buffer_size -= (*message)->TotalBlockSize();
             return true;
         }
 
@@ -580,7 +580,7 @@ private:
                 }
             }
             int ret = _current_rpc_request_parser->Parse(
-                    _tran_buf, size, data - _tran_buf, &consumed);
+                    _tran_buf, TranBufPool::block_size(), size, data - _tran_buf, &consumed);
             _cur_recved_bytes += consumed;
             if (ret == 0)
             {

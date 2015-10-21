@@ -361,7 +361,7 @@ private:
         _pending_calls.push_back(PendingItem(message, cookie));
         ++_pending_message_count;
         _pending_data_size += message->TotalCount();
-        _pending_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _pending_buffer_size += message->TotalBlockSize();
     }
 
     // Insert an item into front of the pending queue.
@@ -376,7 +376,7 @@ private:
         _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
-        _swapped_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _swapped_buffer_size += message->TotalBlockSize();
     }
 
     // Get an item from the pending queue.
@@ -413,7 +413,7 @@ private:
             // update stats
             --_swapped_message_count;
             _swapped_data_size -= (*message)->TotalCount();
-            _swapped_buffer_size -= (*message)->BlockCount() * TranBufPool::block_size();
+            _swapped_buffer_size -= (*message)->TotalBlockSize();
             return true;
         }
 
@@ -586,7 +586,8 @@ private:
             if (_received_message_size + size < message_size)
             {
                 // all the remaining data belongs to the in-complete message
-                _receiving_message->Append(BufHandle(_tran_buf, size, data - _tran_buf));
+                _receiving_message->Append(BufHandle(_tran_buf,
+                        size, data - _tran_buf, TranBufPool::block_size()));
                 _received_message_size += size;
                 return true;
             }
@@ -594,7 +595,8 @@ private:
             int64 consume_size = message_size - _received_message_size;
             if (consume_size > 0)
             {
-                _receiving_message->Append(BufHandle(_tran_buf, consume_size, data - _tran_buf));
+                _receiving_message->Append(BufHandle(_tran_buf,
+                        consume_size, data - _tran_buf, TranBufPool::block_size()));
             }
             received_messages->push_back(ReceivedItem(_receiving_message, 
                         _receiving_header.meta_size, _receiving_header.data_size));

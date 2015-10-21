@@ -14,19 +14,19 @@ struct BufHandle
 {
     char* data; // block header
     int   size; // data size
-    union {
-        int capacity; // block capacity, used by WriteBuffer
-        int offset;   // start position in the block, used by ReadBuffer
-    };
+    int capacity; // block capacity, used by WriteBuffer
+    int offset;   // start position in the block, used by ReadBuffer
 
     BufHandle(char* _data, int _capacity)
         : data(_data)
         , size(0)
-        , capacity(_capacity) {}
+        , capacity(_capacity)
+        , offset(0) {}
 
-    BufHandle(char* _data, int _size, int _offset)
+    BufHandle(char* _data, int _size, int _offset, int _capacity)
         : data(_data)
         , size(_size)
+        , capacity(_capacity)
         , offset(_offset) {}
 }; // class BufHandle
 
