@@ -50,6 +50,9 @@ public:
     // Get the block count occupied by the buffer.
     int BlockCount() const;
 
+    // Get the total size of blocks occupied by the buffer.
+    int64 TotalBlockSize() const;
+
     // Trans buffer to string.
     std::string ToString() const;
 
@@ -66,6 +69,7 @@ private:
     int _cur_pos;
     int _last_bytes; // last read bytes
     int64 _read_bytes; // total read bytes
+    int64 _total_block_size; // total size of all blocks
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ReadBuffer);
 }; // class ReadBuffer

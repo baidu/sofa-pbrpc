@@ -25,7 +25,7 @@ public:
 
     virtual bool CheckMagicString(const char* magic_string);
 
-    virtual int Parse(const char* buf, int data_size, int offset, int* bytes_consumed);
+    virtual int Parse(const char* buf, int buf_size, int data_size, int offset, int* bytes_consumed);
 
     virtual RpcRequestPtr GetRequest();
 

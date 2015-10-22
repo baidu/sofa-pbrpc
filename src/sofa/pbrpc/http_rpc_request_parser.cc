@@ -51,7 +51,7 @@ bool HTTPRpcRequestParser::CheckMagicString(const char* magic_string)
 }
 
 int HTTPRpcRequestParser::Parse(const char* buf,
-        int data_size, int offset, int* bytes_consumed)
+        int buf_size, int data_size, int offset, int* bytes_consumed)
 {
     if (data_size == 0)
     {
@@ -99,7 +99,7 @@ int HTTPRpcRequestParser::Parse(const char* buf,
             return 0;
         }
         int consume = std::min(data_size, bytes_remain);
-        _req->_req_body->Append(BufHandle(const_cast<char*>(buf), consume, offset));
+        _req->_req_body->Append(BufHandle(const_cast<char*>(buf), consume, offset, buf_size));
         *bytes_consumed += consume;
         if (_content_length == _req->_req_body->TotalCount())
         {

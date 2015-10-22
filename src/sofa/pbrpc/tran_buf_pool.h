@@ -10,7 +10,7 @@
 #include <sofa/pbrpc/common_internal.h>
 
 #ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (1024u - sizeof(RefCountType))
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (1024u)
 #endif
 
 namespace sofa {
@@ -24,18 +24,22 @@ public:
     typedef int RefCountType;
 
     // Get the size of single block.
-    inline static int block_size() 
+    inline static int block_size(int factor = 1)
     {
-        return static_cast<int>(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE);
+        SCHECK_GT(factor, 0);
+        SCHECK_LT(factor, (1 << 20));
+        return static_cast<int>(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE) * factor - sizeof(RefCountType);
     }
 
     // Allocate a block.  Return NULL if failed.
     //
     // Postconditions:
     // * If succeed, the reference count of the block is equal to 1.
-    inline static void * malloc()
+    inline static void * malloc(int factor = 1)
     {
-        void * p = ::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE + sizeof(RefCountType));
+        SCHECK_GT(factor, 0);
+        SCHECK_LT(factor, (1 << 20));
+        void * p = ::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE * factor);
         if (p != NULL)
         {
             *(reinterpret_cast<RefCountType*>(p)) = 1;

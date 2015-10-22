@@ -46,7 +46,7 @@ bool BinaryRpcRequestParser::CheckMagicString(const char* magic_string)
 }
 
 int BinaryRpcRequestParser::Parse(const char* buf,
-        int data_size, int offset, int* bytes_consumed)
+        int buf_size, int data_size, int offset, int* bytes_consumed)
 {
     if (data_size == 0)
     {
@@ -85,7 +85,7 @@ int BinaryRpcRequestParser::Parse(const char* buf,
         case PS_MSG_BODY:
             bytes_remain = _req->_req_header.message_size - _bytes_recved;
             consume = std::min(data_size, bytes_remain);
-            _req->_req_body->Append(BufHandle(const_cast<char*>(buf), consume, offset));
+            _req->_req_body->Append(BufHandle(const_cast<char*>(buf), consume, offset, buf_size));
             *bytes_consumed += consume;
             _bytes_recved += consume;
             if (_bytes_recved == _req->_req_header.message_size)

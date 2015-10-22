@@ -16,6 +16,7 @@ ReadBuffer::ReadBuffer()
     , _cur_pos(0)
     , _last_bytes(0)
     , _read_bytes(0)
+    , _total_block_size(0)
 {}
 
 ReadBuffer::~ReadBuffer()
@@ -34,6 +35,7 @@ void ReadBuffer::Append(const BufHandle& buf_handle)
     _buf_list.push_back(buf_handle);
     TranBufPool::add_ref(buf_handle.data);
     _total_bytes += buf_handle.size;
+    _total_block_size += buf_handle.capacity;
     _cur_it = _buf_list.begin();
 }
 
@@ -47,6 +49,7 @@ void ReadBuffer::Append(const ReadBuffer* read_buffer)
         TranBufPool::add_ref(it->data);
     }
     _total_bytes += read_buffer->_total_bytes;
+    _total_block_size += read_buffer->_total_block_size;
     _cur_it = _buf_list.begin();
 }
 
@@ -58,6 +61,11 @@ int64 ReadBuffer::TotalCount() const
 int ReadBuffer::BlockCount() const
 {
     return _buf_list.size();
+}
+
+int64 ReadBuffer::TotalBlockSize() const
+{
+    return _total_block_size;
 }
 
 std::string ReadBuffer::ToString() const
@@ -165,7 +173,6 @@ void WriteBuffer::SwapOut(ReadBuffer* is)
         BufHandle& buf_handle = _buf_list.front();
         if (buf_handle.size > 0)
         {
-            buf_handle.offset = 0; // capacity -> offset
             is->Append(buf_handle);
         }
         TranBufPool::free(buf_handle.data);
@@ -280,10 +287,11 @@ int64 WriteBuffer::ByteCount() const
 
 bool WriteBuffer::Extend()
 {
-    char* block = static_cast<char*>(TranBufPool::malloc());
+    int factor = _buf_list.size() < 5 ? (1 << _buf_list.size()) : (1 << 5);
+    char* block = static_cast<char*>(TranBufPool::malloc(factor));
     if (block == NULL) return false;
-    _buf_list.push_back(BufHandle(block, TranBufPool::block_size()));
-    _total_capacity += TranBufPool::block_size();
+    _buf_list.push_back(BufHandle(block, TranBufPool::block_size(factor)));
+    _total_capacity += TranBufPool::block_size(factor);
     return true;
 }
 
