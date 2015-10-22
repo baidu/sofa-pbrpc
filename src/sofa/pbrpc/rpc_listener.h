@@ -107,6 +107,20 @@ public:
             return false;
         }
 
+        int ret = fcntl(_acceptor.native_handle(), F_SETFD, 
+                        fcntl(_acceptor.native_handle(), F_GETFD) | FD_CLOEXEC);
+        if (ret < 0)
+        {
+#if defined( LOG )
+            LOG(ERROR) << "start_listen(): make fd close_on_exec failed: "
+                       << _endpoint_str << ": " << strerror(errno);
+#else
+            SLOG(ERROR, "start_listen(): make fd close_on_exec failed: %s: %s",
+                    _endpoint_str.c_str(), strerror(errno));
+#endif
+            return false;
+        }
+
         _acceptor.set_option(tcp::acceptor::reuse_address(true), ec);
         if (ec)
         {
