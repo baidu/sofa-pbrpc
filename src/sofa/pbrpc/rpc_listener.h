@@ -107,8 +107,8 @@ public:
             return false;
         }
 
-        int ret = fcntl(_acceptor.native_handle(), F_SETFD, 
-                        fcntl(_acceptor.native_handle(), F_GETFD) | FD_CLOEXEC);
+        int ret = fcntl(_acceptor.native(), F_SETFD, 
+                        fcntl(_acceptor.native(), F_GETFD) | FD_CLOEXEC);
         if (ret < 0)
         {
 #if defined( LOG )
