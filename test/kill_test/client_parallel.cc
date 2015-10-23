@@ -8,13 +8,12 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <asm/atomic.h>
 #include <sofa/pbrpc/pbrpc.h>
 #include "echo_service.pb.h"
 
 static volatile bool s_is_running = true;
 static volatile bool s_should_wait = false;
-static atomic_t s_print_token = ATOMIC_INIT(1);
+static sofa::pbrpc::AtomicCounter s_print_token(1);
 static sofa::pbrpc::AtomicCounter s_succeed_count(0);
 static sofa::pbrpc::AtomicCounter s_pending_count(0);
 
@@ -37,7 +36,7 @@ void EchoCallback(
         }
         else {
             s_is_running = false;
-            if (atomic_dec_and_test(&s_print_token))
+            if (--s_print_token == 0) 
             {
                 SLOG(ERROR, "request failed: %s", cntl->ErrorText().c_str());
             }
@@ -45,7 +44,7 @@ void EchoCallback(
     }
     else if (request->message() != response->message()) {
         s_is_running = false;
-        if (atomic_dec_and_test(&s_print_token))
+        if (--s_print_token == 0) 
         {
             SLOG(ERROR, "request failed: response not matched");
         }
