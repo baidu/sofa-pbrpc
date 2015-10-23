@@ -27,7 +27,7 @@ struct RpcServerOptions {
                                  // in seconds, should >= -1, -1 means forever, default -1.
 
     int max_pending_buffer_size; // max buffer size of the pending send queue for one connection.
-                                 // in MB, should >= 0, 0 means no buffer, default 2.
+                                 // in MB, should >= 0, 0 means no buffer, default 100.
 
     // Network throughput limit.
     // The network bandwidth is shared by all connections:
@@ -58,7 +58,7 @@ struct RpcServerOptions {
     RpcServerOptions()
         : work_thread_num(8)
         , keep_alive_time(-1)
-        , max_pending_buffer_size(2)
+        , max_pending_buffer_size(100)
         , max_throughput_in(-1)
         , max_throughput_out(-1)
         , disable_builtin_services(false)

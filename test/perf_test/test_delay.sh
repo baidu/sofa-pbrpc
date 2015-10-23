@@ -37,38 +37,25 @@ then
     at_exit
 fi
 
-echo
-echo "============= test 1K data =============="
-echo "./$CLIENT $HOST $PORT 900 &>$CLIENT_LOG &"
-./$CLIENT $HOST $PORT 900 &>$CLIENT_LOG &
-echo "sleep 3"
-sleep 3
-grep -o -a 'elapsed time in us: [0-9]*$' $CLIENT_LOG \
-| awk 'BEGIN{sum=0;num=0}{if(NR > 10){sum+=$5;++num;}}END{ \
-print "Succeed count: " num; \
-print "Average elapsed time per request: " (sum/num) "us";}'
-
-echo
-echo "============= test 1M data =============="
-echo "./$CLIENT $HOST $PORT 1000000 &>$CLIENT_LOG &"
-./$CLIENT $HOST $PORT 1000000 &>$CLIENT_LOG &
-echo "sleep 10"
-sleep 10
-grep -o -a 'elapsed time in us: [0-9]*$' $CLIENT_LOG \
-| awk 'BEGIN{sum=0;num=0}{sum+=$5;++num;}END{ \
-print "Succeed count: " num; \
-print "Average elapsed time per request: " (sum/num) "us";}'
-
-echo
-echo "============= test 10M data =============="
-echo "./$CLIENT $HOST $PORT 10000000 &>$CLIENT_LOG &"
-./$CLIENT $HOST $PORT 10000000 &>$CLIENT_LOG &
-echo "sleep 10"
-sleep 10
-grep -o -a 'elapsed time in us: [0-9]*$' $CLIENT_LOG \
-| awk 'BEGIN{sum=0;num=0}{sum+=$5;++num;}END{ \
-print "Succeed count: " num; \
-print "Average elapsed time per request: " (sum/num) "us";}'
+for i in "100 0.1K" "900 1K" "10000 10K" "100000 100K" "1000000 1M" "10000000 10M"; do
+    arr=($i)
+    num=${arr[0]}
+    str=${arr[1]}
+    echo
+    echo "============= test $str data =============="
+    echo "./$CLIENT $HOST $PORT $num &>$CLIENT_LOG &"
+    ./$CLIENT $HOST $PORT $num &>$CLIENT_LOG &
+    PID=$!
+    SLEEP=5
+    echo "sleep $SLEEP"
+    sleep $SLEEP
+    grep -o -a 'elapsed time in us: [0-9]*$' $CLIENT_LOG \
+        | awk 'BEGIN{sum=0;num=0}{if(NR > 10){sum+=$5;++num;}}END{ \
+        print "Succeed count: " num; \
+        print "Average elapsed time per request: " (sum/num) "us";}'
+    kill $PID
+    sleep 1
+done
 
 echo
 at_exit

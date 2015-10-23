@@ -10,7 +10,7 @@
 #include <sofa/pbrpc/common_internal.h>
 
 #ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE
-// block_base_size = 1K
+// base_block_size = 1K
 #define SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE (1024u)
 #endif
 

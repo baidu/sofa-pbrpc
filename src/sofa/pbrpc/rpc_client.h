@@ -21,10 +21,10 @@ struct RpcClientOptions {
 
     int keep_alive_time;         // keep alive time of idle connections.
                                  // idle connections will be closed if no read/write for this time.
-                                 // in seconds, should >= -1, -1 means for ever, default 65.
+                                 // in seconds, should >= -1, -1 means for ever, default -1.
 
     int max_pending_buffer_size; // max buffer size of the pending send queue for each connection.
-                                 // in MB, should >= 0, 0 means no buffer, default 2.
+                                 // in MB, should >= 0, 0 means no buffer, default 100.
 
     // Network throughput limit.
     // The network bandwidth is shared by all connections:
@@ -38,8 +38,8 @@ struct RpcClientOptions {
     RpcClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
-        , keep_alive_time(65)
-        , max_pending_buffer_size(2)
+        , keep_alive_time(-1)
+        , max_pending_buffer_size(100)
         , max_throughput_in(-1)
         , max_throughput_out(-1)
     {}

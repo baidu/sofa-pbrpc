@@ -37,7 +37,7 @@ inline std::string ptime_to_string(const PTime& t)
     PTime::date_type date = lt.date();
     TimeDuration tod = lt.time_of_day();
     char buf[64];
-    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%06ld", 
+    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%06lld",
             (int)date.year(),
             (int)date.month(),
             (int)date.day(),

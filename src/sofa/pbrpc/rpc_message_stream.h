@@ -450,7 +450,7 @@ private:
         }
 
         if (_role_type == ROLE_TYPE_SERVER
-                && pending_buffer_size() > _max_pending_buffer_size)
+                && pending_buffer_size() > max_pending_buffer_size())
         {
             // sending buffer full, should suspend receiving to wait
             return false;
@@ -695,10 +695,8 @@ private:
             TranBufPool::free(_tran_buf);
             _tran_buf = NULL;
         }
-
-        _tran_buf = reinterpret_cast<char*>(TranBufPool::malloc(std::min(
-                        SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR,
-                        _receiving_message->BlockCount())));
+        _tran_buf = reinterpret_cast<char*>(
+                TranBufPool::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR));
         if(_tran_buf == NULL)
         {
 #if defined( LOG )

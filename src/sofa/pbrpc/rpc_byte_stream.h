@@ -13,6 +13,20 @@
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
 
+// If SOFA_PBRPC_TCP_NO_DELAY == true, means disable the Nagle algorithm.
+//
+// Nagle algorithm may cause an extra delay in some cases, because if
+// the data in a single write spans 2n packets, the last packet will be
+// withheld, waiting for the ACK for the previous packet. For more, please
+// refer to <https://en.wikipedia.org/wiki/Nagle's_algorithm>.
+//
+// Disabling the Nagle algorithm would cause these affacts:
+//   * decrease delay time (positive affact)
+//   * decrease the qps (negative affact)
+#ifndef SOFA_PBRPC_TCP_NO_DELAY
+#define SOFA_PBRPC_TCP_NO_DELAY true
+#endif
+
 namespace sofa {
 namespace pbrpc {
 
@@ -89,6 +103,20 @@ public:
         _last_rw_ticks = _ticks;
 
         boost::system::error_code ec;
+        _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
+        if (ec)
+        {
+#if defined( LOG )
+            LOG(ERROR) << "on_connect(): set no_delay option failed: "
+                       << ec.message();
+#else
+            SLOG(ERROR, "on_connect(): set no_delay option failed: %s",
+                    ec.message().c_str());
+#endif
+            close("init stream failed: " + ec.message());
+            return;
+        }
+
         _local_endpoint = _socket.local_endpoint(ec);
         if (ec)
         {
@@ -207,7 +235,7 @@ protected:
     void async_write_some(const char* data, size_t size)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        
+
         _socket.async_write_some(boost::asio::buffer(data, size),
                 boost::bind(&RpcByteStream::on_write_some, 
                     shared_from_this(), _1, _2));
@@ -253,6 +281,20 @@ private:
         }
 
         boost::system::error_code ec;
+        _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
+        if (ec)
+        {
+#if defined( LOG )
+            LOG(ERROR) << "on_connect(): set no_delay option failed: "
+                       << ec.message();
+#else
+            SLOG(ERROR, "on_connect(): set no_delay option failed: %s",
+                    ec.message().c_str());
+#endif
+            close("init stream failed: " + ec.message());
+            return;
+        }
+
         _local_endpoint = _socket.local_endpoint(ec);
         if (ec)
         {
