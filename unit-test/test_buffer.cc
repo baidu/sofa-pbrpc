@@ -4,7 +4,7 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE 32
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (64u)
 
 #include <cstdlib>
 #include <cstring>
@@ -34,16 +34,16 @@ public:
     ReadBufferTest() {}
     virtual ~ReadBufferTest() {}
     virtual void SetUp() {
-        _block_size = TranBufPool::block_size();
         _block = static_cast<char*>(TranBufPool::malloc());
+        _capacity = TranBufPool::capacity(_block);
         ASSERT_TRUE(_block != NULL);
-        rand_str(_block, _block_size);
+        rand_str(_block, _capacity);
     }
     virtual void TearDown() {
         TranBufPool::free(_block);
     }
 
-    int _block_size;
+    int _capacity;
     char* _block;
 };
 
@@ -64,11 +64,11 @@ TEST_F(ReadBufferTest, Next)
     // one block
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
+        ASSERT_EQ(_capacity, size);
         ASSERT_EQ(size, is->_last_bytes);
         ASSERT_STREQ(_block, static_cast<const char*>(data));
         ASSERT_EQ(size, is->ByteCount());
@@ -81,7 +81,7 @@ TEST_F(ReadBufferTest, Next)
     {
         std::vector<char*> blocks;
         int gap = 2; // gap at head and tail
-        int buf_handle_size = _block_size - gap * 2;
+        int buf_handle_size = _capacity - gap * 2;
 
         ReadBufferPtr is(new ReadBuffer());
         int rb_size = 0;
@@ -90,7 +90,7 @@ TEST_F(ReadBufferTest, Next)
         {
             char* block = static_cast<char*>(TranBufPool::malloc());
             ASSERT_TRUE(block != NULL);
-            rand_str(block, _block_size);
+            rand_str(block, _capacity);
             blocks.push_back(block);
             is->Append(BufHandle(block, buf_handle_size, gap));
             rb_size += buf_handle_size;
@@ -128,21 +128,21 @@ TEST_F(ReadBufferTest, BackUp)
     // backup 0
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size * 2, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity * 2, is->TotalCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, size);
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         is->BackUp(0);
         ASSERT_EQ(0, is->_last_bytes);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
-        ASSERT_EQ(_block_size * 2, is->ByteCount());
+        ASSERT_EQ(_capacity, size);
+        ASSERT_EQ(_capacity * 2, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -150,21 +150,21 @@ TEST_F(ReadBufferTest, BackUp)
     // backup part
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, size);
+        ASSERT_EQ(_capacity, is->ByteCount());
 
-        int count = _block_size / 2 + 1;
+        int count = _capacity / 2 + 1;
         is->BackUp(count);
         ASSERT_EQ(0, is->_last_bytes);
-        ASSERT_EQ(_block_size - count, is->ByteCount());
+        ASSERT_EQ(_capacity - count, is->ByteCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
         ASSERT_EQ(count, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -172,20 +172,20 @@ TEST_F(ReadBufferTest, BackUp)
     // backup all
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, size);
+        ASSERT_EQ(_capacity, is->ByteCount());
 
-        is->BackUp(_block_size);
+        is->BackUp(_capacity);
         ASSERT_EQ(0, is->_last_bytes);
         ASSERT_EQ(0, is->ByteCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, size);
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -199,8 +199,8 @@ TEST_F(ReadBufferTest, Skip)
     // skip 0
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
         ASSERT_TRUE(is->Skip(0));
         ASSERT_EQ(0, is->_last_bytes);
@@ -211,17 +211,17 @@ TEST_F(ReadBufferTest, Skip)
     // skip inside block
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
-        int count = _block_size / 2 + 1;
+        int count = _capacity / 2 + 1;
         ASSERT_TRUE(is->Skip(count));
         ASSERT_EQ(0, is->_last_bytes);
         ASSERT_EQ(count, is->ByteCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size - count, size);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity - count, size);
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -229,23 +229,23 @@ TEST_F(ReadBufferTest, Skip)
     // skip cross block
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        is->Append(BufHandle(_block, _block_size, 0));
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size * 3, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        is->Append(BufHandle(_block, _capacity, 0));
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity * 3, is->TotalCount());
 
-        int count = _block_size / 2 + 1;
+        int count = _capacity / 2 + 1;
         ASSERT_TRUE(is->Skip(count));
         ASSERT_EQ(0, is->_last_bytes);
         ASSERT_EQ(count, is->ByteCount());
 
-        ASSERT_TRUE(is->Skip(_block_size * 2));
+        ASSERT_TRUE(is->Skip(_capacity * 2));
         ASSERT_EQ(0, is->_last_bytes);
-        ASSERT_EQ(count + _block_size * 2, is->ByteCount());
+        ASSERT_EQ(count + _capacity * 2, is->ByteCount());
 
         ASSERT_TRUE(is->Next(&data, &size));
-        ASSERT_EQ(_block_size - count, size);
-        ASSERT_EQ(_block_size * 3, is->ByteCount());
+        ASSERT_EQ(_capacity - count, size);
+        ASSERT_EQ(_capacity * 3, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -253,12 +253,12 @@ TEST_F(ReadBufferTest, Skip)
     // skip to the end
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
-        ASSERT_TRUE(is->Skip(_block_size));
+        ASSERT_TRUE(is->Skip(_capacity));
         ASSERT_EQ(0, is->_last_bytes);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -266,12 +266,12 @@ TEST_F(ReadBufferTest, Skip)
     // skip over end
     {
         ReadBufferPtr is(new ReadBuffer());
-        is->Append(BufHandle(_block, _block_size, 0));
-        ASSERT_EQ(_block_size, is->TotalCount());
+        is->Append(BufHandle(_block, _capacity, 0));
+        ASSERT_EQ(_capacity, is->TotalCount());
 
-        ASSERT_FALSE(is->Skip(_block_size + 1));
+        ASSERT_FALSE(is->Skip(_capacity + 1));
         ASSERT_EQ(0, is->_last_bytes);
-        ASSERT_EQ(_block_size, is->ByteCount());
+        ASSERT_EQ(_capacity, is->ByteCount());
 
         ASSERT_FALSE(is->Next(&data, &size));
     }
@@ -283,16 +283,16 @@ public:
     WriteBufferTest() {}
     virtual ~WriteBufferTest() {}
     virtual void SetUp() {
-        _block_size = TranBufPool::block_size();
         _block = static_cast<char*>(TranBufPool::malloc());
+        _capacity = TranBufPool::capacity(_block);
         ASSERT_TRUE(_block != NULL);
-        rand_str(_block, _block_size);
+        rand_str(_block, _capacity);
     }
     virtual void TearDown() {
         TranBufPool::free(_block);
     }
 
-    int _block_size;
+    int _capacity;
     char* _block;
 };
 
@@ -315,12 +315,12 @@ TEST_F(WriteBufferTest, Next)
         WriteBufferPtr os(new WriteBuffer());
 
         ASSERT_TRUE(os->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
+        ASSERT_EQ(_capacity, size);
         ASSERT_EQ(size, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
-        ASSERT_EQ(_block_size, os->_last_bytes);
+        ASSERT_EQ(_capacity, os->_last_bytes);
     }
 }
 
@@ -334,16 +334,16 @@ TEST_F(WriteBufferTest, BackUp)
         WriteBufferPtr os(new WriteBuffer());
 
         ASSERT_TRUE(os->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
+        ASSERT_EQ(_capacity, size);
         ASSERT_EQ(size, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
 
         os->BackUp(0);
         ASSERT_EQ(0, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
     }
 
@@ -353,18 +353,18 @@ TEST_F(WriteBufferTest, BackUp)
 
         ASSERT_TRUE(os->Next(&data, &size));
 
-        int count = _block_size / 2 + 1;
+        int count = _capacity / 2 + 1;
         os->BackUp(count);
         ASSERT_EQ(0, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size - count, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity - count, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
 
         ASSERT_TRUE(os->Next(&data, &size));
         ASSERT_EQ(count, size);
         ASSERT_EQ(size, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
     }
 
@@ -374,18 +374,18 @@ TEST_F(WriteBufferTest, BackUp)
 
         ASSERT_TRUE(os->Next(&data, &size));
 
-        int count = _block_size;
+        int count = _capacity;
         os->BackUp(count);
         ASSERT_EQ(0, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
         ASSERT_EQ(0, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
 
         ASSERT_TRUE(os->Next(&data, &size));
-        ASSERT_EQ(_block_size, size);
+        ASSERT_EQ(_capacity, size);
         ASSERT_EQ(size, os->_last_bytes);
-        ASSERT_EQ(_block_size, os->TotalCapacity());
-        ASSERT_EQ(_block_size, os->ByteCount());
+        ASSERT_EQ(_capacity, os->TotalCapacity());
+        ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
     }
 }
@@ -400,25 +400,30 @@ TEST_F(WriteBufferTest, Reserve)
     }
     {
         WriteBufferPtr os(new WriteBuffer());
-        ASSERT_EQ(0, os->Reserve(40));
-        ASSERT_EQ(40, os->ByteCount());
+        ASSERT_EQ(0, os->Reserve(_capacity + 10));
+        ASSERT_EQ(_capacity + 10, os->ByteCount());
         ASSERT_EQ(2u, os->_buf_list.size());
     }
     {
         WriteBufferPtr os(new WriteBuffer());
         ASSERT_EQ(0, os->Reserve(10));
-        ASSERT_EQ(10, os->Reserve(40));
-        ASSERT_EQ(50, os->ByteCount());
+        ASSERT_EQ(10, os->Reserve(_capacity));
+        ASSERT_EQ(_capacity + 10, os->ByteCount());
         ASSERT_EQ(2u, os->_buf_list.size());
     }
     {
         WriteBufferPtr os(new WriteBuffer());
-        ASSERT_EQ(0, os->Reserve(32));
-        ASSERT_EQ(32, os->ByteCount());
-        ASSERT_EQ(32, os->Reserve(32));
-        ASSERT_EQ(64, os->ByteCount());
-        ASSERT_EQ(64, os->Reserve(32));
-        ASSERT_EQ(96, os->ByteCount());
+        ASSERT_EQ(0, os->Reserve(_capacity));
+        ASSERT_EQ(_capacity, os->ByteCount());
+        ASSERT_EQ(1u, os->_buf_list.size());
+        ASSERT_EQ(_capacity, os->Reserve(_capacity));
+        ASSERT_EQ(_capacity * 2, os->ByteCount());
+        ASSERT_EQ(2u, os->_buf_list.size());
+        ASSERT_EQ(_capacity * 2, os->Reserve(_capacity));
+        ASSERT_EQ(_capacity * 3, os->ByteCount());
+        ASSERT_EQ(2u, os->_buf_list.size());
+        ASSERT_EQ(_capacity * 3, os->Reserve(_capacity));
+        ASSERT_EQ(_capacity * 4, os->ByteCount());
         ASSERT_EQ(3u, os->_buf_list.size());
     }
 }
@@ -444,7 +449,10 @@ public:
     PBSerDeserTest() {}
     virtual ~PBSerDeserTest() {}
     virtual void SetUp() {
-        _block_size = TranBufPool::block_size();
+        _block = static_cast<char*>(TranBufPool::malloc());
+        _capacity = TranBufPool::capacity(_block);
+        ASSERT_TRUE(_block != NULL);
+
         std::string str(5000, 'x');
         _test_data.set_v1(12);
         _test_data.set_v2(34);
@@ -453,9 +461,11 @@ public:
         _test_data.set_v5("hello");
     }
     virtual void TearDown() {
+        TranBufPool::free(_block);
     }
 
-    int _block_size;
+    int _capacity;
+    char* _block;
     ::sofa::pbrpc::test::TestData _test_data;
 };
 

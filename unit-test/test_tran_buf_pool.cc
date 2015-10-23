@@ -4,7 +4,7 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE 1024
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (64u)
 
 #include <gtest/gtest.h>
 #include <sofa/pbrpc/tran_buf_pool.h>
@@ -15,17 +15,15 @@ class TranBufPoolTest : public ::testing::Test {};
 
 TEST_F(TranBufPoolTest, malloc_free_test)
 {
-    ASSERT_EQ(1024, TranBufPool::block_size());
-
     void* data = TranBufPool::malloc();
     ASSERT_TRUE(NULL != data);
+    ASSERT_EQ(1024, TranBufPool::block_size(data));
+    ASSERT_EQ(1024 - sizeof(int) * 2, TranBufPool::capacity(data));
     TranBufPool::free(data);
 }
 
 TEST_F(TranBufPoolTest, add_ref_test)
 {
-    ASSERT_EQ(1024, TranBufPool::block_size());
-
     void* data = TranBufPool::malloc();
     ASSERT_TRUE(NULL != data);
     TranBufPool::add_ref(data);
