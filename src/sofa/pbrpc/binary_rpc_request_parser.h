@@ -29,6 +29,8 @@ public:
 
     virtual RpcRequestPtr GetRequest();
 
+    virtual int CurrentBlockCount();
+
 private:
     enum ParseState
     {

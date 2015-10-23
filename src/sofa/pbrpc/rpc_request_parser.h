@@ -50,6 +50,9 @@ public:
     //   * Parse() returns 1
     virtual RpcRequestPtr GetRequest() = 0;
 
+    // Get received block count of current request.
+    virtual int CurrentBlockCount() = 0;
+
 public:
     // Get all registered parsers.
     static void RegisteredParsers(std::vector<RpcRequestParserPtr>* parsers);

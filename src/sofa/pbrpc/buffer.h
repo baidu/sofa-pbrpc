@@ -50,6 +50,9 @@ public:
     // Get the block count occupied by the buffer.
     int BlockCount() const;
 
+    // Get the total block size occupied by the buffer.
+    int64 TotalBlockSize() const;
+
     // Trans buffer to string.
     std::string ToString() const;
 
@@ -61,6 +64,7 @@ public:
 
 private:
     BufHandleList _buf_list;
+    int64 _total_block_size; // total block size in the buffer
     int64 _total_bytes; // total bytes in the buffer
     BufHandleListIterator _cur_it;
     int _cur_pos;
@@ -81,6 +85,9 @@ public:
 
     // Get the block count occupied by the buffer.
     int BlockCount() const;
+
+    // Get the total block size occupied by the buffer.
+    int64 TotalBlockSize() const;
 
     // Swap out data from this output stream and append to the input stream "is".
     // The "is" should not be null.
@@ -116,7 +123,8 @@ private:
 
 private:
     BufHandleList _buf_list;
-    int64 _total_capacity;
+    int64 _total_block_size; // total block size in the buffer
+    int64 _total_capacity; // total capacity in the buffer
     int _last_bytes; // last write bytes
     int64 _write_bytes; // total write bytes
 

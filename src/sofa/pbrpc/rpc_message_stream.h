@@ -7,6 +7,7 @@
 #ifndef _SOFA_PBRPC_RPC_MESSAGE_STREAM_H_
 #define _SOFA_PBRPC_RPC_MESSAGE_STREAM_H_
 
+#include <algorithm>
 #include <deque>
 
 #include <sofa/pbrpc/rpc_byte_stream.h>
@@ -20,18 +21,21 @@ namespace sofa {
 namespace pbrpc {
 
 // The "SendCookie" type should has default constructor, and
-// should be copyable. 
+// should be copyable.
 template <typename SendCookie>
 class RpcMessageStream : public RpcByteStream
 {
 public:
-    enum RoleType {
+    enum RoleType
+    {
         ROLE_TYPE_SERVER = 0,
         ROLE_TYPE_CLIENT = 1,
     };
 
 public:
-    RpcMessageStream(RoleType role_type, IOService& io_service, const RpcEndpoint& endpoint)
+    RpcMessageStream(RoleType role_type,
+            IOService& io_service,
+            const RpcEndpoint& endpoint)
         : RpcByteStream(io_service, endpoint)
         , _role_type(role_type)
         , _pending_message_count(0)
@@ -118,7 +122,7 @@ public:
     }
 
     // Get the current count of messages in the pending queue.
-    int pending_message_count() const
+    int64 pending_message_count() const
     {
         return _pending_message_count + _swapped_message_count;
     }
@@ -178,12 +182,12 @@ protected:
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
-    // Callback function when send message succeed.
+    // Hook function when send message succeed.
     virtual void on_sent(
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
-    // Callback function when send message failed.
+    // Hook function when send message failed.
     virtual void on_send_failed(
             RpcErrorCode error_code,
             const ReadBufferPtr& message,
@@ -243,7 +247,7 @@ private:
         _total_received_size += bytes_transferred;
 
         std::deque<ReceivedItem> received_messages;
-        if (!split_and_process_message(_receiving_data, 
+        if (!split_and_process_message(_receiving_data,
                     static_cast<int>(bytes_transferred), &received_messages))
         {
             close("broken stream");
@@ -361,7 +365,7 @@ private:
         _pending_calls.push_back(PendingItem(message, cookie));
         ++_pending_message_count;
         _pending_data_size += message->TotalCount();
-        _pending_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _pending_buffer_size += message->TotalBlockSize();
     }
 
     // Insert an item into front of the pending queue.
@@ -376,7 +380,7 @@ private:
         _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
-        _swapped_buffer_size += message->BlockCount() * TranBufPool::block_size();
+        _swapped_buffer_size += message->TotalBlockSize();
     }
 
     // Get an item from the pending queue.
@@ -413,7 +417,7 @@ private:
             // update stats
             --_swapped_message_count;
             _swapped_data_size -= (*message)->TotalCount();
-            _swapped_buffer_size -= (*message)->BlockCount() * TranBufPool::block_size();
+            _swapped_buffer_size -= (*message)->TotalBlockSize();
             return true;
         }
 
@@ -446,7 +450,7 @@ private:
         }
 
         if (_role_type == ROLE_TYPE_SERVER
-                && _pending_buffer_size > _max_pending_buffer_size)
+                && pending_buffer_size() > _max_pending_buffer_size)
         {
             // sending buffer full, should suspend receiving to wait
             return false;
@@ -458,7 +462,7 @@ private:
         {
             SCHECK(_receiving_data != NULL);
             SCHECK(_receiving_size > 0);
-            if((_read_quota_token = _flow_controller->acquire_read_quota(_receiving_size)) <= 0)
+            if ((_read_quota_token = _flow_controller->acquire_read_quota(_receiving_size)) <= 0)
             {
                 // no network quota
                 atomic_comp_swap(&_receive_token, TOKEN_FREE, TOKEN_LOCK);
@@ -508,7 +512,7 @@ private:
 
                     atomic_comp_swap(&_send_token, TOKEN_FREE, TOKEN_LOCK);
                 }
-                else if ((_write_quota_token =_flow_controller->acquire_write_quota(
+                else if ((_write_quota_token = _flow_controller->acquire_write_quota(
                                 _sending_message->TotalCount())) <= 0)
                 {
                     // no network quota
@@ -673,7 +677,7 @@ private:
         _sending_size = 0;
     }
 
-    // Reset temp variables for receiving message.
+    // Clear temp variables for receiving message.
     void reset_receiving_env()
     {
         _receiving_message.reset(new ReadBuffer());
@@ -692,7 +696,9 @@ private:
             _tran_buf = NULL;
         }
 
-        _tran_buf = reinterpret_cast<char*>(TranBufPool::malloc());
+        _tran_buf = reinterpret_cast<char*>(TranBufPool::malloc(std::min(
+                        SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR,
+                        _receiving_message->BlockCount())));
         if(_tran_buf == NULL)
         {
 #if defined( LOG )
@@ -705,7 +711,7 @@ private:
             return false;
         }
         _receiving_data = reinterpret_cast<char*>(_tran_buf);
-        _receiving_size = TranBufPool::block_size();
+        _receiving_size = TranBufPool::capacity(_tran_buf);
         return true;
     }
 
@@ -750,7 +756,7 @@ private:
     // flow control
     FlowControllerPtr _flow_controller;
     int64 _max_pending_buffer_size;
-    volatile int32 _read_quota_token;  // <=0 means no quota
+    volatile int32 _read_quota_token; // <=0 means no quota
     volatile int32 _write_quota_token; // <=0 means no quota
 
     // statistics

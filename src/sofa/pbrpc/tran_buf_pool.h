@@ -9,39 +9,63 @@
 
 #include <sofa/pbrpc/common_internal.h>
 
-#ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (1024u - sizeof(RefCountType))
+#ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE
+// block_base_size = 1K
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE (1024u)
+#endif
+
+#ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR
+// max_block_size = 1024<<5 = 32K
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR 5
 #endif
 
 namespace sofa {
 namespace pbrpc {
 
 // Reference counted tran buf pool.
+//
+//   Block = BlockSize(int) + RefCount(int) + Data(char[capacity])
+//
 // Thread safe.
 class TranBufPool
 {
 public:
-    typedef int RefCountType;
-
-    // Get the size of single block.
-    inline static int block_size() 
-    {
-        return static_cast<int>(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE);
-    }
-
     // Allocate a block.  Return NULL if failed.
+    //
+    //   block_size = SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE << factor
     //
     // Postconditions:
     // * If succeed, the reference count of the block is equal to 1.
-    inline static void * malloc()
+    inline static void * malloc(int factor = 0)
     {
-        void * p = ::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE + sizeof(RefCountType));
+        void * p = ::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE << factor);
         if (p != NULL)
         {
-            *(reinterpret_cast<RefCountType*>(p)) = 1;
-            p = reinterpret_cast<RefCountType*>(p) + 1;
+            *(reinterpret_cast<int*>(p)) = SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE << factor;
+            *(reinterpret_cast<int*>(p) + 1) = 1;
+            p = reinterpret_cast<int*>(p) + 2;
         }
         return p;
+    }
+
+    // Return block size pointed by "p", including the hidden header.
+    //
+    // Preconditions:
+    // * The block pointed by "p" was allocated by this pool and is in use currently.
+    inline static int block_size(void * p)
+    {
+        return *(reinterpret_cast<int*>(p) - 2);
+    }
+
+    // Return capacity size pointed by "p", not including the hidden header.
+    //
+    //   capacity = block_size - sizeof(int) * 2
+    //
+    // Preconditions:
+    // * The block pointed by "p" was allocated by this pool and is in use currently.
+    inline static int capacity(void * p)
+    {
+        return *(reinterpret_cast<int*>(p) - 2) - sizeof(int) * 2;
     }
 
     // Increase the reference count of the block.
@@ -50,7 +74,7 @@ public:
     // * The block pointed by "p" was allocated by this pool and is in use currently.
     inline static void add_ref(void * p)
     {
-        sofa::pbrpc::atomic_inc(reinterpret_cast<RefCountType*>(p) - 1);
+        sofa::pbrpc::atomic_inc(reinterpret_cast<int*>(p) - 1);
     }
 
     // Decrease the reference count of the block.  If the reference count equals
@@ -60,9 +84,9 @@ public:
     // * The block pointed by "p" was allocated by this pool and is in use currently.
     inline static void free(void * p)
     {
-        if (sofa::pbrpc::atomic_dec_ret_old(reinterpret_cast<RefCountType*>(p) - 1) == 1)
+        if (sofa::pbrpc::atomic_dec_ret_old(reinterpret_cast<int*>(p) - 1) == 1)
         {
-            ::free(reinterpret_cast<RefCountType*>(p) - 1);
+            ::free(reinterpret_cast<int*>(p) - 2);
         }
     }
 }; // class TranBufPool

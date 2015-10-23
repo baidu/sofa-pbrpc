@@ -4,6 +4,8 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
+#include <algorithm>
+
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/tran_buf_pool.h>
 
@@ -11,7 +13,8 @@ namespace sofa {
 namespace pbrpc {
 
 ReadBuffer::ReadBuffer()
-    : _total_bytes(0)
+    : _total_block_size(0)
+    , _total_bytes(0)
     , _cur_it(_buf_list.begin())
     , _cur_pos(0)
     , _last_bytes(0)
@@ -33,6 +36,7 @@ void ReadBuffer::Append(const BufHandle& buf_handle)
     SCHECK_GT(buf_handle.size, 0);
     _buf_list.push_back(buf_handle);
     TranBufPool::add_ref(buf_handle.data);
+    _total_block_size += TranBufPool::block_size(buf_handle.data);
     _total_bytes += buf_handle.size;
     _cur_it = _buf_list.begin();
 }
@@ -46,6 +50,7 @@ void ReadBuffer::Append(const ReadBuffer* read_buffer)
         _buf_list.push_back(*it);
         TranBufPool::add_ref(it->data);
     }
+    _total_block_size += read_buffer->_total_block_size;
     _total_bytes += read_buffer->_total_bytes;
     _cur_it = _buf_list.begin();
 }
@@ -58,6 +63,11 @@ int64 ReadBuffer::TotalCount() const
 int ReadBuffer::BlockCount() const
 {
     return _buf_list.size();
+}
+
+int64 ReadBuffer::TotalBlockSize() const
+{
+    return _total_block_size;
 }
 
 std::string ReadBuffer::ToString() const
@@ -133,7 +143,8 @@ int64 ReadBuffer::ByteCount() const
 }
 
 WriteBuffer::WriteBuffer()
-    : _total_capacity(0)
+    : _total_block_size(0)
+    , _total_capacity(0)
     , _last_bytes(0)
     , _write_bytes(0)
 {}
@@ -158,6 +169,11 @@ int WriteBuffer::BlockCount() const
     return _buf_list.size();
 }
 
+int64 WriteBuffer::TotalBlockSize() const
+{
+    return _total_block_size;
+}
+
 void WriteBuffer::SwapOut(ReadBuffer* is)
 {
     while (!_buf_list.empty())
@@ -171,6 +187,7 @@ void WriteBuffer::SwapOut(ReadBuffer* is)
         TranBufPool::free(buf_handle.data);
         _buf_list.pop_front();
     }
+    _total_block_size = 0;
     _total_capacity = 0;
     _last_bytes = 0;
     _write_bytes = 0;
@@ -280,10 +297,14 @@ int64 WriteBuffer::ByteCount() const
 
 bool WriteBuffer::Extend()
 {
-    char* block = static_cast<char*>(TranBufPool::malloc());
+    // incrementally extend block
+    char* block = static_cast<char*>(TranBufPool::malloc(std::min(
+                    SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR,
+                    (int)_buf_list.size())));
     if (block == NULL) return false;
-    _buf_list.push_back(BufHandle(block, TranBufPool::block_size()));
-    _total_capacity += TranBufPool::block_size();
+    _buf_list.push_back(BufHandle(block, TranBufPool::capacity(block)));
+    _total_block_size += TranBufPool::block_size(block);
+    _total_capacity += TranBufPool::capacity(block);
     return true;
 }
 

@@ -118,6 +118,11 @@ RpcRequestPtr BinaryRpcRequestParser::GetRequest()
     return _req;
 }
 
+int BinaryRpcRequestParser::CurrentBlockCount()
+{
+    return _req->_req_body->BlockCount();
+}
+
 } // namespace pbrpc
 } // namespace sofa
 
