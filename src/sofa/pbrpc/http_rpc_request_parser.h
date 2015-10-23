@@ -29,8 +29,6 @@ public:
 
     virtual RpcRequestPtr GetRequest();
 
-    virtual int CurrentBlockCount();
-
 private:
     // HTTP state machine based parser.
     //

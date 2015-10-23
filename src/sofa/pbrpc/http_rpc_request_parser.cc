@@ -115,11 +115,6 @@ RpcRequestPtr HTTPRpcRequestParser::GetRequest()
     return _req;
 }
 
-int HTTPRpcRequestParser::CurrentBlockCount()
-{
-    return _req->_req_body->BlockCount();
-}
-
 int HTTPRpcRequestParser::ParseInternal(char c, std::string& err)
 {
     switch (_state)
