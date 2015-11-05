@@ -64,6 +64,10 @@ private:
             const RpcServerStreamWPtr& server_stream,
             const std::string& error);
 
+    static bool RenderResponse(
+            google::protobuf::io::ZeroCopyOutputStream* output,
+            const std::string& response);
+
     static bool RenderJsonResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& json);
@@ -71,6 +75,10 @@ private:
     static bool RenderHtmlResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& html);
+
+    static bool RenderProtobufResponse(
+            google::protobuf::io::ZeroCopyOutputStream* output,
+            const google::protobuf::Message* response);
 
     static rapidjson::Document* ParseJson(
             const char* str,
@@ -106,7 +114,8 @@ private:
     enum Type
     {
         GET = 0,
-        POST = 1
+        POST = 1,
+        POST_PB = 2
     };
     Type                               _type;
     std::string                        _path;

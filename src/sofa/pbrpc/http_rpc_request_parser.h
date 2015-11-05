@@ -56,6 +56,9 @@ private:
     std::string _header_value; // currrent parsing header value
     int64 _content_length; // body content length
     HTTPRpcRequestPtr _req;
+    static const std::string CONTENT_LENGTH;
+    static const std::string ACCEPT;
+    static const std::string ACCEPT_PROTOBUF;
 }; // class HTTPRpcRequestParser
 
 } // namespace pbrpc

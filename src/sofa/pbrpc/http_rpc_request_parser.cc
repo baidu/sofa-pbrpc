@@ -9,6 +9,10 @@
 namespace sofa {
 namespace pbrpc {
 
+const std::string HTTPRpcRequestParser::CONTENT_LENGTH = "Content-Length";
+const std::string HTTPRpcRequestParser::ACCEPT = "Accept";
+const std::string HTTPRpcRequestParser::ACCEPT_PROTOBUF = "application/protobuf";
+
 HTTPRpcRequestParser::HTTPRpcRequestParser() :
     _state(PS_METHOD),
     _content_length(0),
@@ -199,7 +203,7 @@ int HTTPRpcRequestParser::ParseInternal(char c, std::string& err)
         if (c == '\n')
         {
             std::map<std::string, std::string>::const_iterator it =
-                _req->_headers.find("Content-Length");
+                _req->_headers.find(CONTENT_LENGTH);
             if (it != _req->_headers.end())
             {
                 char* endptr = NULL;
@@ -210,6 +214,16 @@ int HTTPRpcRequestParser::ParseInternal(char c, std::string& err)
                     return -1;
                 }
             }
+
+            it = _req->_headers.find(ACCEPT);
+            if (it != _req->_headers.end())
+            {
+                if (it->second == ACCEPT_PROTOBUF)
+                {
+                    _req->_type = HTTPRpcRequest::POST_PB;
+                }
+            }
+
             _state = PS_BODY;
             return 1;
         }
