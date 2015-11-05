@@ -64,10 +64,6 @@ private:
             const RpcServerStreamWPtr& server_stream,
             const std::string& error);
 
-    static bool RenderResponse(
-            google::protobuf::io::ZeroCopyOutputStream* output,
-            const std::string& response);
-
     static bool RenderJsonResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
             const std::string& json);
