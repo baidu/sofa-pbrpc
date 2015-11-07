@@ -53,5 +53,5 @@ For sample codes, please refer to './sample' and the wiki.
 For performace details, please refer to the wiki.
 
 ### Support
-openps@baidu.com
+opensearch@baidu.com
 
