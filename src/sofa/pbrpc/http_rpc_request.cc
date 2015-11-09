@@ -219,7 +219,7 @@ ReadBufferPtr HTTPRpcRequest::AssembleSucceedResponse(
     WriteBuffer write_buffer;
     if (_type == POST_PB)
     {
-        if (!RenderProtobufResponse(&write_buffer, response))
+        if (!RenderResponse(&write_buffer, PROTOBUF, response->SerializeAsString()))
         {
             err = "render protobuf response failed";
             return ReadBufferPtr();
@@ -229,7 +229,7 @@ ReadBufferPtr HTTPRpcRequest::AssembleSucceedResponse(
     {
         std::string json_str;
         pb2json(response, json_str);
-        if (!RenderJsonResponse(&write_buffer, json_str))
+        if (!RenderResponse(&write_buffer, JSON, json_str))
         {
             err = "render json response failed";
             return ReadBufferPtr();
@@ -251,7 +251,7 @@ ReadBufferPtr HTTPRpcRequest::AssembleFailedResponse(
         << StringUtils::replace_all(reason, "\"", "\\\"") << "\"";
 
     WriteBuffer write_buffer;
-    if (!RenderJsonResponse(&write_buffer, oss.str()))
+    if (!RenderResponse(&write_buffer, JSON, oss.str()))
     {
         err = "render json response failed";
         return ReadBufferPtr();
@@ -403,7 +403,7 @@ void HTTPRpcRequest::SendPage(
         const std::string& page)
 {
     WriteBuffer write_buffer;
-    if (!RenderHtmlResponse(&write_buffer, page))
+    if (!RenderResponse(&write_buffer, HTML, page))
     {
 #if defined( LOG )
         LOG(ERROR) << "SendPage(): " << RpcEndpointToString(_remote_endpoint)
@@ -433,51 +433,33 @@ void HTTPRpcRequest::SendError(
     SendPage(server_stream, oss.str());
 }
 
-bool HTTPRpcRequest::RenderJsonResponse(
+bool HTTPRpcRequest::RenderResponse(
         google::protobuf::io::ZeroCopyOutputStream* output,
-        const std::string& json)
+        const RenderType type,
+        const std::string& body)
 {
     std::ostringstream oss;
-    oss << json.size();
+    oss << body.size();
     google::protobuf::io::Printer printer(output, '$');
     printer.Print("HTTP/1.1 200 OK\r\n");
-    printer.Print("Content-Type: application/json\r\n");
+    switch (type)
+    {
+        case JSON:
+            printer.Print("Content-Type: application/json\r\n");
+            break;
+        case PROTOBUF:
+            printer.Print("Content-Type: application/protobuf\r\n");
+            break;
+        case HTML:
+            printer.Print("Content-Type: text/html; charset=UTF-8\r\n");
+            break;
+        default:
+            break;
+    }
     printer.Print("Access-Control-Allow-Origin: *\r\n");
     printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
     printer.Print("\r\n");
-    printer.PrintRaw(json);
-    return !printer.failed();
-}
-
-bool HTTPRpcRequest::RenderHtmlResponse(
-        google::protobuf::io::ZeroCopyOutputStream* output,
-        const std::string& html)
-{
-    std::ostringstream oss;
-    oss << html.size();
-    google::protobuf::io::Printer printer(output, '$');
-    printer.Print("HTTP/1.1 200 OK\r\n");
-    printer.Print("Content-Type: text/html; charset=UTF-8\r\n");
-    printer.Print("Access-Control-Allow-Origin: *\r\n");
-    printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
-    printer.Print("\r\n");
-    printer.PrintRaw(html);
-    return !printer.failed();
-}
-
-bool HTTPRpcRequest::RenderProtobufResponse(
-        google::protobuf::io::ZeroCopyOutputStream* output,
-        const google::protobuf::Message* response)
-{
-    std::ostringstream oss;
-    oss << response->ByteSize();
-    google::protobuf::io::Printer printer(output, '$');
-    printer.Print("HTTP/1.1 200 OK\r\n");
-    printer.Print("Content-Type: application/protobuf\r\n");
-    printer.Print("Access-Control-Allow-Origin: *\r\n");
-    printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
-    printer.Print("\r\n");
-    printer.PrintRaw(response->SerializeAsString());
+    printer.PrintRaw(body);
     return !printer.failed();
 }
 
