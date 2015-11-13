@@ -48,6 +48,14 @@ public:
             std::string& err);
 
 private:
+    enum RenderType
+    {
+        JSON = 1,
+        PROTOBUF = 2,
+        HTML = 3
+    };
+
+private:
     // Parse http path.
     // @return false if parse failed.
     bool ParsePath();
@@ -64,13 +72,10 @@ private:
             const RpcServerStreamWPtr& server_stream,
             const std::string& error);
 
-    static bool RenderJsonResponse(
+    static bool RenderResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
-            const std::string& json);
-
-    static bool RenderHtmlResponse(
-            google::protobuf::io::ZeroCopyOutputStream* output,
-            const std::string& html);
+            const RenderType type,
+            const std::string& body);
 
     static rapidjson::Document* ParseJson(
             const char* str,
@@ -106,7 +111,8 @@ private:
     enum Type
     {
         GET = 0,
-        POST = 1
+        POST = 1,
+        POST_PB = 2
     };
     Type                               _type;
     std::string                        _path;
