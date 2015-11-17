@@ -114,7 +114,6 @@ private:
     FlowControllerPtr _flow_controller;
 
     ThreadGroupImplPtr _maintain_thread_group;
-    ThreadGroupImplPtr _work_thread_group;
 
     std::string _server_address;
     RpcEndpoint _listen_endpoint;
@@ -126,6 +125,8 @@ private:
     StreamList _stream_list;
     FastLock _stream_list_lock;
     volatile int _live_stream_count;
+
+    IOServicePoolPtr _io_service_pool;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcServerImpl);
 }; // class RpcServerImpl

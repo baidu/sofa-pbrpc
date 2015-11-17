@@ -11,6 +11,7 @@
 #include <sofa/pbrpc/rpc_endpoint.h>
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/locks.h>
+#include <sofa/pbrpc/io_service_pool.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -28,11 +29,11 @@ public:
     static const int LISTEN_MAX_CONNECTIONS = 4096;
     
 public:
-    RpcListener(IOService& io_service, const RpcEndpoint& endpoint)
-        : _io_service(io_service)
+    RpcListener(IOServicePoolPtr& io_service_pool, const RpcEndpoint& endpoint)
+        : _io_service_pool(io_service_pool)
         , _endpoint(endpoint)
         , _endpoint_str(RpcEndpointToString(endpoint))
-        , _acceptor(io_service)
+        , _acceptor(io_service_pool->GetIOService())
         , _is_closed(true)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcListener);
@@ -176,7 +177,7 @@ public:
 private:
     void async_accept()
     {
-        RpcServerStreamPtr stream(new RpcServerStream(_io_service));
+        RpcServerStreamPtr stream(new RpcServerStream(_io_service_pool->GetIOService()));
 
         if (_create_callback)
             _create_callback(stream);
@@ -230,7 +231,7 @@ private:
     }
 
 private:
-    IOService& _io_service;
+    IOServicePoolPtr& _io_service_pool;
     RpcEndpoint _endpoint;
     std::string _endpoint_str;
     Callback _create_callback;

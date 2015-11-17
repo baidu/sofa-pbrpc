@@ -55,6 +55,8 @@ struct RpcServerOptions {
     // Default is NULL, means no destroy function.
     ExtClosure<void()>* work_thread_dest_func;
 
+    size_t io_service_pool_size;
+
     RpcServerOptions()
         : work_thread_num(8)
         , keep_alive_time(-1)
@@ -65,6 +67,7 @@ struct RpcServerOptions {
         , disable_list_service(false)
         , work_thread_init_func(NULL)
         , work_thread_dest_func(NULL)
+        , io_service_pool_size(1)
     {}
 };
 
