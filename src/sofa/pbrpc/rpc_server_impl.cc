@@ -183,11 +183,11 @@ void RpcServerImpl::Stop()
     _timer_worker->stop();
     _listener->close();
     StopStreams();
-    _io_service_pool->Stop();
 
     _timer_worker.reset();
     _listener.reset();
     ClearStreams();
+    _io_service_pool->Stop();
     _maintain_thread_group->stop();
 
     _io_service_pool.reset();
