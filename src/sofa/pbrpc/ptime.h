@@ -13,16 +13,23 @@
 #include <boost/date_time/local_time_adjustor.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
-#include <sofa/pbrpc/time_provider.h>
-
 namespace sofa {
 namespace pbrpc {
 
+typedef boost::posix_time::ptime PTime;
 typedef boost::posix_time::time_duration TimeDuration;
 
+inline TimeDuration time_duration_microseconds(int64_t);
 inline PTime ptime_now()
 {
-    return TimeProvider::Instance()->GetNow();
+    struct timespec ts = { 0, 0 };
+    clock_gettime(CLOCK_REALTIME, &ts);
+
+    time_t microsec = ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+    TimeDuration td = time_duration_microseconds(microsec);
+    PTime pt(boost::gregorian::date(1970, 1, 1));
+    pt += td;
+    return pt;
 }
 
 inline PTime ptime_infin()
