@@ -12,6 +12,7 @@
 #include <sofa/pbrpc/closure.h>
 #include <sofa/pbrpc/ptime.h>
 #include <sofa/pbrpc/compressed_stream.h>
+#include <sofa/pbrpc/io_service_pool.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -94,38 +95,38 @@ bool RpcServerImpl::Start(const std::string& server_address)
         _flow_controller.reset();
     }
 
-    _work_thread_group.reset(new ThreadGroupImpl(
-                _options.work_thread_num, "sofa_pbrpc_server_work_thread_group"));
-    _work_thread_group->set_init_func(_options.work_thread_init_func);
-    _work_thread_group->set_dest_func(_options.work_thread_dest_func);
-    if (!_work_thread_group->start())
+    _io_service_pool.reset(new IOServicePool(
+                _options.io_service_pool_size, _options.work_thread_num));
+    _io_service_pool->set_init_func(_options.work_thread_init_func);
+    _io_service_pool->set_dest_func(_options.work_thread_dest_func);
+    if (!_io_service_pool->Run())
     {
 #if defined( LOG )
-        LOG(ERROR) << "Start(): start work thread group failed";
+        LOG(ERROR) << "Start(): start io service pool failed";
 #else
-        SLOG(ERROR, "Start(): start work thread group failed");
+        SLOG(ERROR, "Start(): start io service pool failed");
 #endif
-        _work_thread_group.reset();
+        _io_service_pool.reset();
         _maintain_thread_group.reset();
         _flow_controller.reset();
         return false;
     }
 
     _server_address = server_address;
-    if (!ResolveAddress(_work_thread_group->io_service(), _server_address, &_listen_endpoint))
+    if (!ResolveAddress(_io_service_pool->GetIOService(), _server_address, &_listen_endpoint))
     {
 #if defined( LOG )
         LOG(ERROR) << "Start(): resolve server address failed: " << _server_address;
 #else
         SLOG(ERROR, "Start(): resolve server address failed: %s", _server_address.c_str());
 #endif
-        _work_thread_group.reset();
+        _io_service_pool.reset();
         _maintain_thread_group.reset();
         _flow_controller.reset();
         return false;
     }
 
-    _listener.reset(new RpcListener(_work_thread_group->io_service(), _listen_endpoint));
+    _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
     _listener->set_create_callback(boost::bind(
                 &RpcServerImpl::OnCreated, shared_from_this(), _1));
     _listener->set_accept_callback(boost::bind(
@@ -140,7 +141,7 @@ bool RpcServerImpl::Start(const std::string& server_address)
         SLOG(ERROR, "Start(): listen failed: %s", _server_address.c_str());
 #endif
         _listener.reset();
-        _work_thread_group.reset();
+        _io_service_pool.reset();
         _maintain_thread_group.reset();
         _flow_controller.reset();
         return false;
@@ -182,14 +183,14 @@ void RpcServerImpl::Stop()
     _timer_worker->stop();
     _listener->close();
     StopStreams();
-    _work_thread_group->stop();
 
     _timer_worker.reset();
     _listener.reset();
     ClearStreams();
+    _io_service_pool->Stop();
     _maintain_thread_group->stop();
 
-    _work_thread_group.reset();
+    _io_service_pool.reset();
     _maintain_thread_group.reset();
     _flow_controller.reset();
 
@@ -342,7 +343,7 @@ bool RpcServerImpl::RestartListen()
     _listener->close();
 
     // reset and restart listener
-    _listener.reset(new RpcListener(_work_thread_group->io_service(), _listen_endpoint));
+    _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
     _listener->set_create_callback(boost::bind(
                 &RpcServerImpl::OnCreated, shared_from_this(), _1));
     _listener->set_accept_callback(boost::bind(

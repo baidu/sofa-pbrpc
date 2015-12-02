@@ -51,7 +51,8 @@ TESTS = \
 	test_closure \
 	test_ext_closure \
 	test_thread_group \
-	test_timeout_manager
+	test_timeout_manager \
+	test_io_service_pool
 
 all: check_depends $(TESTS)
 
@@ -97,6 +98,9 @@ test_thread_group: test_thread_group.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_timeout_manager: test_timeout_manager.o libgtest.a
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
+
+test_io_service_pool: test_io_service_pool.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
