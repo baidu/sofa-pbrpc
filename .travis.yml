@@ -10,4 +10,9 @@ install:
     - git clone https://github.com/google/snappy
     - ( cd snappy && sh ./autogen.sh && ./configure && make -j2 && sudo make install )
     - sudo apt-get install zlib1g-dev
-script: make -j4 && make install
+    - git clone https://github.com/google/googletest.git
+script:
+    - make -j4
+    - make install
+    - make -C unit-test
+    - cd unit-test && ./run_test.sh
