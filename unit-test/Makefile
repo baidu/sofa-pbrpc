@@ -54,7 +54,7 @@ TESTS = \
 	test_timeout_manager \
 	test_io_service_pool
 
-all: check_depends $(TESTS)
+all: $(TESTS)
 
 .PHONY: check_depends clean
 
