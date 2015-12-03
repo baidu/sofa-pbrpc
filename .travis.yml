@@ -13,6 +13,5 @@ install:
     - git clone https://github.com/google/googletest.git
 script:
     - make -j4
-    - make install
     - make -C unit-test
     - cd unit-test && ./run_test.sh

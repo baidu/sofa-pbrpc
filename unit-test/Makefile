@@ -35,8 +35,7 @@ INCPATH=-I. -I../src -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -Dprivate=public $(INCPATH)
 
-LIBRARY=../libsofa-pbrpc.a $(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
+LDFLAGS += -L.. -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lsofa-pbrpc -lprotobuf -lsnappy -lpthread -lz
 
 PROTO_SRC=test_data.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
@@ -74,7 +73,7 @@ clean:
 rebuild: clean all
 
 test_common: test_common.o libgtest.a
-	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 test_atomic: test_atomic.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
