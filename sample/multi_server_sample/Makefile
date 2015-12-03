@@ -33,7 +33,12 @@ INCPATH=-I. -I$(SOFA_PBRPC)/include -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/incl
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS $(INCPATH)
 
 LIBRARY=$(SOFA_PBRPC)/lib/libsofa-pbrpc.a $(PROTOBUF_DIR)/lib/libprotobuf.a $(SNAPPY_DIR)/lib/libsnappy.a
-LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lrt -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+      LDFLAGS += -lrt
+endif
 
 PROTO_SRC=echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))

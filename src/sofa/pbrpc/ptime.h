@@ -22,10 +22,15 @@ typedef boost::posix_time::time_duration TimeDuration;
 inline TimeDuration time_duration_microseconds(int64_t);
 inline PTime ptime_now()
 {
+#ifdef __linux__
     struct timespec ts = { 0, 0 };
     clock_gettime(CLOCK_REALTIME, &ts);
-
     time_t microsec = ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+#else
+    struct timeval tv = { 0, 0 };
+    gettimeofday(&tv, NULL);
+    time_t microsec = tv.tv_sec * 1000000 + tv.tv_usec;
+#endif
     TimeDuration td = time_duration_microseconds(microsec);
     PTime pt(boost::gregorian::date(1970, 1, 1));
     pt += td;
