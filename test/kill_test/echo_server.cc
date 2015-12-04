@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     sofa::pbrpc::RpcServerOptions options;
     options.max_throughput_in = 30;
     options.max_throughput_out = 30;
-    options.keep_alive_time = 3;
+    options.keep_alive_time = 5;
     sofa::pbrpc::RpcServer rpc_server(options);
 
     // Start rpc server.
