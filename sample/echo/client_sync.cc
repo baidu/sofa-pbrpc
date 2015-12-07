@@ -7,17 +7,16 @@
 #include <sofa/pbrpc/pbrpc.h>
 #include "echo_service.pb.h"
 
+// Using global RpcClient object can help share resources such as threads and buffers.
+sofa::pbrpc::RpcClient g_rpc_client;
+
 int main()
 {
     SOFA_PBRPC_SET_LOG_LEVEL(NOTICE);
 
-    // Define an rpc client.
-    sofa::pbrpc::RpcClientOptions client_options;
-    sofa::pbrpc::RpcClient rpc_client(client_options);
-
     // Define an rpc channel.
     sofa::pbrpc::RpcChannelOptions channel_options;
-    sofa::pbrpc::RpcChannel rpc_channel(&rpc_client, "127.0.0.1:12321", channel_options);
+    sofa::pbrpc::RpcChannel rpc_channel(&g_rpc_client, "127.0.0.1:12321", channel_options);
 
     // Prepare parameters.
     sofa::pbrpc::RpcController* cntl = new sofa::pbrpc::RpcController();

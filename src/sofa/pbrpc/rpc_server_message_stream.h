@@ -223,6 +223,8 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
+        if (_status != STATUS_CONNECTED) return;
+
         if (error)
         {
             if (error != boost::asio::error::eof)
@@ -283,6 +285,8 @@ private:
             std::size_t bytes_transferred)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
+
+        if (_status != STATUS_CONNECTED) return;
 
         if (error)
         {
