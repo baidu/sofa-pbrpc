@@ -82,6 +82,16 @@ typedef sofa::pbrpc::shared_ptr<IOServicePool> IOServicePoolPtr;
 SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcByteStream);
 SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcListener);
 
+// Use for affecting global/static variables' construct/destruct order.
+inline void touch_boost_error_category()
+{
+    (void)boost::system::system_category();
+    (void)boost::system::generic_category();
+    (void)boost::asio::error::get_addrinfo_category();
+    (void)boost::asio::error::get_misc_category();
+    (void)boost::asio::error::get_netdb_category();
+}
+
 } // namespace pbrpc
 } // namespace sofa
 

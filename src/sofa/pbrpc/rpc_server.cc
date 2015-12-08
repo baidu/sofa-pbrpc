@@ -14,8 +14,9 @@ namespace sofa {
 namespace pbrpc {
 
 RpcServer::RpcServer(const RpcServerOptions& options, EventHandler* handler)
-    : _impl(new RpcServerImpl(options, handler))
 {
+    touch_boost_error_category();
+    _impl.reset(new RpcServerImpl(options, handler));
 }
 
 RpcServer::~RpcServer()

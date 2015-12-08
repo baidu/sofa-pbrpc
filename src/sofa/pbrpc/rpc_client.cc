@@ -11,8 +11,9 @@ namespace sofa {
 namespace pbrpc {
 
 RpcClient::RpcClient(const RpcClientOptions& options)
-    : _impl(new RpcClientImpl(options))
 {
+    touch_boost_error_category();
+    _impl.reset(new RpcClientImpl(options));
     _impl->Start();
 }
 
