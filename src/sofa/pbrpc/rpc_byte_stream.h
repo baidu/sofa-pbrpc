@@ -40,8 +40,8 @@ public:
         , _remote_endpoint(endpoint)
         , _ticks(0)
         , _last_rw_ticks(0)
-        , _status(STATUS_INIT)
         , _socket(io_service)
+        , _status(STATUS_INIT)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcByteStream);
         memset(_error_message, 0, sizeof(_error_message));
@@ -341,6 +341,9 @@ protected:
     volatile int64 _ticks;
     volatile int64 _last_rw_ticks;
 
+private:
+    tcp::socket _socket;
+
     enum {
         STATUS_INIT       = 0,
         STATUS_CONNECTING = 1,
@@ -348,9 +351,6 @@ protected:
         STATUS_CLOSED     = 3,
     };
     volatile int _status;
-
-private:
-    tcp::socket _socket;
 }; // class RpcByteStream
 
 } // namespace pbrpc

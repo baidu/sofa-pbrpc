@@ -224,7 +224,7 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        if (_status != STATUS_CONNECTED) return;
+        if (!is_connected()) return;
 
         if (error)
         {
@@ -288,7 +288,7 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        if (_status != STATUS_CONNECTED) return;
+        if (!is_connected()) return;
 
         if (error)
         {
