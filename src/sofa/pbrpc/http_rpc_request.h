@@ -107,6 +107,7 @@ private:
 
 private:
     friend class HTTPRpcRequestParser;
+    friend class WebService;
 
     enum Type
     {

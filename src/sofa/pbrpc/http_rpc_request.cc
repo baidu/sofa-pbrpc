@@ -17,6 +17,7 @@
 #include <sofa/pbrpc/rpc_server_impl.h>
 #include <sofa/pbrpc/pbjson.h>
 #include <sofa/pbrpc/string_utils.h>
+#include <sofa/pbrpc/web_service.h>
 
 #include <google/protobuf/io/printer.h>
 
@@ -104,7 +105,13 @@ void HTTPRpcRequest::ProcessRequest(
     std::string method_name;
     if (!ParseMethodFullName(_method, &service_name, &method_name))
     {
+        RpcServerImpl* server = service_pool->RpcServer();
+        WebServicePtr web_service = server->GetWebService();
         if (RoutePage(server_stream, service_pool))
+        {
+            return;
+        }
+        else if (web_service && web_service->Dispatch(server_stream, shared_from_this()))
         {
             return;
         }

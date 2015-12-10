@@ -13,6 +13,7 @@
 #include <sofa/pbrpc/ptime.h>
 #include <sofa/pbrpc/compressed_stream.h>
 #include <sofa/pbrpc/io_service_pool.h>
+#include <sofa/pbrpc/web_service.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -165,6 +166,11 @@ bool RpcServerImpl::Start(const std::string& server_address)
                     shared_from_this(), _service_pool, _options.disable_list_service));
     }
 
+    if (_options.web_service_method) {
+        _web_service.reset(new WebService());
+        _web_service->RegisterMethod(_options.web_service_method);
+    }
+
     _is_running = true;
 #if defined( LOG )
     LOG(INFO) << "Start(): rpc server started";
@@ -183,11 +189,11 @@ void RpcServerImpl::Stop()
     _timer_worker->stop();
     _listener->close();
     StopStreams();
+    _io_service_pool->Stop();
 
     _timer_worker.reset();
     _listener.reset();
     ClearStreams();
-    _io_service_pool->Stop();
     _maintain_thread_group->stop();
 
     _io_service_pool.reset();
@@ -564,6 +570,11 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
     }
 
     _last_maintain_ticks = now_ticks;
+}
+
+WebServicePtr RpcServerImpl::GetWebService()
+{
+    return _web_service;
 }
 
 } // namespace pbrpc

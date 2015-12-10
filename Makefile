@@ -43,7 +43,7 @@ PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/cl
 	src/sofa/pbrpc/thread_group.h src/sofa/pbrpc/timeout_manager.h src/sofa/pbrpc/string_utils.h \
 	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
 	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
-	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h \
+	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h src/sofa/pbrpc/http.h \
 	$(PROTO) $(PROTO_HEADER)
 
 #-----------------------------------------------
@@ -66,6 +66,7 @@ endif
 #-----------------------------------------------
 
 CXX=g++
+#CXX=/opt/compiler/gcc-4.8.2/bin/g++
 INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 

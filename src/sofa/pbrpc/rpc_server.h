@@ -18,6 +18,8 @@ namespace pbrpc {
 
 // Defined in other files.
 class RpcServerImpl;
+class HTTPRequest;
+class HTTPResponse;
 
 struct RpcServerOptions {
     int work_thread_num; // thread count for network handing and service processing, default 8.
@@ -54,6 +56,8 @@ struct RpcServerOptions {
     // This closure should be a permanent closure created and destroyed by user.
     // Default is NULL, means no destroy function.
     ExtClosure<void()>* work_thread_dest_func;
+
+    ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* web_service_method;
 
     size_t io_service_pool_size;
 

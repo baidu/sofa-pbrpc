@@ -58,6 +58,8 @@ public:
     // listening.  Return false if the server is not started, or fail to restart listening.
     bool RestartListen();
 
+    WebServicePtr GetWebService();
+
 private:
     void OnCreated(const RpcServerStreamPtr& stream);
 
@@ -127,6 +129,8 @@ private:
     volatile int _live_stream_count;
 
     IOServicePoolPtr _io_service_pool;
+
+    WebServicePtr _web_service;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcServerImpl);
 }; // class RpcServerImpl

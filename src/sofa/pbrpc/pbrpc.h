@@ -18,6 +18,7 @@
 #include <sofa/pbrpc/counter.h>
 #include <sofa/pbrpc/closure.h>
 #include <sofa/pbrpc/ext_closure.h>
+#include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/locks.h>
 #include <sofa/pbrpc/string_utils.h>
 #include <sofa/pbrpc/thread_group.h>
