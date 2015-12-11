@@ -57,9 +57,9 @@ struct RpcServerOptions {
     // Default is NULL, means no destroy function.
     ExtClosure<void()>* work_thread_dest_func;
 
-    ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* web_service_method;
-
     size_t io_service_pool_size;
+
+    ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* web_service_method;
 
     RpcServerOptions()
         : work_thread_num(8)
@@ -72,6 +72,7 @@ struct RpcServerOptions {
         , work_thread_init_func(NULL)
         , work_thread_dest_func(NULL)
         , io_service_pool_size(1)
+        , web_service_method(NULL)
     {}
 };
 

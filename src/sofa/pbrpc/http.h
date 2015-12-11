@@ -31,11 +31,14 @@ struct HTTPRequest
 
     std::string body;
 
+    std::string decoded_path;
+
     HTTPRequest() : type(GET)
                   , headers()
                   , query_params()
-                  , path("") 
-                  , body("")
+                  , path() 
+                  , body()
+                  , decoded_path()
     { }
 };
 
@@ -43,7 +46,7 @@ struct HTTPResponse
 {
     std::string html;
 
-    HTTPResponse() : html("")
+    HTTPResponse() : html()
     { }
 };
 

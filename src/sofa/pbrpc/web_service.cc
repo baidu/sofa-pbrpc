@@ -30,6 +30,7 @@ bool WebService::Dispatch(
     request.body = http_rpc_request->_req_body->ToString();
     request.headers = http_rpc_request->_headers;
     request.query_params = http_rpc_request->_query_params;
+    request.decoded_path = http_rpc_request->_decoded_path;
     HTTPResponse response;
     bool ret = false;
     if (_method)
