@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Copyright (c) 2015 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -50,4 +50,4 @@ struct HTTPResponse
 } // namespace pbrpc
 } // namespace sofa
 
-#endif
+#endif // _SOFA_PBRPC_HTTP_H_

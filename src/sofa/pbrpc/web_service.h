@@ -4,12 +4,11 @@
 //
 // Author: shichengyi@baidu.com (Shi Chengyi)
 
-#ifndef _SOFA_PBRPC_BINARY_WEB_SERVICE_H_
-#define _SOFA_PBRPC_BINARY_WEB_SERVICE_H_
+#ifndef _SOFA_PBRPC_WEB_SERVICE_H_
+#define _SOFA_PBRPC_WEB_SERVICE_H_
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/ext_closure.h>
-#include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/rpc_request.h>
 
 namespace sofa {
@@ -35,5 +34,4 @@ private:
 } // namespace pbrpc
 } // namespace sofa
 
-
-#endif
+#endif // _SOFA_PBRPC_WEB_SERVICE_H_

@@ -5,6 +5,7 @@
 // Author: shichengyi@baidu.com (Shi Chengyi)
 
 #include <sofa/pbrpc/web_service.h>
+#include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/http_rpc_request.h>
 #include <sofa/pbrpc/rpc_server_stream.h>
 
@@ -34,10 +35,13 @@ bool WebService::Dispatch(
     if (_method)
     {
         ret = _method->Run(request, response);
+        if (ret)
+        {
+            const_cast<HTTPRpcRequest*>(http_rpc_request)->SendPage(
+                server_stream, response.html);
+        }
     }
-    const_cast<HTTPRpcRequest*>(http_rpc_request)->SendPage(
-        server_stream, response.html);
-    return true;
+    return ret;
 }
 
 } // namespace pbrpc
