@@ -16,19 +16,77 @@ namespace pbrpc {
 
 class HTTPRequest;
 class HTTPResponse;
-typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* MethodType;
+typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 
 class WebService
 {
 public:
-    void RegisterMethod(MethodType method);
+    WebService(const ServicePoolWPtr& service_pool);
+    ~WebService();
 
-    bool Dispatch(
-        const RpcServerStreamWPtr& server_stream,
-        const RpcRequestPtr& rpc_request);
+    void Init();
+
+    void RegisterServlet(const std::string& path, Servlet servlet);
+
+    bool RoutePage(
+        const RpcRequestPtr& rpc_request, 
+        const RpcServerStreamWPtr& server_stream);
 
 private:
-   MethodType _method; 
+    Servlet FindServlet(const std::string& path);
+
+    bool DefaultHome(const HTTPRequest& request, HTTPResponse& response);
+
+    bool DefaultOptions(const HTTPRequest& request, HTTPResponse& response);
+
+    bool DefaultStatus(const HTTPRequest& request, HTTPResponse& response);
+
+    bool DefaultServices(const HTTPRequest& request, HTTPResponse& response);
+
+    bool DefaultService(const HTTPRequest& request, HTTPResponse& response);
+
+    static void PageHeader(std::ostream& out);
+    
+    static void PageFooter(std::ostream& out);
+
+    static void ServerBrief(std::ostream& out,
+                            const ServicePoolPtr& service_pool,
+                            const HTTPResponse& response);
+
+    static void ServerOptions(std::ostream& out,
+                              const ServicePoolPtr& service_pool);
+
+    static void ServerStatus(std::ostream& out,
+                             const ServicePoolPtr& service_pool);
+
+    static void ServiceList(std::ostream& out,
+                            const ServicePoolPtr& service_pool);
+
+    static void MethodList(std::ostream& out,
+                           ServiceBoard* svc_board);
+
+    static void ErrorPage(std::ostream& out, 
+                          const std::string& reason);
+
+    void ListServlet(std::ostream& out);
+
+private:
+    ServicePoolWPtr _service_pool;
+
+    static const uint64_t SERVLET_COUNT = 1000;
+    Servlet _cache[SERVLET_COUNT];
+
+    FastLock _servlet_map_lock;
+    typedef std::map<const std::string, Servlet> ServletMap;
+    ServletMap _servlet_map;
+
+    Servlet _default_home;
+    Servlet _default_options;
+    Servlet _default_status;
+    Servlet _default_services;
+    Servlet _default_service;
+
+    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(WebService);
 };
 
 } // namespace pbrpc

@@ -59,8 +59,6 @@ struct RpcServerOptions {
 
     size_t io_service_pool_size;
 
-    ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* web_service_method;
-
     RpcServerOptions()
         : work_thread_num(8)
         , keep_alive_time(-1)
@@ -72,10 +70,10 @@ struct RpcServerOptions {
         , work_thread_init_func(NULL)
         , work_thread_dest_func(NULL)
         , io_service_pool_size(1)
-        , web_service_method(NULL)
     {}
 };
 
+typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 class RpcServer
 {
 public:
@@ -169,6 +167,8 @@ public:
 
     // Return true if the server is listening on some address.
     bool IsListening();
+
+    bool RegisterWebServlet(const std::string& path, Servlet servlet);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const

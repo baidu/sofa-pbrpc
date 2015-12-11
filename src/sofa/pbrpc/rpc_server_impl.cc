@@ -33,6 +33,9 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,
 {
     _service_pool.reset(new ServicePool(this));
 
+    _web_service.reset(new WebService(_service_pool));
+    _web_service->Init();
+
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
     _slice_quota_in = _options.max_throughput_in == -1 ?
         -1 : std::max(0L, _options.max_throughput_in * 1024L * 1024L) / _slice_count;
@@ -71,6 +74,7 @@ RpcServerImpl::~RpcServerImpl()
     SOFA_PBRPC_FUNCTION_TRACE;
     Stop();
     _service_pool.reset();
+    _web_service.reset();
     if (_event_handler) delete _event_handler;
 }
 
@@ -164,11 +168,6 @@ bool RpcServerImpl::Start(const std::string& server_address)
     if (!_options.disable_builtin_services) {
         _service_pool->RegisterService(new sofa::pbrpc::builtin::BuiltinServiceImpl(
                     shared_from_this(), _service_pool, _options.disable_list_service));
-    }
-
-    if (_options.web_service_method) {
-        _web_service.reset(new WebService());
-        _web_service->RegisterMethod(_options.web_service_method);
     }
 
     _is_running = true;
@@ -575,6 +574,16 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
 WebServicePtr RpcServerImpl::GetWebService()
 {
     return _web_service;
+}
+
+bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet)
+{
+    if (!_web_service) 
+    {
+        return false;
+    }
+    _web_service->RegisterServlet(path, servlet);
+    return true;
 }
 
 } // namespace pbrpc

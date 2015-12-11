@@ -44,9 +44,21 @@ struct HTTPRequest
 
 struct HTTPResponse
 {
-    std::string html;
+    std::string content;
 
-    HTTPResponse() : html()
+    std::string host;
+
+    std::string ip;
+
+    uint32_t port;
+
+    std::string content_type;
+
+    HTTPResponse() : content()
+                   , host()
+                   , ip()
+                   , port(0)
+                   , content_type("text/html; charset=UTF-8")
     { }
 };
 

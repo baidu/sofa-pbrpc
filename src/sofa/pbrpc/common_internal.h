@@ -17,6 +17,7 @@
 #include <sofa/pbrpc/io_service.h>
 #include <sofa/pbrpc/locks.h>
 #include <sofa/pbrpc/ptime.h>
+#include <sofa/pbrpc/murmurhash.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -93,6 +94,11 @@ inline void touch_boost_error_category()
     (void)boost::asio::error::get_addrinfo_category();
     (void)boost::asio::error::get_misc_category();
     (void)boost::asio::error::get_netdb_category();
+}
+
+inline uint64 CacheIndex(const std::string& name, uint64_t cache_size)
+{
+    return murmurhash(name.c_str(), name.size()) % cache_size;
 }
 
 } // namespace pbrpc

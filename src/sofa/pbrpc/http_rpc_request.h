@@ -21,6 +21,8 @@ class HTTPRpcRequestParser;
 class HTTPRpcRequest;
 typedef sofa::pbrpc::shared_ptr<HTTPRpcRequest> HTTPRpcRequestPtr;
 
+class HTTPResponse;
+
 class HTTPRpcRequest : public RpcRequest
 {
 public:
@@ -60,50 +62,26 @@ private:
     // @return false if parse failed.
     bool ParsePath();
 
-    bool RoutePage(
+    void SendResponse(
             const RpcServerStreamWPtr& server_stream,
-            const ServicePoolPtr& service_pool);
-
-    void SendPage(
-            const RpcServerStreamWPtr& server_stream,
-            const std::string& page);
-
-    void SendError(
-            const RpcServerStreamWPtr& server_stream,
-            const std::string& error);
+            const HTTPResponse& response);
 
     static bool RenderResponse(
             google::protobuf::io::ZeroCopyOutputStream* output,
             const RenderType type,
             const std::string& body);
 
+    static bool RenderResponse(
+            google::protobuf::io::ZeroCopyOutputStream* output,
+            const HTTPResponse& response);
+
     static rapidjson::Document* ParseJson(
             const char* str,
             std::string& err);
 
-    static void PageHeader(std::ostream& out);
-
-    static void PageFooter(std::ostream& out);
-
-    void ServerBrief(
-            std::ostream& out,
+    void InnerProcess(
+            const RpcServerStreamWPtr& server_stream,
             const ServicePoolPtr& service_pool);
-
-    static void ServerOptions(
-            std::ostream& out,
-            const ServicePoolPtr& service_pool);
-
-    static void ServerStatus(
-            std::ostream& out,
-            const ServicePoolPtr& service_pool);
-
-    static void ServiceList(
-            std::ostream& out,
-            const ServicePoolPtr& service_pool);
-
-    static void MethodList(
-            std::ostream& out,
-            ServiceBoard* svc_board);
 
 private:
     friend class HTTPRpcRequestParser;

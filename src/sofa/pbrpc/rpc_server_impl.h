@@ -60,6 +60,8 @@ public:
 
     WebServicePtr GetWebService();
 
+    bool RegisterWebServlet(const std::string& path, Servlet servlet);
+
 private:
     void OnCreated(const RpcServerStreamPtr& stream);
 
