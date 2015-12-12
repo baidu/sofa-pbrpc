@@ -17,6 +17,7 @@
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/builtin_service.pb.h>
 #include <sofa/pbrpc/counter.h>
+#include <sofa/pbrpc/murmurhash.h>
 #include <sofa/pbrpc/ptime.h>
 
 namespace sofa {
@@ -312,7 +313,7 @@ public:
         _head = svc_board;
         ++_count;
         // add into cache
-        uint64 cache_index = CacheIndex(svc_name, SERVICE_CACHE_SLOT_COUNT);
+        uint64 cache_index = CacheIndex(svc_name);
         if (_cache[cache_index] == NULL) {
             _cache[cache_index] = svc_board;
         }
@@ -322,7 +323,7 @@ public:
     ServiceBoard* FindService(const std::string& svc_name)
     {
         // find in cache first
-        uint64 cache_index = CacheIndex(svc_name, SERVICE_CACHE_SLOT_COUNT);
+        uint64 cache_index = CacheIndex(svc_name);
         if (_cache[cache_index] != NULL
                 && _cache[cache_index]->ServiceName() == svc_name) {
             return _cache[cache_index];
@@ -398,6 +399,10 @@ public:
     }
 
 private:
+    uint64 CacheIndex(const std::string& name)
+    {
+        return murmurhash(name.c_str(), name.size()) % SERVICE_CACHE_SLOT_COUNT;
+    }
 
     void AddFileDescriptor(sofa::pbrpc::builtin::ListServiceResponse* response,
             std::set<std::string>* added_file_set, const google::protobuf::FileDescriptor* fd)
