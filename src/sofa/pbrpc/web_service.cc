@@ -58,15 +58,13 @@ static std::string format_number(T num)
 WebService::WebService(const ServicePoolWPtr& service_pool)
     : _service_pool(service_pool)
     , _servlet_map_lock()
-    , _servlet_map()
+    , _servlet_map(new ServletMap())
     , _default_home(NULL)
     , _default_options(NULL)
     , _default_status(NULL)
     , _default_services(NULL)
     , _default_service(NULL)
-{
-    memset(_cache, 0, SERVLET_COUNT);
-}
+{ }
 
 WebService::~WebService()
 {
@@ -90,6 +88,7 @@ void WebService::Init()
 {
     _default_home = 
         sofa::pbrpc::NewPermanentExtClosure(this, &WebService::DefaultHome);
+
     RegisterServlet("/", _default_home);
     RegisterServlet("/home", _default_home);
 
@@ -112,14 +111,17 @@ void WebService::Init()
 
 void WebService::RegisterServlet(const std::string& path, Servlet servlet)
 {
-    uint64 cache_index = CacheIndex(path, SERVLET_COUNT);
-    _cache[cache_index] = servlet;
-
+    std::string real_path(path);
+    FormatPath(real_path);
     ScopedLocker<FastLock> _(_servlet_map_lock);
-    _servlet_map[path] = servlet;
+    if (!_servlet_map.unique())
+    {
+        ServletMapPtr servlet_map(new ServletMap());
+        _servlet_map.swap(servlet_map);
+    }
+    (*_servlet_map)[real_path] = servlet;
 }
 
-#include <iostream>
 bool WebService::RoutePage(
     const RpcRequestPtr& rpc_request,
     const RpcServerStreamWPtr& server_stream)
@@ -140,7 +142,10 @@ bool WebService::RoutePage(
     response.host = GetHostName(response.ip);
 
     bool ret = false;
-    Servlet servlet = FindServlet("/" + http_rpc_request->_method);
+    const std::string& method = http_rpc_request->_method;
+    std::string real_path(method);
+    FormatPath(real_path);
+    Servlet servlet = FindServlet(real_path);
     if (servlet)
     {
         ret = servlet->Run(request, response);
@@ -155,16 +160,25 @@ bool WebService::RoutePage(
 
 Servlet WebService::FindServlet(const std::string& path)
 {
-    uint64 cache_index = CacheIndex(path, SERVLET_COUNT);
-    if (_cache[cache_index] != NULL) 
+    // path => /xxxx/ => ["", "xxx", ""]
+    std::vector<std::string> path_vec;
+    StringUtils::split(path, "/", &path_vec);
+    std::size_t path_len = path.size();
+    ServletMap::iterator map_it;
+    std::vector<std::string>::reverse_iterator vec_it = path_vec.rbegin();
+    ServletMapPtr servlets = GetServletPtr();
+    size_t sub_len = 0;
+    for (; vec_it != path_vec.rend(); ++vec_it)
     {
-        return _cache[cache_index];
+        const std::string& subpath = path.substr(0, path_len - sub_len);
+        map_it = servlets->find(subpath);
+        if (map_it != servlets->end())
+        {
+            return map_it->second;
+        }
+        sub_len += vec_it->size() + 1;
     }
-
-    // find in map then
-    ScopedLocker<FastLock> _(_servlet_map_lock);
-    ServletMap::iterator it = _servlet_map.find(path);
-    return it == _servlet_map.end() ? NULL : it->second;
+    return map_it == servlets->end() ? NULL : map_it->second;
 }
 
 bool WebService::DefaultHome(const HTTPRequest& /*request*/,
@@ -324,15 +338,18 @@ void WebService::ServerOptions(std::ostream& out,
 
 void WebService::ListServlet(std::ostream& out)
 {
-    ScopedLocker<FastLock> _(_servlet_map_lock);
-    ServletMap::iterator it = _servlet_map.begin();
+    ServletMapPtr servlets = GetServletPtr();
+    ServletMap::iterator it = servlets->begin();
     out << "<h3>Servlets</h3><hr>" 
         << "<table border=\"2\">"
-        << "<tr><th align=\"left\">Link</th></tr>";
-    for (; it != _servlet_map.end(); ++it)
+        << "<tr><th align=\"left\">Servlet</th></tr>";
+    for (; it != servlets->end(); ++it)
     {
         const std::string& name = it->first;
-        out << "<tr><td><a href=\"" << name << "\">" << name << "</a></td></tr>";
+        if (!it->first.empty())
+        {
+            out << "<tr><td><a href=\"" << name << "\">" << name << "</a></td></tr>";
+        }
     }
     out << "</table>";
 }
@@ -466,6 +483,22 @@ void WebService::ErrorPage(std::ostream& out,
     PageHeader(out);
     out << "<h1>ERROR: " << reason << "</h1>";
     PageFooter(out);
+}
+
+// "dfs/" => "/dfs";
+void WebService::FormatPath(std::string& path)
+{
+    path = (path[0] == '/') ? path : "/" + path;
+    if (path[path.size() - 1] == '/')
+    {
+        path = path.substr(0, path.size() - 1);
+    }
+}
+
+ServletMapPtr WebService::GetServletPtr()
+{
+    ScopedLocker<FastLock> _(_servlet_map_lock);
+    return _servlet_map;
 }
 
 } // namespace pbrpc

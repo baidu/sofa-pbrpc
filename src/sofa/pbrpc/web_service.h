@@ -18,6 +18,9 @@ class HTTPRequest;
 class HTTPResponse;
 typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 
+typedef std::map<const std::string, Servlet> ServletMap;
+typedef sofa::pbrpc::shared_ptr<ServletMap> ServletMapPtr;
+
 class WebService
 {
 public:
@@ -70,15 +73,15 @@ private:
 
     void ListServlet(std::ostream& out);
 
+    static void FormatPath(std::string& path);
+
+    ServletMapPtr GetServletPtr();
+
 private:
     ServicePoolWPtr _service_pool;
 
-    static const uint64_t SERVLET_COUNT = 1000;
-    Servlet _cache[SERVLET_COUNT];
-
     FastLock _servlet_map_lock;
-    typedef std::map<const std::string, Servlet> ServletMap;
-    ServletMap _servlet_map;
+    ServletMapPtr _servlet_map;
 
     Servlet _default_home;
     Servlet _default_options;
