@@ -261,13 +261,15 @@ bool WebService::DefaultService(const HTTPRequest& request,
         return false;
     }
     std::ostringstream oss;
-    if (request.query_params.find("name") == request.query_params.end())
+    typedef std::map<std::string, std::string> QueryParams;
+    QueryParams::const_iterator it = request.query_params.find("name"); 
+    if (it == request.query_params.end())
     {
         ErrorPage(oss, "Lack of name param");
         response.content = oss.str();
         return true;
     }
-    const std::string& name = request.query_params.find("name")->second;
+    const std::string& name = it->second;
     ServiceBoard* svc_board = service_pool->FindService(name);
     if (svc_board == NULL)
     {
