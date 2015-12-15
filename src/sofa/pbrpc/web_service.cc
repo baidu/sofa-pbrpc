@@ -116,7 +116,7 @@ void WebService::RegisterServlet(const std::string& path, Servlet servlet)
     ScopedLocker<FastLock> _(_servlet_map_lock);
     if (!_servlet_map.unique())
     {
-        ServletMapPtr servlet_map(new ServletMap());
+        ServletMapPtr servlet_map(new ServletMap(*_servlet_map));
         _servlet_map.swap(servlet_map);
     }
     (*_servlet_map)[real_path] = servlet;
