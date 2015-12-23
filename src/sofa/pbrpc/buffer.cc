@@ -252,6 +252,7 @@ void WriteBuffer::SetData(int64 pos, const char* data, int size)
         {
             memcpy(cur_it->data + cur_offset, data, cur_size);
             size -= cur_size;
+            data += cur_size;
             ++cur_it;
             cur_offset = 0;
         }

@@ -441,6 +441,17 @@ TEST_F(WriteBufferTest, SetData)
         ASSERT_EQ(10, os->Reserve(32));
         os->SetData(10, _block, 32);
     }
+    {
+        WriteBufferPtr os(new WriteBuffer());
+        std::string str1(2000, 'x');
+        std::string str2(2000, 'y');
+        str1 += str2;
+        int head_pos = os->Reserve(str1.size());
+        os->SetData(head_pos, str1.c_str(), str1.size());
+        ReadBufferPtr is(new ReadBuffer());
+        os->SwapOut(is.get());
+        ASSERT_EQ(str1, is->ToString());
+    }
 }
 
 class PBSerDeserTest : public ::testing::Test
