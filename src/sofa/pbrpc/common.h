@@ -17,7 +17,7 @@ namespace std {}
 namespace sofa {
 namespace pbrpc {
 
-#define SOFA_PBRPC_VERSION "1.0.1"
+#define SOFA_PBRPC_VERSION "1.1.1"
 
 const char* compile_info();
 
