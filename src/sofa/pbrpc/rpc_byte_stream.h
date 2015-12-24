@@ -92,6 +92,29 @@ public:
                 boost::bind(&RpcByteStream::on_connect, shared_from_this(), _1));
     }
 
+    // Update remote endpoint from socket.  Used by server.
+    //
+    // Precondition:
+    // * the "socket" is opened.
+    void update_remote_endpoint()
+    {
+        SOFA_PBRPC_FUNCTION_TRACE;
+
+        boost::system::error_code ec;
+        _remote_endpoint = _socket.remote_endpoint(ec);
+        if (ec)
+        {
+#if defined( LOG )
+            LOG(ERROR) << "update_remote_endpoint(): get remote endpoint failed: "
+                       << ec.message();
+#else
+            SLOG(ERROR, "update_remote_endpoint(): get remote endpoint failed: %s",
+                    ec.message().c_str());
+#endif
+            close("init stream failed: " + ec.message());
+        }
+    }
+
     // Set socket connected.  Used by server.
     //
     // Precondition:
@@ -107,10 +130,10 @@ public:
         if (ec)
         {
 #if defined( LOG )
-            LOG(ERROR) << "on_connect(): set no_delay option failed: "
+            LOG(ERROR) << "set_socket_connected(): set no_delay option failed: "
                        << ec.message();
 #else
-            SLOG(ERROR, "on_connect(): set no_delay option failed: %s",
+            SLOG(ERROR, "set_socket_connected(): set no_delay option failed: %s",
                     ec.message().c_str());
 #endif
             close("init stream failed: " + ec.message());
@@ -125,19 +148,6 @@ public:
                        << ec.message();
 #else
             SLOG(ERROR, "set_socket_connected(): get local endpoint failed: %s",
-                    ec.message().c_str());
-#endif
-            close("init stream failed: " + ec.message());
-            return;
-        }
-        _remote_endpoint = _socket.remote_endpoint(ec);
-        if (ec)
-        {
-#if defined( LOG )
-            LOG(ERROR) << "set_socket_connected(): get remote endpoint failed: "
-                       << ec.message();
-#else
-            SLOG(ERROR, "set_socket_connected(): get remote endpoint failed: %s",
                     ec.message().c_str());
 #endif
             close("init stream failed: " + ec.message());

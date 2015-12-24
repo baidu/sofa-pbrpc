@@ -520,6 +520,8 @@ void HTTPRpcRequest::ServerOptions(
         << "<tr><th align=\"left\">Name</th><th align=\"right\">Value</th></tr>"
         << "<tr><td>work_thread_num</td>"
         << "<td align=\"right\">" << options.work_thread_num << "</td></tr>"
+        << "<tr><td>max_connection_count</td>"
+        << "<td align=\"right\">" << options.max_connection_count << "</td></tr>"
         << "<tr><td>keep_alive_time (seconds)</td>"
         << "<td align=\"right\">" << options.keep_alive_time << "</td></tr>"
         << "<tr><td>max_pending_buffer_size (MB)</td>"
