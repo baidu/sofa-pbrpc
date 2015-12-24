@@ -10,6 +10,8 @@
 #include <sofa/pbrpc/http-agent/http_agent.h>
 #include <sofa/pbrpc/builtin_service.pb.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
+#include <sofa/pbrpc/pbjson.h>
+#include <sofa/pbrpc/string_utils.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -211,7 +213,32 @@ void HttpAgent::CallMethod(const std::string& method_full_name,
     const ::google::protobuf::Descriptor* id = md->input_type();
     const ::google::protobuf::Descriptor* od = md->output_type();
     ::google::protobuf::Message* request_message = _msg_factory->GetPrototype(id)->New();
-    if (!::google::protobuf::TextFormat::ParseFromString(*request, request_message)) {
+    std::string request_str = StringUtils::trim(*request);
+    bool parse_failed = false;
+    if (request_str.size() > 0 && request_str[0] == '{') {
+        // try parsing as json string, as json message must begin with '{'
+        rapidjson::Document* doc = new rapidjson::Document();
+        doc->Parse<0>(request_str.c_str());
+        std::string err;
+        if (doc->HasParseError()) {
+            err = doc->GetParseError();
+            parse_failed = true;
+        }
+        else if (jsonobject2pb(doc, request_message, err) < 0) {
+            parse_failed = true;
+        }
+        delete doc;
+        if (parse_failed) {
+            SLOG(ERROR, "Error parsing json-format %s: %s", id->full_name().c_str(), err.c_str());
+        }
+    }
+    else {
+        // try parsing as text string
+        if (!::google::protobuf::TextFormat::ParseFromString(request_str, request_message)) {
+            parse_failed = true;
+        }
+    }
+    if (parse_failed) {
         delete request_message;
         SLOG(ERROR, "CallMethod(): parse request message failed");
         cntl->SetFailed(RPC_ERROR_PARSE_REQUEST_MESSAGE, "parse request message failed");
