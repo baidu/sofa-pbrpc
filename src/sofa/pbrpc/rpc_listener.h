@@ -213,18 +213,28 @@ private:
         }
         else
         {
-            if (_accept_callback)
+            stream->update_remote_endpoint();
+
+            if (!stream->is_closed() && _accept_callback)
+            {
                 _accept_callback(stream);
+            }
 
-            stream->set_socket_connected();
+            if (!stream->is_closed())
+            {
+                stream->set_socket_connected();
+            }
 
+            if (!stream->is_closed())
+            {
 #if defined( LOG )
-            LOG(INFO) << "on_accept(): accept connection at "
-                      << _endpoint_str << ": " << RpcEndpointToString(stream->remote_endpoint());
+                LOG(INFO) << "on_accept(): accept connection at "
+                          << _endpoint_str << ": " << RpcEndpointToString(stream->remote_endpoint());
 #else
-            SLOG(INFO, "on_accept(): accept connection at %s: %s",
-                    _endpoint_str.c_str(), RpcEndpointToString(stream->remote_endpoint()).c_str());
+                SLOG(INFO, "on_accept(): accept connection at %s: %s",
+                        _endpoint_str.c_str(), RpcEndpointToString(stream->remote_endpoint()).c_str());
 #endif
+            }
 
             async_accept();
         }

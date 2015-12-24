@@ -30,6 +30,7 @@ message ServerOptions {
     optional int64 max_throughput_out = 5;
     optional bool disable_builtin_services = 6;
     optional bool disable_list_service = 7;
+    optional int64 max_connection_count = 8;
 }
 
 message ServerOptionsRequest {
