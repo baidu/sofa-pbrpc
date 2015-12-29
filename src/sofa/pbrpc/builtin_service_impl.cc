@@ -17,6 +17,7 @@ static void CopyOptions(const RpcServerOptions& options,
         ::sofa::pbrpc::builtin::ServerOptions* options_pb)
 {
     options_pb->set_work_thread_num(options.work_thread_num);
+    options_pb->set_max_connection_count(options.max_connection_count);
     options_pb->set_keep_alive_time(options.keep_alive_time);
     options_pb->set_max_pending_buffer_size(options.max_pending_buffer_size);
     options_pb->set_max_throughput_in(options.max_throughput_in);
@@ -82,11 +83,11 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
         return;
     }
     const ::sofa::pbrpc::builtin::ServerOptions& request_options = request->options();
-    if (!request_options.has_keep_alive_time()
+    if (!request_options.has_max_connection_count()
+            && !request_options.has_keep_alive_time()
             && !request_options.has_max_pending_buffer_size()
             && !request_options.has_max_throughput_in()
-            && !request_options.has_max_throughput_out())
-    {
+            && !request_options.has_max_throughput_out()) {
         controller->SetFailed("no option need to update");
         done->Run();
         return;
@@ -98,6 +99,9 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
         return;
     }
     RpcServerOptions options = server->GetOptions();
+    if (request_options.has_max_connection_count()) {
+        options.max_connection_count = request_options.max_connection_count();
+    }
     if (request_options.has_keep_alive_time()) {
         options.keep_alive_time = request_options.keep_alive_time();
     }

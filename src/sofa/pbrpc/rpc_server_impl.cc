@@ -222,11 +222,13 @@ void RpcServerImpl::ResetOptions(const RpcServerOptions& options)
     int64 old_slice_quota_out = _slice_quota_out;
     int64 old_max_pending_buffer_size = _max_pending_buffer_size;
     int64 old_keep_alive_ticks = _keep_alive_ticks;
+    int64 old_max_connection_count = _options.max_connection_count;
 
     _options.max_throughput_in = options.max_throughput_in;
     _options.max_throughput_out = options.max_throughput_out;
     _options.max_pending_buffer_size = options.max_pending_buffer_size;
     _options.keep_alive_time = options.keep_alive_time;
+    _options.max_connection_count = options.max_connection_count;
 
     _slice_quota_in = _options.max_throughput_in == -1 ?
         -1 : std::max(0L, _options.max_throughput_in * 1024L * 1024L) / _slice_count;
@@ -273,12 +275,17 @@ void RpcServerImpl::ResetOptions(const RpcServerOptions& options)
               << (_keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second)
               << "seconds(old "
               << (old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second)
-              << "seconds)";
+              << "seconds), max_connection_count="
+              << _options.max_connection_count
+              << "(old "
+              << old_max_connection_count
+              << ")";
 #else
     SLOG(INFO, "ResetOptions(): quota_in=%lldMB/s(old %lldMB/s)"
             ", quota_out=%lldMB/s(old %lldMB/s)"
             ", max_pending_buffer_size=%lldMB(old %lldMB)"
-            ", keep_alive_time=%lldseconds(old %lldseconds)",
+            ", keep_alive_time=%lldseconds(old %lldseconds)"
+            ", max_connection_count=%lld(old %lld)",
             _slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L),
             old_slice_quota_in == -1 ? -1 : old_slice_quota_in * _slice_count / (1024L * 1024L),
             _slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L),
@@ -286,7 +293,9 @@ void RpcServerImpl::ResetOptions(const RpcServerOptions& options)
             _max_pending_buffer_size / (1024L * 1024L),
             old_max_pending_buffer_size / (1024L * 1024L),
             _keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second,
-            old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second);
+            old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second,
+            _options.max_connection_count,
+            old_max_connection_count);
 #endif
 }
 
@@ -385,6 +394,13 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
     if (!_is_running)
     {
         stream->close("server not running");
+        return;
+    }
+
+    if (_options.max_connection_count != -1 && _live_stream_count >= _options.max_connection_count)
+    {
+        stream->close("exceed max connection count "
+                      + boost::lexical_cast<std::string>(_options.max_connection_count));
         return;
     }
 

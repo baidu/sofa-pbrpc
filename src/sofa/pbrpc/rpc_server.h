@@ -24,6 +24,9 @@ class HTTPResponse;
 struct RpcServerOptions {
     int work_thread_num; // thread count for network handing and service processing, default 8.
 
+    int max_connection_count;    // max connection count to accept.
+                                 // should >= -1, -1 means no limit, default -1.
+
     int keep_alive_time;         // keep alive time of idle connections.
                                  // idle connections will be closed if no read/write for this time.
                                  // in seconds, should >= -1, -1 means forever, default -1.
@@ -61,6 +64,7 @@ struct RpcServerOptions {
 
     RpcServerOptions()
         : work_thread_num(8)
+        , max_connection_count(-1)
         , keep_alive_time(-1)
         , max_pending_buffer_size(100)
         , max_throughput_in(-1)
