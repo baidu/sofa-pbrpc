@@ -116,7 +116,6 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetRemoteEndpoint(_remote_endpoint);
     cntl->SetRpcServerStream(stream);
     cntl->SetRequestReceivedTime(_received_time);
-    cntl->SetStartProcessTime(ptime_now());
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);
 

@@ -205,7 +205,6 @@ void HTTPRpcRequest::ProcessRequest(
     cntl->SetRemoteEndpoint(_remote_endpoint);
     cntl->SetRpcServerStream(server_stream);
     cntl->SetRequestReceivedTime(_received_time);
-    cntl->SetStartProcessTime(ptime_now());
     cntl->SetResponseCompressType(CompressTypeNone);
 
     CallMethod(method_board, controller, request, response);
@@ -559,6 +558,10 @@ void HTTPRpcRequest::ServerStatus(
         << "<td align=\"right\">" << format_number(pending_buffer_size) << "</td></tr>"
         << "<tr><td>pending_data_size (bytes)</td>"
         << "<td align=\"right\">" << format_number(pending_data_size) << "</td></tr>"
+        << "<tr><td>countof(RpcListener)</td>"
+        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcListener)) << "</td></tr>"
+        << "<tr><td>countof(RpcByteStream)</td>"
+        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcByteStream)) << "</td></tr>"
         << "</table>";
 }
 

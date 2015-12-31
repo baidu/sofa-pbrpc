@@ -7,7 +7,7 @@
 #ifndef _SOFA_PBRPC_RPC_SERVER_IMPL_H_
 #define _SOFA_PBRPC_RPC_SERVER_IMPL_H_
 
-#include <deque>
+#include <set>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_controller.h>
@@ -67,6 +67,8 @@ private:
 
     void OnReceived(const RpcServerStreamWPtr& stream, const RpcRequestPtr& request);
 
+    void OnClosed(const RpcServerStreamPtr& stream);
+
     void StopStreams();
 
     void ClearStreams();
@@ -107,7 +109,6 @@ private:
     int64 _keep_alive_ticks;
     int64 _restart_listen_interval_ticks;
     int64 _switch_stat_slot_interval_ticks;
-    int64 _print_connection_interval_ticks;
 
     ServicePoolPtr _service_pool;
 
@@ -121,10 +122,9 @@ private:
 
     TimerWorkerPtr _timer_worker;
 
-    typedef std::deque<RpcServerStreamPtr> StreamList;
-    StreamList _stream_list;
-    FastLock _stream_list_lock;
-    volatile int _live_stream_count;
+    typedef std::set<RpcServerStreamPtr> StreamSet;
+    StreamSet _stream_set;
+    FastLock _stream_set_lock;
 
     IOServicePoolPtr _io_service_pool;
 
