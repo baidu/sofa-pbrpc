@@ -50,7 +50,6 @@ public:
     virtual ~RpcByteStream()
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        close("stream destructed");
         boost::system::error_code ec;
         _socket.close(ec);
         SOFA_PBRPC_DEC_RESOURCE_COUNTER(RpcByteStream);

@@ -17,10 +17,18 @@ void RpcRequest::CallMethod(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
+    const RpcControllerImplPtr& cntl = controller->impl();
+    RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
+    if (stream)
+    {
+        stream->increase_pending_process_count();
+    }
+
     method_board->ReportProcessBegin();
     google::protobuf::Closure* done = NewClosure(
             shared_from_this(), &RpcRequest::OnCallMethodDone,
             method_board, controller, request, response);
+    cntl->SetStartProcessTime(ptime_now());
     method_board->GetServiceBoard()->Service()->CallMethod(
             method_board->Descriptor(), controller, request, response, done);
 }
@@ -61,6 +69,12 @@ void RpcRequest::OnCallMethodDone(
 #endif
         method_board->ReportProcessEnd(true, process_time_us);
         SendSucceedResponse(cntl, response);
+    }
+
+    RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
+    if (stream)
+    {
+        stream->decrease_pending_process_count();
     }
 
     delete request;
