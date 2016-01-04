@@ -55,6 +55,23 @@ static std::string format_number(T num)
     return ret;
 }
 
+// "*" => "/*"
+// "///" => "/"
+static std::string FormatPath(const std::string& path)
+{
+    std::vector<std::string> path_vec;
+    StringUtils::split(path, "/", &path_vec);
+    std::stringstream os;
+    for (size_t i = 0; i < path_vec.size(); ++i)
+    {
+        if (!path_vec[i].empty())
+        {
+            os << "/" << path_vec[i];
+        }
+    }
+    return os.str().empty() ? "/" : os.str();
+}
+
 WebService::WebService(const ServicePoolWPtr& service_pool)
     : _service_pool(service_pool)
     , _servlet_map_lock()
@@ -109,17 +126,70 @@ void WebService::Init()
     RegisterServlet("/service", _default_service);
 }
 
-void WebService::RegisterServlet(const std::string& path, Servlet servlet)
+bool WebService::RegisterServlet(const std::string& path, Servlet servlet)
 {
-    std::string real_path(path);
-    FormatPath(real_path);
+    std::string real_path = FormatPath(path);
     ScopedLocker<FastLock> _(_servlet_map_lock);
     if (!_servlet_map.unique())
     {
         ServletMapPtr servlet_map(new ServletMap(*_servlet_map));
         _servlet_map.swap(servlet_map);
     }
-    (*_servlet_map)[real_path] = servlet;
+    std::pair<ServletMap::iterator, bool> ret = 
+        _servlet_map->insert(std::make_pair(real_path, servlet));
+    if (ret.second == true)
+    {
+#if defined( LOG )
+        LOG(INFO) << "RegisterServlet(): register webserver path {" 
+            << path << "} format to {" << real_path << "} success";
+#else
+        SLOG(INFO, "RegisterServlet(): register webserver path {%s} format to {%s} success", 
+             path.c_str(), real_path.c_str());
+#endif
+    }
+    else
+    {
+#if defined( LOG )
+        LOG(INFO) << "RegisterServlet(): register webserver path {" 
+            << path << "} format to {" << real_path << "} alreay exist";
+#else
+        SLOG(INFO, "RegisterServlet(): register webserver path {%s} format to {%s} already exist", 
+             path.c_str(), real_path.c_str());
+#endif
+    }
+    return ret.second;
+}
+
+bool WebService::UnregisterServlet(const std::string& path)
+{
+    std::string real_path = FormatPath(path);
+    ScopedLocker<FastLock> _(_servlet_map_lock);
+    if (!_servlet_map.unique())
+    {
+        ServletMapPtr servlet_map(new ServletMap(*_servlet_map));
+        _servlet_map.swap(servlet_map);
+    }
+    ServletMap::iterator it = _servlet_map->find(real_path);
+    if (it == _servlet_map->end())
+    {
+#if defined( LOG )
+        LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
+            << path << "} format to {" << real_path << "} not exist";
+#else
+        SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} not exist", 
+             path.c_str(), real_path.c_str());
+#endif
+        return false;
+    }
+    _servlet_map->erase(it);
+#if defined( LOG )
+    LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
+        << path << "} format to {" << real_path << "} success";
+#else
+    SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} success", 
+         path.c_str(), real_path.c_str());
+#endif
+    return true;
 }
 
 bool WebService::RoutePage(
@@ -134,7 +204,6 @@ bool WebService::RoutePage(
     request.body = http_rpc_request->_req_body->ToString();
     request.headers = http_rpc_request->_headers;
     request.query_params = http_rpc_request->_query_params;
-    request.decoded_path = http_rpc_request->_decoded_path;
 
     HTTPResponse response;
     response.ip = HostOfRpcEndpoint(http_rpc_request->_local_endpoint);
@@ -143,9 +212,7 @@ bool WebService::RoutePage(
 
     bool ret = false;
     const std::string& method = http_rpc_request->_method;
-    std::string real_path(method);
-    FormatPath(real_path);
-    Servlet servlet = FindServlet(real_path);
+    Servlet servlet = FindServlet(method);
     if (servlet)
     {
         ret = servlet->Run(request, response);
@@ -160,41 +227,34 @@ bool WebService::RoutePage(
 
 Servlet WebService::FindServlet(const std::string& path)
 {
-    // path => /xxxx/ => ["", "xxx", ""]
-    std::vector<std::string> path_vec;
-    StringUtils::split(path, "/", &path_vec);
-    std::size_t path_len = path.size();
-    ServletMap::iterator map_it;
-    std::vector<std::string>::reverse_iterator vec_it = path_vec.rbegin();
+    // if user register a path "/baidu"
+    // then "/baidu/*" matched both
+    std::string real_path = FormatPath(path);
     ServletMapPtr servlets = GetServletPtr();
-    size_t sub_len = 0;
-    for (; vec_it != path_vec.rend(); ++vec_it)
+
+    size_t index = real_path.size();
+    while (index != std::string::npos)
     {
-        const std::string& subpath = path.substr(0, path_len - sub_len);
-        map_it = servlets->find(subpath);
-        if (map_it != servlets->end())
+        const std::string& substr = real_path.substr(0, index);
+        ServletMap::iterator it = servlets->find(substr);
+        if (it != servlets->end())
         {
-            return map_it->second;
+            return it->second;
         }
-        sub_len += vec_it->size() + 1;
+        index = substr.rfind("/");
     }
-    return map_it == servlets->end() ? NULL : map_it->second;
+    return NULL;
 }
 
 bool WebService::DefaultHome(const HTTPRequest& /*request*/,
                              HTTPResponse& response)
 {
-    ServicePoolPtr service_pool = _service_pool.lock();
-    if (!service_pool)
-    {
-        return false;
-    }
     std::ostringstream oss;
     PageHeader(oss);
-    ServerBrief(oss, service_pool, response);
-    ServerStatus(oss, service_pool);
-    ServiceList(oss, service_pool);
-    ServerOptions(oss, service_pool);
+    ServerBrief(oss, response);
+    ServerStatus(oss);
+    ServiceList(oss);
+    ServerOptions(oss);
     ListServlet(oss);
     PageFooter(oss);
     response.content = oss.str();
@@ -204,15 +264,10 @@ bool WebService::DefaultHome(const HTTPRequest& /*request*/,
 bool WebService::DefaultOptions(const HTTPRequest& /*request*/, 
                                 HTTPResponse& response)
 {
-    ServicePoolPtr service_pool = _service_pool.lock();
-    if (!service_pool)
-    {
-        return false;
-    }
     std::ostringstream oss;
     PageHeader(oss);
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-    ServerOptions(oss, service_pool);
+    ServerOptions(oss);
     PageFooter(oss);
     response.content = oss.str();
     return true;
@@ -221,15 +276,10 @@ bool WebService::DefaultOptions(const HTTPRequest& /*request*/,
 bool WebService::DefaultStatus(const HTTPRequest& /*request*/, 
                                HTTPResponse& response)
 {
-    ServicePoolPtr service_pool = _service_pool.lock();
-    if (!service_pool)
-    {
-        return false;
-    }
     std::ostringstream oss;
     PageHeader(oss);
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-    ServerStatus(oss, service_pool);
+    ServerStatus(oss);
     PageFooter(oss);
     response.content = oss.str();
     return true;
@@ -238,15 +288,10 @@ bool WebService::DefaultStatus(const HTTPRequest& /*request*/,
 bool WebService::DefaultServices(const HTTPRequest& /*request*/, 
                                  HTTPResponse& response)
 {
-    ServicePoolPtr service_pool = _service_pool.lock();
-    if (!service_pool)
-    {
-        return false;
-    }
     std::ostringstream oss;
     PageHeader(oss);
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-    ServiceList(oss, service_pool);
+    ServiceList(oss);
     PageFooter(oss);
     response.content = oss.str();
     return true;
@@ -255,11 +300,6 @@ bool WebService::DefaultServices(const HTTPRequest& /*request*/,
 bool WebService::DefaultService(const HTTPRequest& request, 
                                 HTTPResponse& response)
 {
-    ServicePoolPtr service_pool = _service_pool.lock();
-    if (!service_pool)
-    {
-        return false;
-    }
     std::ostringstream oss;
     typedef std::map<std::string, std::string> QueryParams;
     QueryParams::const_iterator it = request.query_params.find("name"); 
@@ -270,7 +310,7 @@ bool WebService::DefaultService(const HTTPRequest& request,
         return true;
     }
     const std::string& name = it->second;
-    ServiceBoard* svc_board = service_pool->FindService(name);
+    ServiceBoard* svc_board = _service_pool->FindService(name);
     if (svc_board == NULL)
     {
         ErrorPage(oss, "Service not found");
@@ -302,21 +342,19 @@ void WebService::PageFooter(std::ostream& out)
 }
 
 void WebService::ServerBrief(std::ostream& out,
-                             const ServicePoolPtr& service_pool, 
                              const HTTPResponse& response)
 {
     out << "<h1>" << response.host << "</h1>"
         << "<b>IP:</b> " << response.ip << "<br>"
         << "<b>Port:</b> " << response.port << "<br>"
-        << "<b>Started:</b> " << ptime_to_string(service_pool->RpcServer()->GetStartTime()) << "<br>"
+        << "<b>Started:</b> " << ptime_to_string(_service_pool->RpcServer()->GetStartTime()) << "<br>"
         << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>"
         << "<b>Compiled:</b> " << compile_info() << "<br>";
 }
 
-void WebService::ServerOptions(std::ostream& out,
-                               const ServicePoolPtr& service_pool)
+void WebService::ServerOptions(std::ostream& out)
 {
-    RpcServerImpl* server = service_pool->RpcServer();
+    RpcServerImpl* server = _service_pool->RpcServer();
     RpcServerOptions options = server->GetOptions();
     out << "<h3>ServerOptions</h3><hr>"
         << "<table border=\"2\">"
@@ -358,10 +396,9 @@ void WebService::ListServlet(std::ostream& out)
     out << "</table>";
 }
 
-void WebService::ServerStatus(std::ostream& out,
-                              const ServicePoolPtr& service_pool)
+void WebService::ServerStatus(std::ostream& out)
 {
-    RpcServerImpl* server = service_pool->RpcServer();
+    RpcServerImpl* server = _service_pool->RpcServer();
     int64 pending_message_count;
     int64 pending_buffer_size;
     int64 pending_data_size;
@@ -380,11 +417,14 @@ void WebService::ServerStatus(std::ostream& out,
         << "<td align=\"right\">" << format_number(pending_buffer_size) << "</td></tr>"
         << "<tr><td>pending_data_size (bytes)</td>"
         << "<td align=\"right\">" << format_number(pending_data_size) << "</td></tr>"
+        << "<tr><td>countof(RpcListener)</td>"
+        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcListener)) << "</td></tr>"
+        << "<tr><td>countof(RpcByteStream)</td>"
+        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcByteStream)) << "</td></tr>"
         << "</table>";
 }
 
-void WebService::ServiceList(std::ostream& out,
-                             const ServicePoolPtr& service_pool)
+void WebService::ServiceList(std::ostream& out)
 {
     out << "<h3>Services</h3><hr>"
         << "<table border=\"2\">"
@@ -398,7 +438,7 @@ void WebService::ServiceList(std::ostream& out,
         << "<th align=\"right\">Requested</th><th align=\"right\">Succeed</th><th align=\"right\">Failed</th>"
         << "</tr>";
     std::list<ServiceBoard*> svc_list;
-    service_pool->ListService(&svc_list);
+    _service_pool->ListService(&svc_list);
     for (std::list<ServiceBoard*>::iterator it = svc_list.begin();
             it != svc_list.end(); ++it)
     {
@@ -487,16 +527,6 @@ void WebService::ErrorPage(std::ostream& out,
     PageHeader(out);
     out << "<h1>ERROR: " << reason << "</h1>";
     PageFooter(out);
-}
-
-// "dfs/" => "/dfs";
-void WebService::FormatPath(std::string& path)
-{
-    path = (path[0] == '/') ? path : "/" + path;
-    if (path[path.size() - 1] == '/')
-    {
-        path = path.substr(0, path.size() - 1);
-    }
 }
 
 ServletMapPtr WebService::GetServletPtr()

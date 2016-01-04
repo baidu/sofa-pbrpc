@@ -29,7 +29,9 @@ public:
 
     void Init();
 
-    void RegisterServlet(const std::string& path, Servlet servlet);
+    bool RegisterServlet(const std::string& path, Servlet servlet);
+
+    bool UnregisterServlet(const std::string& path);
 
     bool RoutePage(
         const RpcRequestPtr& rpc_request, 
@@ -52,18 +54,14 @@ private:
     
     static void PageFooter(std::ostream& out);
 
-    static void ServerBrief(std::ostream& out,
-                            const ServicePoolPtr& service_pool,
-                            const HTTPResponse& response);
+    void ServerBrief(std::ostream& out,
+                     const HTTPResponse& response);
 
-    static void ServerOptions(std::ostream& out,
-                              const ServicePoolPtr& service_pool);
+    void ServerOptions(std::ostream& out);
 
-    static void ServerStatus(std::ostream& out,
-                             const ServicePoolPtr& service_pool);
+    void ServerStatus(std::ostream& out);
 
-    static void ServiceList(std::ostream& out,
-                            const ServicePoolPtr& service_pool);
+    void ServiceList(std::ostream& out);
 
     static void MethodList(std::ostream& out,
                            ServiceBoard* svc_board);
@@ -73,12 +71,10 @@ private:
 
     void ListServlet(std::ostream& out);
 
-    static void FormatPath(std::string& path);
-
     ServletMapPtr GetServletPtr();
 
 private:
-    ServicePoolWPtr _service_pool;
+    ServicePoolPtr _service_pool;
 
     FastLock _servlet_map_lock;
     ServletMapPtr _servlet_map;

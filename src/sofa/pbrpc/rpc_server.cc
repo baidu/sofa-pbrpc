@@ -84,6 +84,11 @@ bool RpcServer::RegisterWebServlet(const std::string& path, Servlet servlet)
     return _impl->RegisterWebServlet(path, servlet);
 }
 
+bool RpcServer::UnregisterWebServlet(const std::string& path)
+{
+    return _impl->UnregisterWebServlet(path);
+}
+
 } // namespace pbrpc
 } // namespace sofa
 

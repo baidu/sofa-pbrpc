@@ -172,7 +172,18 @@ public:
     // Return true if the server is listening on some address.
     bool IsListening();
 
+    // Register a path and its dealing function
+    // Return true if operation success
+    // Return false if path already exist
+    // Example: see sofa-pbrpc/sample/echo
+    // NOTE: path will be formatted
     bool RegisterWebServlet(const std::string& path, Servlet servlet);
+
+    // Delete a path and its related function from rpc server
+    // Return true if deleting success
+    // Return false if path not exist
+    // NOTE: path will be formatted
+    bool UnregisterWebServlet(const std::string& path);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const

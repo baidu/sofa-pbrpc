@@ -71,8 +71,8 @@ RpcServerImpl::~RpcServerImpl()
 {
     SOFA_PBRPC_FUNCTION_TRACE;
     Stop();
-    _service_pool.reset();
     _web_service.reset();
+    _service_pool.reset();
     if (_event_handler) delete _event_handler;
 }
 
@@ -186,11 +186,11 @@ void RpcServerImpl::Stop()
     _timer_worker->stop();
     _listener->close();
     StopStreams();
-    _io_service_pool->Stop();
 
     _timer_worker.reset();
     _listener.reset();
     ClearStreams();
+    _io_service_pool->Stop();
     _maintain_thread_group->stop();
 
     _io_service_pool.reset();
@@ -603,8 +603,16 @@ bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet)
     {
         return false;
     }
-    _web_service->RegisterServlet(path, servlet);
-    return true;
+    return _web_service->RegisterServlet(path, servlet);
+}
+
+bool RpcServerImpl::UnregisterWebServlet(const std::string& path)
+{
+    if (!_web_service)
+    {
+        return false;
+    }
+    return _web_service->UnregisterServlet(path);
 }
 
 } // namespace pbrpc

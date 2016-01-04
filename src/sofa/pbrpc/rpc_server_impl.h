@@ -62,6 +62,8 @@ public:
 
     bool RegisterWebServlet(const std::string& path, Servlet servlet);
 
+    bool UnregisterWebServlet(const std::string& path);
+
 private:
     void OnCreated(const RpcServerStreamPtr& stream);
 
