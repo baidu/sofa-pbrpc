@@ -14,6 +14,10 @@
 namespace sofa {
 namespace pbrpc {
 
+// Callback function when closed client stream.
+typedef boost::function<void(
+        const RpcClientStreamPtr& /* stream */)> ClosedClientStreamCallback;
+
 class RpcClientStream : public RpcMessageStream<RpcControllerImplPtr>
 {
 public:
@@ -24,12 +28,31 @@ public:
     virtual ~RpcClientStream() 
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        close("stream destructed");
         for (ControllerMap::iterator it = _controller_map.begin();
                 it != _controller_map.end(); ++it)
         {
             it->second->Done(RPC_ERROR_CONNECTION_CLOSED, _error_message);
         }
+    }
+
+    // Set the callback function when closed stream.
+    void set_closed_stream_callback(
+            const ClosedClientStreamCallback& callback)
+    {
+        _closed_stream_callback = callback;
+    }
+
+    // Get the callback function when closed stream.
+    const ClosedClientStreamCallback& closed_stream_callback() const
+    {
+        return _closed_stream_callback;
+    }
+
+    // Get pending process count.
+    uint32_t pending_process_count()
+    {
+        ScopedLocker<FastLock> _(_controller_map_lock);
+        return _controller_map.size();
     }
 
     void call_method(const RpcControllerImplPtr& cntl) 
@@ -75,6 +98,12 @@ private:
                 it != tmp_map.end(); ++it)
         {
             it->second->Done(RPC_ERROR_CONNECTION_CLOSED, _error_message);
+        }
+
+        if (_closed_stream_callback)
+        {
+            _closed_stream_callback(
+                    sofa::pbrpc::dynamic_pointer_cast<RpcClientStream>(shared_from_this()));
         }
     }
 
@@ -237,6 +266,8 @@ private:
     }
 
 private:
+    ClosedClientStreamCallback _closed_stream_callback;
+
     // sequence_id ==> RpcControllerImplPtr
     // TODO more efficient sync map
     typedef std::map<uint64, RpcControllerImplPtr> ControllerMap;

@@ -23,7 +23,6 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
     , _ticks_per_second(time_duration_seconds(1).ticks())
     , _last_maintain_ticks(0)
     , _last_print_connection_ticks(0)
-    , _live_stream_count(0)
 {
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
     _slice_quota_in = _options.max_throughput_in == -1 ?
@@ -34,7 +33,6 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
         std::max(0L, _options.max_pending_buffer_size * 1024L * 1024L);
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
-    _print_connection_interval_ticks = _ticks_per_second * 60;
 
 #if defined( LOG )
     LOG(INFO) << "RpcClientImpl(): quota_in="
@@ -201,7 +199,8 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
 
 int RpcClientImpl::ConnectionCount()
 {
-    return _live_stream_count;
+    ScopedLocker<FastLock> _(_stream_map_lock);
+    return _stream_map.size();
 }
 
 // Rpc call method to remote endpoint.
@@ -379,6 +378,8 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
             stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
+            stream->set_closed_stream_callback(
+                    boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
 
             _stream_map[remote_endpoint] = stream;
             create = true;
@@ -389,6 +390,15 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
         stream->async_connect();
     }
     return stream;
+}
+
+void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
+{
+    if (!_is_running)
+        return;
+
+    ScopedLocker<FastLock> _(_stream_map_lock);
+    _stream_map.erase(stream->remote_endpoint());
 }
 
 void RpcClientImpl::StopStreams()
@@ -451,110 +461,108 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
 
     int64 now_ticks = (now - _epoch_time).ticks();
 
-    std::list<RpcClientStreamPtr> live_streams;
-    std::list<RpcClientStreamPtr> closed_streams;
-    int live_count = 0;
+    // checks which need iterator streams
+    if (_keep_alive_ticks != -1 || _slice_quota_in != -1 || _slice_quota_out != -1)
     {
-        ScopedLocker<FastLock> _(_stream_map_lock);
-        for (StreamMap::iterator it = _stream_map.begin(); it != _stream_map.end(); )
+        StreamMap streams;
         {
-            const RpcClientStreamPtr& stream = it->second;
-
-            if (_keep_alive_ticks != -1
-                    && now_ticks - stream->last_rw_ticks() >= _keep_alive_ticks)
-            {
-                stream->close("keep alive timeout");
-            }
-
-            if (stream->is_closed())
-            {
-                closed_streams.push_back(stream);
-                _stream_map.erase(it++);
-            }
-            else
-            {
-                stream->reset_ticks(now_ticks, false);
-                live_streams.push_back(stream);
-                ++live_count;
-                ++it;
-            }
+            ScopedLocker<FastLock> _(_stream_map_lock);
+            streams = _stream_map;
         }
-    }
-    _live_stream_count = live_count;
 
-    // flow control
-    if (_slice_quota_in != -1)
-    {
-        // reset quota pool
-        _flow_controller->reset_read_quota(_slice_quota_in);
-
-        // collect streams need to trigger
-        std::vector<FlowControlItem> trigger_list;
-        for (std::list<RpcClientStreamPtr>::iterator it = live_streams.begin();
-                it != live_streams.end(); ++it)
+        // check keep alive time
+        if (_keep_alive_ticks != -1)
         {
-            int token = (*it)->read_quota_token();
-            if (token <= 0)
+            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                // only need trigger streams whose token <= 0
-                trigger_list.push_back(FlowControlItem(token, (*it).get()));
+                const RpcClientStreamPtr& stream = it->second;
+                if (stream->is_closed())
+                {
+                    continue;
+                }
+                if (now_ticks - stream->last_rw_ticks() >= _keep_alive_ticks
+                        && stream->pending_process_count() == 0)
+                {
+                    stream->close("keep alive timeout: "
+                                  + boost::lexical_cast<std::string>(_options.keep_alive_time)
+                                  + " seconds");
+                }
+                else
+                {
+                    stream->reset_ticks(now_ticks, false);
+                }
             }
         }
 
-        // sort by token: token closer to zero, earlier to trigger
-        std::sort(trigger_list.begin(), trigger_list.end());
-
-        // trigger in order
-        for (std::vector<FlowControlItem>::iterator t_it = trigger_list.begin();
-                t_it != trigger_list.end(); ++t_it)
+        // flow control in
+        if (_slice_quota_in != -1)
         {
-            t_it->stream->trigger_receive();
-        }
-    }
-    if (_slice_quota_out != -1)
-    {
-        // reset quota pool
-        _flow_controller->reset_write_quota(_slice_quota_out);
+            // reset quota pool
+            _flow_controller->reset_read_quota(_slice_quota_in);
 
-        // collect streams need to trigger
-        std::vector<FlowControlItem> trigger_list;
-        for (std::list<RpcClientStreamPtr>::iterator it = live_streams.begin();
-                it != live_streams.end(); ++it)
-        {
-            int token = (*it)->write_quota_token();
-            if (token <= 0)
+            // collect streams need to trigger
+            std::vector<FlowControlItem> trigger_list;
+            trigger_list.reserve(streams.size());
+            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                // only need trigger streams whose token <= 0
-                trigger_list.push_back(FlowControlItem(token, (*it).get()));
+                const RpcClientStreamPtr& stream = it->second;
+                if (stream->is_closed())
+                {
+                    continue;
+                }
+                int token = stream->read_quota_token();
+                if (token <= 0)
+                {
+                    // only need trigger streams whose token <= 0
+                    trigger_list.push_back(FlowControlItem(token, stream.get()));
+                }
+            }
+
+            // sort by token: token closer to zero, earlier to trigger
+            std::sort(trigger_list.begin(), trigger_list.end());
+
+            // trigger in order
+            for (std::vector<FlowControlItem>::iterator t_it = trigger_list.begin();
+                    t_it != trigger_list.end(); ++t_it)
+            {
+                t_it->stream->trigger_receive();
             }
         }
 
-        // sort by token: token closer to zero, earlier to trigger
-        std::sort(trigger_list.begin(), trigger_list.end());
-
-        // trigger in order
-        for (std::vector<FlowControlItem>::iterator t_it = trigger_list.begin();
-                t_it != trigger_list.end(); ++t_it)
+        // flow control out
+        if (_slice_quota_out != -1)
         {
-            t_it->stream->trigger_send();
-        }
-    }
+            // reset quota pool
+            _flow_controller->reset_write_quota(_slice_quota_out);
 
-    if (now_ticks - _last_print_connection_ticks >= _print_connection_interval_ticks)
-    {
-        _last_print_connection_ticks = now_ticks;
-#if defined( LOG )
-        LOG(INFO) << "TimerMaintain(): countof(RpcListener)="
-                   << SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcListener)
-                   << ", countof(RpcByteStream)=" << SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcByteStream)
-                   << ", live_stream_count=" << _live_stream_count;
-#else
-        SLOG(INFO, "TimerMaintain(): countof(RpcListener)=%d"
-                ", countof(RpcByteStream)=%d, live_stream_count=%d",
-                SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcListener),
-                SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcByteStream),
-                _live_stream_count);
-#endif
+            // collect streams need to trigger
+            std::vector<FlowControlItem> trigger_list;
+            trigger_list.reserve(streams.size());
+            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
+            {
+                const RpcClientStreamPtr& stream = it->second;
+                if (stream->is_closed())
+                {
+                    continue;
+                }
+                int token = stream->write_quota_token();
+                if (token <= 0)
+                {
+                    // only need trigger streams whose token <= 0
+                    trigger_list.push_back(FlowControlItem(token, stream.get()));
+                }
+            }
+
+            // sort by token: token closer to zero, earlier to trigger
+            std::sort(trigger_list.begin(), trigger_list.end());
+
+            // trigger in order
+            for (std::vector<FlowControlItem>::iterator t_it = trigger_list.begin();
+                    t_it != trigger_list.end(); ++t_it)
+            {
+                t_it->stream->trigger_send();
+            }
+        }
     }
 
     _last_maintain_ticks = now_ticks;

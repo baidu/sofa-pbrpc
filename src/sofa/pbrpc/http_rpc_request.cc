@@ -142,7 +142,6 @@ void HTTPRpcRequest::ProcessRequest(
     cntl->SetRemoteEndpoint(_remote_endpoint);
     cntl->SetRpcServerStream(server_stream);
     cntl->SetRequestReceivedTime(_received_time);
-    cntl->SetStartProcessTime(ptime_now());
     cntl->SetResponseCompressType(CompressTypeNone);
 
     CallMethod(method_board, controller, request, response);
@@ -325,7 +324,7 @@ bool HTTPRpcRequest::RenderResponse(
     std::ostringstream oss;
     oss << response.content.size();
     google::protobuf::io::Printer printer(output, '$');
-    printer.Print("HTTP/1.1 200 OK\r\n");
+    printer.Print("$STATUS_LINE$\r\n", "STATUS_LINE", response.status_line);
     printer.Print("Content-Type: $TYPE$\r\n", "TYPE", response.content_type);
     printer.Print("Access-Control-Allow-Origin: *\r\n");
     printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
@@ -362,10 +361,10 @@ void HTTPRpcRequest::InnerProcess(const RpcServerStreamWPtr& server_stream,
     else
     {
 #if defined( LOG )
-        LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+        LOG(ERROR) << "InnerProcess(): " << RpcEndpointToString(_remote_endpoint)
             << ": {" << SequenceId() << "}: method not found: " << _method;
 #else
-        SLOG(ERROR, "ProcessRequest(): %s: {%lu}: method not found: %s",
+        SLOG(ERROR, "InnerProcess(): %s: {%lu}: method not found: %s",
              RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), _method.c_str());
 #endif
         SendFailedResponse(server_stream,

@@ -19,7 +19,11 @@ typedef boost::function<void(
         const RpcServerStreamWPtr& /* stream */,
         const RpcRequestPtr& /* request */)> ReceivedRequestCallback;
 
-/// Callback function when send response message done.
+// Callback function when closed server stream.
+typedef boost::function<void(
+        const RpcServerStreamPtr& /* stream */)> ClosedServerStreamCallback;
+
+// Callback function when send response message done.
 //  * if "status" == RPC_SUCCESS, means send response succeed;
 //  * else, means send failed.
 typedef boost::function<void(
@@ -36,7 +40,6 @@ public:
     virtual ~RpcServerStream() 
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        close("stream destructed");
     }
 
     // Set the callback function when received request.
@@ -50,6 +53,37 @@ public:
     const ReceivedRequestCallback& received_request_callback() const
     {
         return _received_request_callback;
+    }
+
+    // Set the callback function when closed stream.
+    void set_closed_stream_callback(
+            const ClosedServerStreamCallback& callback)
+    {
+        _closed_stream_callback = callback;
+    }
+
+    // Get the callback function when closed stream.
+    const ClosedServerStreamCallback& closed_stream_callback() const
+    {
+        return _closed_stream_callback;
+    }
+
+    // Increase pending process count.
+    void increase_pending_process_count()
+    {
+        ++_pending_process_count;
+    }
+
+    // Decrease pending process count.
+    void decrease_pending_process_count()
+    {
+        --_pending_process_count;
+    }
+
+    // Get pending process count.
+    uint32_t pending_process_count() const
+    {
+        return _pending_process_count;
     }
 
     // Send response message.  No timeout is set for sending response.
@@ -70,7 +104,11 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        // do nothing
+        if (_closed_stream_callback)
+        {
+            _closed_stream_callback(
+                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
+        }
     }
 
     virtual bool on_sending(
@@ -116,6 +154,8 @@ private:
 
 private:
     ReceivedRequestCallback _received_request_callback;
+    ClosedServerStreamCallback _closed_stream_callback;
+    AtomicCounter _pending_process_count; // count of processing requests to be sent by this stream
 }; // class RpcServerStream
 
 } // namespace pbrpc

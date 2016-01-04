@@ -60,6 +60,8 @@ private:
     // Get stream for "remote_endpoint".  Return null ptr if failed. 
     RpcClientStreamPtr FindOrCreateStream(const RpcEndpoint& remote_endpoint);
 
+    void OnClosed(const RpcClientStreamPtr& stream);
+
     void StopStreams();
 
     void ClearStreams();
@@ -118,7 +120,6 @@ private:
     typedef std::map<RpcEndpoint, RpcClientStreamPtr> StreamMap;
     StreamMap _stream_map;
     FastLock _stream_map_lock;
-    volatile int _live_stream_count;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcClientImpl);
 }; // class RpcClientImpl
