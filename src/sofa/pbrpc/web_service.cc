@@ -150,10 +150,10 @@ bool WebService::RegisterServlet(const std::string& path, Servlet servlet)
     else
     {
 #if defined( LOG )
-        LOG(INFO) << "RegisterServlet(): register webserver path {" 
+        LOG(ERROR) << "RegisterServlet(): register webserver path {" 
             << path << "} format to {" << real_path << "} alreay exist";
 #else
-        SLOG(INFO, "RegisterServlet(): register webserver path {%s} format to {%s} already exist", 
+        SLOG(ERROR, "RegisterServlet(): register webserver path {%s} format to {%s} already exist", 
              path.c_str(), real_path.c_str());
 #endif
     }
@@ -173,10 +173,10 @@ bool WebService::UnregisterServlet(const std::string& path)
     if (it == _servlet_map->end())
     {
 #if defined( LOG )
-        LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
+        LOG(ERROR) << "UnregisterServlet(): unregister webserver path {" 
             << path << "} format to {" << real_path << "} not exist";
 #else
-        SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} not exist", 
+        SLOG(ERROR, "UnregisterServlet(): unregister webserver path {%s} format to {%s} not exist", 
              path.c_str(), real_path.c_str());
 #endif
         return false;
