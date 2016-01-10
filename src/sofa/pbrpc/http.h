@@ -10,6 +10,8 @@
 #include <map>
 #include <string>
 
+#include <sofa/pbrpc/buffer.h>
+
 namespace sofa {
 namespace pbrpc {
 
@@ -25,24 +27,31 @@ struct HTTPRequest
         POST = 2
     };
 
-    Type type;                                              // method in http header
+    Type type;                                                      // method in http header
 
-    std::map<std::string, std::string> headers;             // http request headers
+    const std::map<std::string, std::string>* headers;              // http request headers
 
-    std::map<std::string, std::string> query_params;        // query parameters 
-                                                            // http://www.baidu.com/s?k=123
-                                                            // will be parsed to {"k":"123"}
+    const std::map<std::string, std::string>* query_params;         // query parameters 
+                                                                    // http://www.baidu.com/s?k=123
+                                                                    // will be parsed to {"k":"123"}
 
-    std::string path;                                       // PATH field in http request
-                                                            // for example, http://www.baidu.com/s?k=123
-                                                            // path is "/s"
+    std::string path;                                               // PATH field in http request
+                                                                    // for example, http://www.baidu.com/s?k=123
+                                                                    // path is "/s"
 
-    std::string body;                                       // the body field describes HTTP post body
+    std::string ip;                                                 // server ip adddress
+
+    uint16_t port;                                                  // server port
+
+    ReadBufferPtr body;                                             // the body field describes HTTP post body
+                                                                    // using body->ToString() to get the std::string
 
     HTTPRequest() : type(GET)
-                  , headers()
-                  , query_params()
+                  , headers(NULL)
+                  , query_params(NULL)
                   , path() 
+                  , ip()
+                  , port(0)
                   , body()
     { }
 };
@@ -52,29 +61,21 @@ struct HTTPRequest
  */
 struct HTTPResponse
 {
-    std::string content;                                    // page content will return to http client 
-                                                            // which maybe a web browser
+    std::string status_line;                                        // HTTP server status line, reference to RFC2616
+                                                                    // default value is 200 OK, means this request dealed 
+                                                                    // normally
+                                                                    
+    std::string content_type;                                       // content-type field in http response header
+                                                                    // default is "text/html", return a plain text to 
+                                                                    // http client
 
-    std::string host;                                       // server host, auto filled by web service
-
-    std::string ip;                                         // server ip address, auto filled by web service
-
-    uint32_t port;                                          // server port, auto filled by web service
-
-    std::string content_type;                               // content-type field in http response header
-                                                            // default is "text/html", return a plain text to 
-                                                            // http client
-
-    std::string status_line;                                // HTTP server status line, reference to RFC2616
-                                                            // default value is 200 OK, means this request dealed 
-                                                            // normally
-
-    HTTPResponse() : content()
-                   , host()
-                   , ip()
-                   , port(0)
+    WriteBufferPtr content;                                         // page content will return to http client 
+                                                                    // which maybe a web browser
+                                                                    // using content->Append(std::string) to set response body
+                                                            
+    HTTPResponse() : status_line("HTTP/1.1 200 OK")
                    , content_type("text/html; charset=UTF-8")
-                   , status_line("HTTP/1.1 200 OK")
+                   , content(new WriteBuffer()) 
     { }
 };
 

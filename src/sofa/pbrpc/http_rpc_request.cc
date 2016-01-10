@@ -271,11 +271,11 @@ void HTTPRpcRequest::SendResponse(
     if (!RenderResponse(&write_buffer, response))
     {
 #if defined( LOG )
-        LOG(ERROR) << "SendPage(): " << RpcEndpointToString(_remote_endpoint)
+        LOG(ERROR) << "SendResponse(): " << RpcEndpointToString(_remote_endpoint)
                    << ": {" << SequenceId() << "}"
                    << ": render response failed";
 #else
-        SLOG(ERROR, "SendPage(): %s: {%lu}: render response failed",
+        SLOG(ERROR, "SendResponse(): %s: {%lu}: render response failed",
                 RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
 #endif
         return;
@@ -283,6 +283,7 @@ void HTTPRpcRequest::SendResponse(
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    response.content->SwapOut(read_buffer.get());
 
     SendSucceedResponse(server_stream, read_buffer);
 }
@@ -322,14 +323,13 @@ bool HTTPRpcRequest::RenderResponse(
         const HTTPResponse& response)
 {
     std::ostringstream oss;
-    oss << response.content.size();
+    oss << response.content->ByteCount();
     google::protobuf::io::Printer printer(output, '$');
     printer.Print("$STATUS_LINE$\r\n", "STATUS_LINE", response.status_line);
     printer.Print("Content-Type: $TYPE$\r\n", "TYPE", response.content_type);
     printer.Print("Access-Control-Allow-Origin: *\r\n");
     printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
     printer.Print("\r\n");
-    printer.PrintRaw(response.content);
     return !printer.failed();
 }
 

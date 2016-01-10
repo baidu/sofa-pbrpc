@@ -79,12 +79,12 @@ bool RpcServer::IsListening()
     return _impl->IsListening();
 }
 
-bool RpcServer::RegisterWebServlet(const std::string& path, Servlet servlet)
+bool RpcServer::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
 {
-    return _impl->RegisterWebServlet(path, servlet);
+    return _impl->RegisterWebServlet(path, servlet, take_ownership);
 }
 
-bool RpcServer::UnregisterWebServlet(const std::string& path)
+Servlet RpcServer::UnregisterWebServlet(const std::string& path)
 {
     return _impl->UnregisterWebServlet(path);
 }

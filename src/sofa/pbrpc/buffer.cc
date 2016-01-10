@@ -309,6 +309,19 @@ bool WriteBuffer::Extend()
     return true;
 }
 
+int WriteBuffer::Append(const std::string& data)
+{
+    size_t data_size = data.size();
+    int64_t head = Reserve(data_size);
+    if (head < 0)
+    {
+        return -1;
+    }
+
+    SetData(head, data.c_str(), data_size);
+    return 0;
+}
+
 } // namespace pbrpc
 } // namespace sofa
 

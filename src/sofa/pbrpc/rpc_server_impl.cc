@@ -597,16 +597,16 @@ WebServicePtr RpcServerImpl::GetWebService()
     return _web_service;
 }
 
-bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet)
+bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
 {
     if (!_web_service) 
     {
         return false;
     }
-    return _web_service->RegisterServlet(path, servlet);
+    return _web_service->RegisterServlet(path, servlet, take_ownership);
 }
 
-bool RpcServerImpl::UnregisterWebServlet(const std::string& path)
+Servlet RpcServerImpl::UnregisterWebServlet(const std::string& path)
 {
     if (!_web_service)
     {

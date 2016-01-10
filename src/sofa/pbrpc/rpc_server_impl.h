@@ -60,9 +60,9 @@ public:
 
     WebServicePtr GetWebService();
 
-    bool RegisterWebServlet(const std::string& path, Servlet servlet);
+    bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership);
 
-    bool UnregisterWebServlet(const std::string& path);
+    Servlet UnregisterWebServlet(const std::string& path);
 
 private:
     void OnCreated(const RpcServerStreamPtr& stream);

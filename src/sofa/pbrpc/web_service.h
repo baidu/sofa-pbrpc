@@ -18,7 +18,7 @@ class HTTPRequest;
 class HTTPResponse;
 typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 
-typedef std::map<const std::string, Servlet> ServletMap;
+typedef std::map<const std::string, std::pair<Servlet, bool> > ServletMap;
 typedef sofa::pbrpc::shared_ptr<ServletMap> ServletMapPtr;
 
 class WebService
@@ -29,9 +29,9 @@ public:
 
     void Init();
 
-    bool RegisterServlet(const std::string& path, Servlet servlet);
+    bool RegisterServlet(const std::string& path, Servlet servlet, bool take_ownership = true);
 
-    bool UnregisterServlet(const std::string& path);
+    Servlet UnregisterServlet(const std::string& path);
 
     bool RoutePage(
         const RpcRequestPtr& rpc_request, 
@@ -55,7 +55,7 @@ private:
     static void PageFooter(std::ostream& out);
 
     void ServerBrief(std::ostream& out,
-                     const HTTPResponse& response);
+                     const HTTPRequest& request);
 
     void ServerOptions(std::ostream& out);
 

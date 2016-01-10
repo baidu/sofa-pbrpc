@@ -177,13 +177,13 @@ public:
     // Return false if path already exist
     // Example: see sofa-pbrpc/sample/echo
     // NOTE: path will be formatted
-    bool RegisterWebServlet(const std::string& path, Servlet servlet);
+    bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership = true);
 
     // Delete a path and its related function from rpc server
-    // Return true if deleting success
-    // Return false if path not exist
+    // Return Servlet if deleting success
+    // Return NULL if path not exist
     // NOTE: path will be formatted
-    bool UnregisterWebServlet(const std::string& path);
+    Servlet UnregisterWebServlet(const std::string& path);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const

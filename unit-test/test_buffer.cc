@@ -454,6 +454,34 @@ TEST_F(WriteBufferTest, SetData)
     }
 }
 
+TEST_F(WriteBufferTest, Append)
+{
+    {
+        WriteBufferPtr os(new WriteBuffer());
+        std::string str1(2000, 'x');
+        os->Append(str1);
+        std::string str2(2000, 'y');
+        os->Append(str2);
+        str1 += str2;
+        ReadBufferPtr is(new ReadBuffer());
+        os->SwapOut(is.get());
+        ASSERT_EQ(str1, is->ToString());
+    }
+
+    {
+        WriteBufferPtr os(new WriteBuffer());
+        std::string str1(2000, 'x');
+        int head_pos = os->Reserve(str1.size());
+        os->SetData(head_pos, str1.c_str(), str1.size());
+        std::string str2(2000, 'y');
+        os->Append(str2);
+        str1 += str2;
+        ReadBufferPtr is(new ReadBuffer());
+        os->SwapOut(is.get());
+        ASSERT_EQ(str1, is->ToString());
+    }
+}
+
 class PBSerDeserTest : public ::testing::Test
 {
 public:

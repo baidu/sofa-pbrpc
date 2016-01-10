@@ -11,12 +11,12 @@
 
 bool WebServlet(const sofa::pbrpc::HTTPRequest& request, sofa::pbrpc::HTTPResponse& response)
 {
-    std::map<std::string, std::string>::const_iterator it = request.headers.begin();
-    for (; it != request.headers.end(); ++it)
+    std::map<std::string, std::string>::const_iterator it = request.headers->begin();
+    for (; it != request.headers->end(); ++it)
     {
         SLOG(INFO, "%s:%s", it->first.c_str(), it->second.c_str());
     }
-    response.content = "<h1>Hello from sofa-pbrpc web server</h1>";
+    response.content->Append("<h1>Hello from sofa-pbrpc web server</h1>");
     response.status_line = "HTTP/1.1 200 OK";
     return true;
 }
@@ -87,7 +87,6 @@ int main()
 
     // Delete closures.
     // Attention: should delete the closures after server stopped, or may be crash.
-    delete servlet;
     delete options.work_thread_init_func;
     delete options.work_thread_dest_func;
 
