@@ -610,7 +610,7 @@ Servlet RpcServerImpl::UnregisterWebServlet(const std::string& path)
 {
     if (!_web_service)
     {
-        return false;
+        return NULL;
     }
     return _web_service->UnregisterServlet(path);
 }
