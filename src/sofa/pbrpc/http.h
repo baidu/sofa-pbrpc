@@ -27,31 +27,46 @@ struct HTTPRequest
         POST = 2
     };
 
-    Type type;                                                      // method in http header
+    // method in http header
+    Type type;
 
-    const std::map<std::string, std::string>* headers;              // http request headers
+    // http request headers
+    const std::map<std::string, std::string>* headers;
 
-    const std::map<std::string, std::string>* query_params;         // query parameters 
-                                                                    // http://www.baidu.com/s?k=123
-                                                                    // will be parsed to {"k":"123"}
+    // query parameters 
+    // http://www.baidu.com/s?k=123
+    // will be parsed to {"k":"123"}
+    const std::map<std::string, std::string>* query_params;
 
-    std::string path;                                               // PATH field in http request
-                                                                    // for example, http://www.baidu.com/s?k=123
-                                                                    // path is "/s"
+    // PATH field in http request
+    // for example, http://www.baidu.com/s?k=123
+    // path is "/s"
+    std::string path;
 
-    std::string ip;                                                 // server ip adddress
+    // server ip adddress
+    std::string server_ip;
 
-    uint16_t port;                                                  // server port
+    // server port
+    uint16_t server_port;
 
-    ReadBufferPtr body;                                             // the body field describes HTTP post body
-                                                                    // using body->ToString() to get the std::string
+    // client ip address
+    std::string client_ip;
+
+    // client port
+    uint16_t client_port;
+
+    // the body field describes HTTP post body
+    // using body->ToString() to get the std::string
+    ReadBufferPtr body;
 
     HTTPRequest() : type(GET)
                   , headers(NULL)
                   , query_params(NULL)
                   , path() 
-                  , ip()
-                  , port(0)
+                  , server_ip()
+                  , server_port(0)
+                  , client_ip()
+                  , client_port()
                   , body()
     { }
 };
@@ -61,18 +76,18 @@ struct HTTPRequest
  */
 struct HTTPResponse
 {
-    std::string status_line;                                        // HTTP server status line, reference to RFC2616
-                                                                    // default value is 200 OK, means this request dealed 
-                                                                    // normally
-                                                                    
-    std::string content_type;                                       // content-type field in http response header
-                                                                    // default is "text/html", return a plain text to 
-                                                                    // http client
+    // HTTP server status line, reference to RFC2616
+    // default value is 200 OK, means this request dealed normally
+    std::string status_line;
 
-    WriteBufferPtr content;                                         // page content will return to http client 
-                                                                    // which maybe a web browser
-                                                                    // using content->Append(std::string) to set response body
-                                                            
+    // content-type field in http response header
+    // default is "text/html", return a plain text to http client
+    std::string content_type;
+
+    // page content will return to http client which maybe a web browser
+    // using content->Append(std::string) to set response body
+    WriteBufferPtr content;
+
     HTTPResponse() : status_line("HTTP/1.1 200 OK")
                    , content_type("text/html; charset=UTF-8")
                    , content(new WriteBuffer()) 

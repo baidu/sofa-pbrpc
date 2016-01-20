@@ -46,7 +46,8 @@ void ReadBuffer::Append(const ReadBuffer* read_buffer)
     SCHECK(read_buffer != NULL);
     BufHandleList::const_iterator it = read_buffer->_buf_list.begin();
     BufHandleList::const_iterator end = read_buffer->_buf_list.end();
-    for (; it != end; ++it) {
+    for (; it != end; ++it) 
+    {
         _buf_list.push_back(*it);
         TranBufPool::add_ref(it->data);
     }
@@ -309,17 +310,22 @@ bool WriteBuffer::Extend()
     return true;
 }
 
-int WriteBuffer::Append(const std::string& data)
+bool WriteBuffer::Append(const std::string& data)
 {
-    size_t data_size = data.size();
-    int64_t head = Reserve(data_size);
+    return Append(data.c_str(), data.size());
+}
+
+bool WriteBuffer::Append(const char* data, int size)
+{
+    SCHECK_GE(size, 0);
+    if (size == 0) return true;
+    int64 head = Reserve(size);
     if (head < 0)
     {
-        return -1;
+        return false;
     }
-
-    SetData(head, data.c_str(), data_size);
-    return 0;
+    SetData(head, data, size);
+    return true;
 }
 
 } // namespace pbrpc

@@ -14,6 +14,7 @@ namespace sofa {
 namespace pbrpc {
 
 static const std::string ROOT_PATH = "/";
+static const std::string PATH_SPLITTER = "/";
 
 static std::string GetHostName(const std::string& ip)
 {
@@ -62,13 +63,13 @@ static std::string format_number(T num)
 static std::string FormatPath(const std::string& path)
 {
     std::vector<std::string> path_vec;
-    StringUtils::split(path, ROOT_PATH, &path_vec);
+    StringUtils::split(path, PATH_SPLITTER, &path_vec);
     std::stringstream os;
     for (size_t i = 0; i < path_vec.size(); ++i)
     {
         if (!path_vec[i].empty())
         {
-            os << ROOT_PATH << path_vec[i];
+            os << PATH_SPLITTER << path_vec[i];
         }
     }
     return os.str().empty() ? ROOT_PATH : os.str();
@@ -210,8 +211,10 @@ bool WebService::RoutePage(
     request.body = http_rpc_request->_req_body;
     request.headers = &http_rpc_request->_headers;
     request.query_params = &http_rpc_request->_query_params;
-    request.ip = HostOfRpcEndpoint(http_rpc_request->_local_endpoint);
-    request.port = PortOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.server_ip = HostOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.server_port = PortOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.client_ip = HostOfRpcEndpoint(http_rpc_request->_remote_endpoint);
+    request.client_port = PortOfRpcEndpoint(http_rpc_request->_remote_endpoint);
 
     bool ret = false;
     const std::string& method = http_rpc_request->_method;
@@ -252,7 +255,7 @@ Servlet WebService::FindServlet(const std::string& path)
     size_t cur_pos = 0;
     while (cur_pos < path_size)
     {
-        cur_pos = real_path.find(ROOT_PATH, cur_pos + 1);
+        cur_pos = real_path.find(PATH_SPLITTER, cur_pos + 1);
         if (cur_pos == std::string::npos)
         {
             ServletMap::const_iterator find = servlets->find(real_path);
@@ -272,7 +275,7 @@ Servlet WebService::FindServlet(const std::string& path)
         size_t find_path_size = find_path.size();
         if (find_path_size <= path_size
             && strncmp(real_path.data(), find_path.data(), find_path_size) == 0
-            && (find_path_size == path_size || real_path[find_path_size] == ROOT_PATH[0]))
+            && (find_path_size == path_size || real_path[find_path_size] == PATH_SPLITTER[0]))
         {
             ret = find->second.first;
             cur_pos = find_path_size;
@@ -383,9 +386,9 @@ void WebService::PageFooter(std::ostream& out)
 void WebService::ServerBrief(std::ostream& out, 
                              const HTTPRequest& request)
 {
-    out << "<h1>" << GetHostName(request.ip) << "</h1>"
-        << "<b>IP:</b> " << request.ip << "<br>"
-        << "<b>Port:</b> " << request.port << "<br>"
+    out << "<h1>" << GetHostName(request.server_ip) << "</h1>"
+        << "<b>IP:</b> " << request.server_ip << "<br>"
+        << "<b>Port:</b> " << request.server_port << "<br>"
         << "<b>Started:</b> " << ptime_to_string(_service_pool->RpcServer()->GetStartTime()) << "<br>"
         << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>"
         << "<b>Compiled:</b> " << compile_info() << "<br>";
