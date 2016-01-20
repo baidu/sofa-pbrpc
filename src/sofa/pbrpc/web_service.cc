@@ -69,7 +69,7 @@ static std::string FormatPath(const std::string& path)
     {
         if (!path_vec[i].empty())
         {
-            os << ROOT_PATH << path_vec[i];
+            os << PATH_SPLITTER << path_vec[i];
         }
     }
     return os.str().empty() ? ROOT_PATH : os.str();
@@ -255,7 +255,7 @@ Servlet WebService::FindServlet(const std::string& path)
     size_t cur_pos = 0;
     while (cur_pos < path_size)
     {
-        cur_pos = real_path.find(ROOT_PATH, cur_pos + 1);
+        cur_pos = real_path.find(PATH_SPLITTER, cur_pos + 1);
         if (cur_pos == std::string::npos)
         {
             ServletMap::const_iterator find = servlets->find(real_path);
@@ -275,7 +275,7 @@ Servlet WebService::FindServlet(const std::string& path)
         size_t find_path_size = find_path.size();
         if (find_path_size <= path_size
             && strncmp(real_path.data(), find_path.data(), find_path_size) == 0
-            && (find_path_size == path_size || real_path[find_path_size] == ROOT_PATH[0]))
+            && (find_path_size == path_size || real_path[find_path_size] == PATH_SPLITTER[0]))
         {
             ret = find->second.first;
             cur_pos = find_path_size;
