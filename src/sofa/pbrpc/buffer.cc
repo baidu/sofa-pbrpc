@@ -309,17 +309,25 @@ bool WriteBuffer::Extend()
     return true;
 }
 
-int WriteBuffer::Append(const std::string& data)
+bool WriteBuffer::Append(const std::string& data)
 {
-    size_t data_size = data.size();
-    int64_t head = Reserve(data_size);
-    if (head < 0)
+    return Append(data.c_str(), data.size());
+}
+
+bool WriteBuffer::Append(const char* data, int size)
+{
+    if (size <= 0)
     {
-        return -1;
+        return false;
     }
 
-    SetData(head, data.c_str(), data_size);
-    return 0;
+    int64_t head = Reserve(size);
+    if (head < 0)
+    {
+        return false;
+    }
+    SetData(head, data, size);
+    return true;
 }
 
 } // namespace pbrpc

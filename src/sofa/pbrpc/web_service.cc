@@ -14,6 +14,7 @@ namespace sofa {
 namespace pbrpc {
 
 static const std::string ROOT_PATH = "/";
+static const std::string PATH_SPLITTER = "/";
 
 static std::string GetHostName(const std::string& ip)
 {
@@ -62,7 +63,7 @@ static std::string format_number(T num)
 static std::string FormatPath(const std::string& path)
 {
     std::vector<std::string> path_vec;
-    StringUtils::split(path, ROOT_PATH, &path_vec);
+    StringUtils::split(path, PATH_SPLITTER, &path_vec);
     std::stringstream os;
     for (size_t i = 0; i < path_vec.size(); ++i)
     {
@@ -210,8 +211,10 @@ bool WebService::RoutePage(
     request.body = http_rpc_request->_req_body;
     request.headers = &http_rpc_request->_headers;
     request.query_params = &http_rpc_request->_query_params;
-    request.ip = HostOfRpcEndpoint(http_rpc_request->_local_endpoint);
-    request.port = PortOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.server_ip = HostOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.server_port = PortOfRpcEndpoint(http_rpc_request->_local_endpoint);
+    request.client_ip = HostOfRpcEndpoint(http_rpc_request->_remote_endpoint);
+    request.client_port = PortOfRpcEndpoint(http_rpc_request->_remote_endpoint);
 
     bool ret = false;
     const std::string& method = http_rpc_request->_method;
@@ -383,9 +386,9 @@ void WebService::PageFooter(std::ostream& out)
 void WebService::ServerBrief(std::ostream& out, 
                              const HTTPRequest& request)
 {
-    out << "<h1>" << GetHostName(request.ip) << "</h1>"
-        << "<b>IP:</b> " << request.ip << "<br>"
-        << "<b>Port:</b> " << request.port << "<br>"
+    out << "<h1>" << GetHostName(request.server_ip) << "</h1>"
+        << "<b>IP:</b> " << request.server_ip << "<br>"
+        << "<b>Port:</b> " << request.server_port << "<br>"
         << "<b>Started:</b> " << ptime_to_string(_service_pool->RpcServer()->GetStartTime()) << "<br>"
         << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>"
         << "<b>Compiled:</b> " << compile_info() << "<br>";
