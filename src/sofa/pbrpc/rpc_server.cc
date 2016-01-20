@@ -79,6 +79,16 @@ bool RpcServer::IsListening()
     return _impl->IsListening();
 }
 
+bool RpcServer::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
+{
+    return _impl->RegisterWebServlet(path, servlet, take_ownership);
+}
+
+Servlet RpcServer::UnregisterWebServlet(const std::string& path)
+{
+    return _impl->UnregisterWebServlet(path);
+}
+
 } // namespace pbrpc
 } // namespace sofa
 

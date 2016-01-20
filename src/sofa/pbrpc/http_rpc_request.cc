@@ -17,53 +17,13 @@
 #include <sofa/pbrpc/rpc_server_impl.h>
 #include <sofa/pbrpc/pbjson.h>
 #include <sofa/pbrpc/string_utils.h>
+#include <sofa/pbrpc/http.h>
+#include <sofa/pbrpc/web_service.h>
 
 #include <google/protobuf/io/printer.h>
 
 namespace sofa {
 namespace pbrpc {
-
-static std::string GetHostName(const std::string& ip)
-{
-    struct sockaddr_in addr;
-    struct hostent *host;
-    if (inet_aton(ip.c_str(), &addr.sin_addr) != 0)
-    {
-        host = gethostbyaddr((char*)&addr.sin_addr, 4, AF_INET); 
-    }
-    else
-    {
-        host = gethostbyname(ip.c_str());
-    }
-    if (host != NULL)
-    {
-        return host->h_name;
-    }
-    else
-    {
-        return ip;
-    }
-}
-
-template <class T>
-std::string format_number(T num)
-{
-    std::ostringstream oss;
-    oss << num;
-    std::string str = oss.str();
-    size_t len = str.size();
-    std::string ret;
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        if (i != 0 && len % 3 == 0)
-        {
-            ret.push_back(',');
-        }
-        ret.push_back(str.at(i));
-        --len;
-    }
-    return ret;
-}
 
 HTTPRpcRequest::HTTPRpcRequest() :
     _type(GET),
@@ -104,37 +64,14 @@ void HTTPRpcRequest::ProcessRequest(
     std::string method_name;
     if (!ParseMethodFullName(_method, &service_name, &method_name))
     {
-        if (RoutePage(server_stream, service_pool))
-        {
-            return;
-        }
-        else
-        {
-#if defined( LOG )
-            LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
-                       << ": {" << SequenceId() << "}: method not found: " << _method;
-#else
-            SLOG(ERROR, "ProcessRequest(): %s: {%lu}: method not found: %s",
-                    RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), _method.c_str());
-#endif
-            SendFailedResponse(server_stream,
-                    RPC_ERROR_FOUND_METHOD, "method not found: " + _method);
-            return;
-        }
+        InnerProcess(server_stream, service_pool);
+        return;
     }
 
     MethodBoard* method_board = FindMethodBoard(service_pool, service_name, method_name);
     if (method_board == NULL)
     {
-#if defined( LOG )
-        LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
-                   << ": {" << SequenceId() << "}: method not found: " << _method;
-#else
-        SLOG(ERROR, "ProcessRequest(): %s: {%lu}: method not found: %s",
-                RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), _method.c_str());
-#endif
-        SendFailedResponse(server_stream,
-                RPC_ERROR_FOUND_METHOD, "method not found: " + _method);
+        InnerProcess(server_stream, service_pool);
         return;
     }
 
@@ -326,90 +263,19 @@ bool HTTPRpcRequest::ParsePath()
     return true;
 }
 
-bool HTTPRpcRequest::RoutePage(
+void HTTPRpcRequest::SendResponse(
         const RpcServerStreamWPtr& server_stream,
-        const ServicePoolPtr& service_pool)
-{
-    if (_method == "" || _method == "home")
-    {
-        std::ostringstream oss;
-        PageHeader(oss);
-        ServerBrief(oss, service_pool);
-        ServerStatus(oss, service_pool);
-        ServiceList(oss, service_pool);
-        ServerOptions(oss, service_pool);
-        PageFooter(oss);
-        SendPage(server_stream, oss.str());
-        return true;
-    }
-    else if (_method == "options")
-    {
-        std::ostringstream oss;
-        PageHeader(oss);
-        oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-        ServerOptions(oss, service_pool);
-        PageFooter(oss);
-        SendPage(server_stream, oss.str());
-        return true;
-    }
-    else if (_method == "status")
-    {
-        std::ostringstream oss;
-        PageHeader(oss);
-        oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-        ServerStatus(oss, service_pool);
-        PageFooter(oss);
-        SendPage(server_stream, oss.str());
-        return true;
-    }
-    else if (_method == "services")
-    {
-        std::ostringstream oss;
-        PageHeader(oss);
-        oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
-        ServiceList(oss, service_pool);
-        PageFooter(oss);
-        SendPage(server_stream, oss.str());
-        return true;
-    }
-    else if (_method == "service")
-    {
-        if (_query_params.find("name") == _query_params.end())
-        {
-            SendError(server_stream, "Lack of name param");
-            return true;
-        }
-        ServiceBoard* svc_board = service_pool->FindService(_query_params["name"]);
-        if (svc_board == NULL)
-        {
-            SendError(server_stream, "Service not found");
-            return true;
-        }
-        std::ostringstream oss;
-        PageHeader(oss);
-        oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>"
-            << "<a href=\"/services\">&lt;&lt;&lt;&lt;back to Services</a>";
-        MethodList(oss, svc_board);
-        PageFooter(oss);
-        SendPage(server_stream, oss.str());
-        return true;
-    }
-    return false;
-}
-
-void HTTPRpcRequest::SendPage(
-        const RpcServerStreamWPtr& server_stream,
-        const std::string& page)
+        const HTTPResponse& response)
 {
     WriteBuffer write_buffer;
-    if (!RenderResponse(&write_buffer, HTML, page))
+    if (!RenderResponse(&write_buffer, response))
     {
 #if defined( LOG )
-        LOG(ERROR) << "SendPage(): " << RpcEndpointToString(_remote_endpoint)
+        LOG(ERROR) << "SendResponse(): " << RpcEndpointToString(_remote_endpoint)
                    << ": {" << SequenceId() << "}"
                    << ": render response failed";
 #else
-        SLOG(ERROR, "SendPage(): %s: {%lu}: render response failed",
+        SLOG(ERROR, "SendResponse(): %s: {%lu}: render response failed",
                 RpcEndpointToString(_remote_endpoint).c_str(), SequenceId());
 #endif
         return;
@@ -417,19 +283,9 @@ void HTTPRpcRequest::SendPage(
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    response.content->SwapOut(read_buffer.get());
 
     SendSucceedResponse(server_stream, read_buffer);
-}
-
-void HTTPRpcRequest::SendError(
-        const RpcServerStreamWPtr& server_stream,
-        const std::string& error)
-{
-    std::ostringstream oss;
-    PageHeader(oss);
-    oss << "<h1>ERROR: " << error << "</h1>";
-    PageFooter(oss);
-    SendPage(server_stream, oss.str());
 }
 
 bool HTTPRpcRequest::RenderResponse(
@@ -462,6 +318,21 @@ bool HTTPRpcRequest::RenderResponse(
     return !printer.failed();
 }
 
+bool HTTPRpcRequest::RenderResponse(
+        google::protobuf::io::ZeroCopyOutputStream* output,
+        const HTTPResponse& response)
+{
+    std::ostringstream oss;
+    oss << response.content->ByteCount();
+    google::protobuf::io::Printer printer(output, '$');
+    printer.Print("$STATUS_LINE$\r\n", "STATUS_LINE", response.status_line);
+    printer.Print("Content-Type: $TYPE$\r\n", "TYPE", response.content_type);
+    printer.Print("Access-Control-Allow-Origin: *\r\n");
+    printer.Print("Content-Length: $LENGTH$\r\n", "LENGTH", oss.str());
+    printer.Print("\r\n");
+    return !printer.failed();
+}
+
 rapidjson::Document* HTTPRpcRequest::ParseJson(
         const char* str,
         std::string& err)
@@ -477,192 +348,29 @@ rapidjson::Document* HTTPRpcRequest::ParseJson(
     return d;
 }
 
-void HTTPRpcRequest::PageHeader(std::ostream& out)
-{
-    out << "<html>"
-        << "<head><title>SOFA-PBRPC</title></head>"
-        << "<body>";
-}
-
-void HTTPRpcRequest::PageFooter(std::ostream& out)
-{
-    out << "<hr>"
-        << "Provided by SOFA-PBRPC."
-        << "</body>"
-        << "</html>";
-}
-
-void HTTPRpcRequest::ServerBrief(
-        std::ostream& out,
-        const ServicePoolPtr& service_pool)
-{
-    std::string ip = HostOfRpcEndpoint(_local_endpoint);
-    uint32 port = PortOfRpcEndpoint(_local_endpoint);
-    std::string host = GetHostName(ip);
-
-    out << "<h1>" << host << "</h1>"
-        << "<b>IP:</b> " << ip << "<br>"
-        << "<b>Port:</b> " << port << "<br>"
-        << "<b>Started:</b> " << ptime_to_string(service_pool->RpcServer()->GetStartTime()) << "<br>"
-        << "<b>Version:</b> " << SOFA_PBRPC_VERSION << "<br>"
-        << "<b>Compiled:</b> " << compile_info() << "<br>";
-}
-
-void HTTPRpcRequest::ServerOptions(
-        std::ostream& out,
-        const ServicePoolPtr& service_pool)
+void HTTPRpcRequest::InnerProcess(const RpcServerStreamWPtr& server_stream,
+         const ServicePoolPtr& service_pool)
 {
     RpcServerImpl* server = service_pool->RpcServer();
-    RpcServerOptions options = server->GetOptions();
-    out << "<h3>ServerOptions</h3><hr>"
-        << "<table border=\"2\">"
-        << "<tr><th align=\"left\">Name</th><th align=\"right\">Value</th></tr>"
-        << "<tr><td>work_thread_num</td>"
-        << "<td align=\"right\">" << options.work_thread_num << "</td></tr>"
-        << "<tr><td>max_connection_count</td>"
-        << "<td align=\"right\">" << options.max_connection_count << "</td></tr>"
-        << "<tr><td>keep_alive_time (seconds)</td>"
-        << "<td align=\"right\">" << options.keep_alive_time << "</td></tr>"
-        << "<tr><td>max_pending_buffer_size (MB)</td>"
-        << "<td align=\"right\">" << options.max_pending_buffer_size << "</td></tr>"
-        << "<tr><td>max_throughput_in (MB)</td>"
-        << "<td align=\"right\">" << options.max_throughput_in << "</td></tr>"
-        << "<tr><td>max_throughput_out (MB)</td>"
-        << "<td align=\"right\">" << options.max_throughput_out << "</td></tr>"
-        << "<tr><td>disable_builtin_services</td>"
-        << "<td align=\"right\">" << (options.disable_builtin_services ? "true" : "false") << "</td></tr>"
-        << "<tr><td>disable_list_service</td>"
-        << "<td align=\"right\">" << (options.disable_list_service ? "true" : "false") << "</td></tr>"
-        << "</table>";
-}
-
-void HTTPRpcRequest::ServerStatus(
-        std::ostream& out,
-        const ServicePoolPtr& service_pool)
-{
-    RpcServerImpl* server = service_pool->RpcServer();
-    int64 pending_message_count;
-    int64 pending_buffer_size;
-    int64 pending_data_size;
-    server->GetPendingStat(&pending_message_count, &pending_buffer_size, &pending_data_size);
-    out << "<h3>ServerStatus</h3><hr>"
-        << "<table border=\"2\">"
-        << "<tr><th align=\"left\">Name</td><th align=\"right\">Value</th></tr>"
-        << "<tr><td>connection_count</td>"
-        << "<td align=\"right\">" << server->ConnectionCount() << "</td></tr>"
-        << "<tr><td>service_count</td>"
-        << "<td align=\"right\">" << server->ServiceCount() << "</td></tr>"
-        << "<tr><td>pending_message_count</td>"
-        << "<td align=\"right\">" << pending_message_count << "</td></tr>"
-        << "<tr><td>pending_buffer_size (bytes)</td>"
-        << "<td align=\"right\">" << format_number(pending_buffer_size) << "</td></tr>"
-        << "<tr><td>pending_data_size (bytes)</td>"
-        << "<td align=\"right\">" << format_number(pending_data_size) << "</td></tr>"
-        << "<tr><td>countof(RpcListener)</td>"
-        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcListener)) << "</td></tr>"
-        << "<tr><td>countof(RpcByteStream)</td>"
-        << "<td align=\"right\">" << format_number(SOFA_PBRPC_GET_RESOURCE_COUNTER(RpcByteStream)) << "</td></tr>"
-        << "</table>";
-}
-
-void HTTPRpcRequest::ServiceList(
-        std::ostream& out,
-        const ServicePoolPtr& service_pool)
-{
-    out << "<h3>Services</h3><hr>"
-        << "<table border=\"2\">"
-        << "<tr>"
-        << "<th rowspan=\"2\" align=\"left\">Name</th>"
-        << "<th colspan=\"3\" align=\"center\">Stat in last second</th>"
-        << "<th colspan=\"3\" align=\"center\">Stat in last minute</th>"
-        << "</tr>"
-        << "<tr>"
-        << "<th align=\"right\">Requested</th><th align=\"right\">Succeed</th><th align=\"right\">Failed</th>"
-        << "<th align=\"right\">Requested</th><th align=\"right\">Succeed</th><th align=\"right\">Failed</th>"
-        << "</tr>";
-    std::list<ServiceBoard*> svc_list;
-    service_pool->ListService(&svc_list);
-    for (std::list<ServiceBoard*>::iterator it = svc_list.begin();
-            it != svc_list.end(); ++it)
+    WebServicePtr web_service = server->GetWebService();
+    if (web_service && web_service->RoutePage(
+                shared_from_this(), server_stream))
     {
-        ServiceBoard* svc_board = *it;
-        std::string name = svc_board->ServiceName();
-        sofa::pbrpc::builtin::ServiceStat stat1;
-        sofa::pbrpc::builtin::ServiceStat stat60;
-        svc_board->LatestStats(1, &stat1);
-        svc_board->LatestStats(60, &stat60);
-        out << "<tr>"
-            << "<td><a href=\"/service?name=" << name << "\">" << name << "</a></td>"
-            << "<td align=\"right\">" << (stat1.succeed_count() + stat1.failed_count()) << "</td>"
-            << "<td align=\"right\">" << stat1.succeed_count() << "</td>" 
-            << "<td align=\"right\">" << stat1.failed_count() << "</td>"
-            << "<td align=\"right\">" << (stat60.succeed_count() + stat60.failed_count()) << "</td>"
-            << "<td align=\"right\">" << stat60.succeed_count() << "</td>"
-            << "<td align=\"right\">" << stat60.failed_count() << "</td>"
-            << "</tr>";
+        return;
     }
-    out << "</table>";
-}
-
-void HTTPRpcRequest::MethodList(
-        std::ostream& out,
-        ServiceBoard* svc_board)
-{
-    out << "<h3>Methods of [" << svc_board->ServiceName() << "]</h3><hr>"
-        << "<table border=\"2\">"
-        << "<tr>"
-        << "<th rowspan=\"3\" align=\"left\">Name</th>"
-        << "<th colspan=\"6\" align=\"center\">Stat in last second</th>"
-        << "<th colspan=\"6\" align=\"center\">Stat in last minute</th>"
-        << "</tr>"
-        << "<tr>"
-        << "<th colspan=\"3\" align=\"center\">Succeed</th>"
-        << "<th colspan=\"3\" align=\"center\">Failed</th>"
-        << "<th colspan=\"3\" align=\"center\">Succeed</th>"
-        << "<th colspan=\"3\" align=\"center\">Failed</th>"
-        << "</tr>"
-        << "<tr>"
-        << "<th align=\"right\">Count</th>"
-        << "<th align=\"right\">AvgTime</th>"
-        << "<th align=\"right\">MaxTime</th>"
-        << "<th align=\"right\">Count</th>"
-        << "<th align=\"right\">AvgTime</th>"
-        << "<th align=\"right\">MaxTime</th>"
-        << "<th align=\"right\">Count</th>"
-        << "<th align=\"right\">AvgTime</th>"
-        << "<th align=\"right\">MaxTime</th>"
-        << "<th align=\"right\">Count</th>"
-        << "<th align=\"right\">AvgTime</th>"
-        << "<th align=\"right\">MaxTime</th>"
-        << "</tr>";
-    int method_count = svc_board->Descriptor()->method_count();
-    for (int i = 0; i < method_count; ++i)
+    else
     {
-        MethodBoard* method_board = svc_board->Method(i);
-        std::string name = method_board->Descriptor()->name();
-        sofa::pbrpc::builtin::MethodStat stat1;
-        sofa::pbrpc::builtin::MethodStat stat60;
-        method_board->LatestStats(1, &stat1);
-        method_board->LatestStats(60, &stat60);
-        out << "<tr>"
-            << "<td>" << name << "</td>"
-            << std::setprecision(6) << std::fixed
-            << "<td align=\"right\">" << stat1.succeed_count() << "</td>"
-            << "<td align=\"right\">" << stat1.succeed_avg_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << (float)stat1.succeed_max_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << stat1.failed_count() << "</td>"
-            << "<td align=\"right\">" << stat1.failed_avg_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << (float)stat1.failed_max_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << stat60.succeed_count() << "</td>"
-            << "<td align=\"right\">" << stat60.succeed_avg_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << (float)stat60.succeed_max_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << stat60.failed_count() << "</td>"
-            << "<td align=\"right\">" << stat60.failed_avg_time_us() / 1000 << "</td>"
-            << "<td align=\"right\">" << (float)stat60.failed_max_time_us() / 1000 << "</td>"
-            << "</tr>";
+#if defined( LOG )
+        LOG(ERROR) << "InnerProcess(): " << RpcEndpointToString(_remote_endpoint)
+            << ": {" << SequenceId() << "}: method not found: " << _method;
+#else
+        SLOG(ERROR, "InnerProcess(): %s: {%lu}: method not found: %s",
+             RpcEndpointToString(_remote_endpoint).c_str(), SequenceId(), _method.c_str());
+#endif
+        SendFailedResponse(server_stream,
+                           RPC_ERROR_FOUND_METHOD, "method not found: " + _method);
+        return;
     }
-    out << "</table>";
-    out << "Notes: all the time in the table is in milliseconds.";
 }
 
 } // namespace pbrpc

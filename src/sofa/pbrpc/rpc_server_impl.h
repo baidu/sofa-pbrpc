@@ -58,6 +58,12 @@ public:
     // listening.  Return false if the server is not started, or fail to restart listening.
     bool RestartListen();
 
+    WebServicePtr GetWebService();
+
+    bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership);
+
+    Servlet UnregisterWebServlet(const std::string& path);
+
 private:
     void OnCreated(const RpcServerStreamPtr& stream);
 
@@ -127,6 +133,8 @@ private:
     FastLock _stream_set_lock;
 
     IOServicePoolPtr _io_service_pool;
+
+    WebServicePtr _web_service;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcServerImpl);
 }; // class RpcServerImpl

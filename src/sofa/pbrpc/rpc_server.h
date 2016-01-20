@@ -18,6 +18,8 @@ namespace pbrpc {
 
 // Defined in other files.
 class RpcServerImpl;
+class HTTPRequest;
+class HTTPResponse;
 
 struct RpcServerOptions {
     int work_thread_num; // thread count for network handing and service processing, default 8.
@@ -75,6 +77,7 @@ struct RpcServerOptions {
     {}
 };
 
+typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 class RpcServer
 {
 public:
@@ -168,6 +171,19 @@ public:
 
     // Return true if the server is listening on some address.
     bool IsListening();
+
+    // Register a path and its dealing function
+    // Return true if operation success
+    // Return false if path already exist
+    // Example: see sofa-pbrpc/sample/echo
+    // NOTE: path will be formatted
+    bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership = true);
+
+    // Delete a path and its related function from rpc server
+    // Return Servlet if deleting success
+    // Return NULL if path not exist
+    // NOTE: path will be formatted
+    Servlet UnregisterWebServlet(const std::string& path);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const

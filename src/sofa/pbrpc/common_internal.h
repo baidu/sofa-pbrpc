@@ -68,6 +68,9 @@ typedef sofa::pbrpc::shared_ptr<WaitEvent> WaitEventPtr;
 class IOServicePool;
 typedef sofa::pbrpc::shared_ptr<IOServicePool> IOServicePoolPtr;
 
+class WebService;
+typedef sofa::pbrpc::shared_ptr<WebService> WebServicePtr;
+
 #define SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(name_) \
     extern sofa::pbrpc::AtomicCounter g_sofa_counter_##name_
 #define SOFA_PBRPC_DEFINE_RESOURCE_COUNTER(name_) \
