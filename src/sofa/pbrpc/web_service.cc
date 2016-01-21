@@ -299,8 +299,7 @@ bool WebService::DefaultHome(const HTTPRequest& request,
     ServerOptions(oss);
     ListServlet(oss);
     PageFooter(oss);
-    int ret = response.content->Append(oss.str());
-    return ret == 0 ? true : false;
+    return response.content->Append(oss.str());
 }
 
 bool WebService::DefaultOptions(const HTTPRequest& /*request*/, 
@@ -311,8 +310,7 @@ bool WebService::DefaultOptions(const HTTPRequest& /*request*/,
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
     ServerOptions(oss);
     PageFooter(oss);
-    int ret = response.content->Append(oss.str());
-    return ret == 0 ? true : false;
+    return response.content->Append(oss.str());
 }
 
 bool WebService::DefaultStatus(const HTTPRequest& /*request*/, 
@@ -323,8 +321,7 @@ bool WebService::DefaultStatus(const HTTPRequest& /*request*/,
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
     ServerStatus(oss);
     PageFooter(oss);
-    int ret = response.content->Append(oss.str());
-    return ret == 0 ? true : false;
+    return response.content->Append(oss.str());
 }
 
 bool WebService::DefaultServices(const HTTPRequest& /*request*/, 
@@ -335,8 +332,7 @@ bool WebService::DefaultServices(const HTTPRequest& /*request*/,
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>";
     ServiceList(oss);
     PageFooter(oss);
-    int ret = response.content->Append(oss.str());
-    return ret == 0 ? true : false;
+    return response.content->Append(oss.str());
 }
 
 bool WebService::DefaultService(const HTTPRequest& request, 
@@ -348,24 +344,21 @@ bool WebService::DefaultService(const HTTPRequest& request,
     if (it == request.query_params->end())
     {
         ErrorPage(oss, "Lack of name param");
-        int ret = response.content->Append(oss.str());
-        return ret == 0 ? true : false;
+        return response.content->Append(oss.str());
     }
     const std::string& name = it->second;
     ServiceBoard* svc_board = _service_pool->FindService(name);
     if (svc_board == NULL)
     {
         ErrorPage(oss, "Service not found");
-        int ret = response.content->Append(oss.str());
-        return ret == 0 ? true : false;
+        return response.content->Append(oss.str());
     }
     PageHeader(oss);
     oss << "<a href=\"/\">&lt;&lt;&lt;&lt;back to Home</a><br>"
         << "<a href=\"/services\">&lt;&lt;&lt;&lt;back to Services</a>";
     MethodList(oss, svc_board);
     PageFooter(oss);
-    int ret = response.content->Append(oss.str());
-    return ret == 0 ? true : false;
+    return response.content->Append(oss.str());
 }
 
 void WebService::PageHeader(std::ostream& out)

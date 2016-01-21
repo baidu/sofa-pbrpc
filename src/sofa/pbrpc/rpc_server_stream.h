@@ -81,7 +81,7 @@ public:
     }
 
     // Get pending process count.
-    uint32_t pending_process_count() const
+    uint32 pending_process_count() const
     {
         return _pending_process_count;
     }
