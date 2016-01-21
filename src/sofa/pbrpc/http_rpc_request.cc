@@ -50,7 +50,7 @@ std::string HTTPRpcRequest::Method()
     return _method;
 }
 
-uint64_t HTTPRpcRequest::SequenceId()
+uint64 HTTPRpcRequest::SequenceId()
 {
     // id is not supported in HTTP
     return 0;

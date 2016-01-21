@@ -14,11 +14,9 @@ bool WebServlet(const sofa::pbrpc::HTTPRequest& request, sofa::pbrpc::HTTPRespon
     std::map<std::string, std::string>::const_iterator it = request.headers->begin();
     for (; it != request.headers->end(); ++it)
     {
-        SLOG(INFO, "%s:%s", it->first.c_str(), it->second.c_str());
+        SLOG(INFO, "%s: %s", it->first.c_str(), it->second.c_str());
     }
-    response.content->Append("<h1>Hello from sofa-pbrpc web server</h1>");
-    response.status_line = "HTTP/1.1 200 OK";
-    return true;
+    return response.content->Append("<h1>Hello from sofa-pbrpc web server</h1>");
 }
 
 class EchoServerImpl : public sofa::pbrpc::test::EchoServer
@@ -64,7 +62,7 @@ int main()
     sofa::pbrpc::RpcServer rpc_server(options);
 
     sofa::pbrpc::Servlet servlet = sofa::pbrpc::NewPermanentExtClosure(&WebServlet);
-    rpc_server.RegisterWebServlet("rpc", servlet);
+    rpc_server.RegisterWebServlet("/hello", servlet);
 
     // Start rpc server.
     if (!rpc_server.Start("0.0.0.0:12321")) {

@@ -49,7 +49,7 @@ public:
     }
 
     // Get pending process count.
-    uint32_t pending_process_count()
+    uint32 pending_process_count()
     {
         ScopedLocker<FastLock> _(_controller_map_lock);
         return _controller_map.size();
