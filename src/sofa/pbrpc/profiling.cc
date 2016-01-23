@@ -225,7 +225,7 @@ Profiling::ErrorCode Profiling::DoCpuProfiling()
         return PROFILING;
     }
 
-    if (IsFileExist("./rpc_profiling/test.prof"))
+    if (IsFileExist(_dir.path + "/rpc_profiling/test.prof"))
     {
         return FINISHED;
     }
@@ -238,12 +238,13 @@ Profiling::ErrorCode Profiling::DoCpuProfiling()
     return OK;
 }
 
+
 std::string Profiling::ShowResult()
 {
     std::ostringstream oss;
-    if (!IsFileExist(_dir.path + "/rpc_profiling/pprof.perl"))
+    std::string path = _dir.path + "/rpc_profiling/pprof.perl";
+    if (!IsFileExist(path))
     {
-        std::string path = _dir.path + "/rpc_profiling/pprof.perl";
         std::ofstream ofs(path.c_str());
         ofs << pprof_perl;
         ofs.close();
