@@ -50,6 +50,8 @@ private:
 
     bool DefaultService(const HTTPRequest& request, HTTPResponse& response);
 
+    bool DefaultProfiling(const HTTPRequest& request, HTTPResponse& response);
+
     static void PageHeader(std::ostream& out);
     
     static void PageFooter(std::ostream& out);
@@ -84,6 +86,7 @@ private:
     Servlet _default_status;
     Servlet _default_services;
     Servlet _default_service;
+    Servlet _default_profiling;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(WebService);
 };

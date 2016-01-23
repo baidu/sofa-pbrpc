@@ -7,6 +7,7 @@
 #include <sofa/pbrpc/web_service.h>
 #include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/http_rpc_request.h>
+#include <sofa/pbrpc/profiling.h>
 #include <sofa/pbrpc/rpc_server_impl.h>
 #include <sofa/pbrpc/rpc_server_stream.h>
 
@@ -84,6 +85,7 @@ WebService::WebService(const ServicePoolWPtr& service_pool)
     , _default_status(NULL)
     , _default_services(NULL)
     , _default_service(NULL)
+    , _default_profiling(NULL)
 { }
 
 WebService::~WebService()
@@ -131,6 +133,10 @@ void WebService::Init()
     _default_service = 
         sofa::pbrpc::NewPermanentExtClosure(this, &WebService::DefaultService);
     RegisterServlet("/service", _default_service);
+
+    _default_profiling = 
+        sofa::pbrpc::NewPermanentExtClosure(this, &WebService::DefaultProfiling);
+    RegisterServlet("/profiling", _default_profiling);
 }
 
 bool WebService::RegisterServlet(const std::string& path, Servlet servlet, bool take_ownership)
@@ -359,6 +365,38 @@ bool WebService::DefaultService(const HTTPRequest& request,
     MethodList(oss, svc_board);
     PageFooter(oss);
     return response.content->Append(oss.str());
+}
+
+bool WebService::DefaultProfiling(const HTTPRequest& request, 
+                                  HTTPResponse& response)
+{
+    typedef const std::map<std::string, std::string> QueryParams;
+    QueryParams* query_params = request.query_params;
+
+    QueryParams::const_iterator it = query_params->find("cpu");
+    Profiling::Type type = Profiling::DEFAULT;
+    if (it != query_params->end())
+    {
+        if (it->second == "4")
+        {
+            type = Profiling::GRAPH;
+        }
+        else
+        {
+            type = Profiling::CPU;
+        }
+    }
+    else
+    {
+        it = query_params->find("memory");
+        if (it != query_params->end())
+        {
+            type = Profiling::MEMORY;
+        }
+    }
+
+    Profiling* instance = Profiling::Instance();
+    return response.content->Append(instance->ProfilingPage(type));
 }
 
 void WebService::PageHeader(std::ostream& out)
