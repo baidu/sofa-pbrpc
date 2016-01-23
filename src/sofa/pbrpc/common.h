@@ -12,10 +12,6 @@
 
 #include <sofa/pbrpc/smart_ptr/smart_ptr.hpp>
 
-#if defined(SOFA_PBRPC_PROFILING)
-#include <gperftools/profiler.h>
-#endif
-
 namespace std {}
 
 namespace sofa {
@@ -120,21 +116,6 @@ void log_handler(LogLevel level, const char* filename, int line, const char *fmt
 #define SCHECK_LE(a, b) SCHECK((a) <= (b))
 #define SCHECK_GT(a, b) SCHECK((a) >  (b))
 #define SCHECK_GE(a, b) SCHECK((a) >= (b))
-#endif
-
-#if defined(SOFA_PBRPC_PROFILING)
-void touch_gperftools_profiler()
-{
-    SCHECK(false);
-    ProfilerStart("function_never_run");
-    ProfilerStop();
-}
-
-void touch_profiler() 
-{
-    SCHECK(false);
-    touch_gperftools_profiler();
-}
 #endif
 
 } // namespace pbrpc
