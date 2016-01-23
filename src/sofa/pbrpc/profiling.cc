@@ -76,12 +76,14 @@ static std::string exec(const std::string& cmd)
 
 void Profiling::CpuProfilingFunc()
 {
-    bool ret = Mkdir("./rpc_profiling");
+    // TODO
+    bool ret = Mkdir(_dir.path + "/rpc_profiling");
     if (ret == false)
     {
         return;
     }
-    ProfilerStart("./rpc_profiling/test.prof");
+    std::string path = _dir.path + "/rpc_profiling/test.prof";
+    ProfilerStart(path.c_str());
     sleep(10);
     ProfilerStop();
     _is_profiling = false;
@@ -89,15 +91,16 @@ void Profiling::CpuProfilingFunc()
 
 void Profiling::MemoryProfilingFunc()
 {
-    bool ret = Mkdir("./rpc_profiling");
-    if (ret == false)
-    {
-        return;
-    }
-    ProfilerStart("./rpc_profiling/test.prof");
     // TODO
-    sleep(10);
-    ProfilerStop();
+    // bool ret = Mkdir("./rpc_profiling");
+    // if (ret == false)
+    // {
+    //     return;
+    // }
+    // ProfilerStart("./rpc_profiling/test.prof");
+    // // TODO
+    // sleep(10);
+    // ProfilerStop();
 }
 
 Profiling::Profiling() 
@@ -121,11 +124,21 @@ int Profiling::Init()
         return -1;
     }
 
-    // _self_path.resize(PATH_MAX);
     char buf[PATH_MAX];
+    memset(buf, 0, PATH_MAX);
     const char* link = "/proc/self/exe";
     readlink(link, buf, PATH_MAX);
-    _self_path = buf;
+
+    // TODO
+    std::string path(buf);
+    int pos = path.rfind("/");
+    if (pos < 0)
+    {
+        return -1;
+    }
+    _dir.path = path.substr(0, pos);
+    _dir.name = path.substr(pos + 1, path.size());
+
     _is_initialized = true;
     return 0;
 }
@@ -146,7 +159,8 @@ std::string Profiling::ProfilingPage(Type type)
     if (type == GRAPH)
     {
         // TODO perl exist
-        std::string dot = exec("perl ./rpc_profiling/pprof.perl --dot " + _self_path + " ./rpc_profiling/test.prof");
+        std::string dot = exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
+                               + _dir.path + "/"+ _dir.name + " " + _dir.path + "/rpc_profiling/test.prof");
         oss << dot;
         return oss.str();
     }
@@ -241,7 +255,8 @@ std::string Profiling::ShowResult()
     oss << "</script>";
     oss << "</head>";
 
-    oss << "<div> exec path:[" << _self_path << "]</div>";
+    oss << "<div> exec path:[" << _dir.path << "]</div>";
+    oss << "<div> exec binary:[" << _dir.name << "]</div>";
 
     // std::string dot = exec("perl ./rpc_profiling/pprof.perl --dot " + _self_path + " ./rpc_profiling/test.prof");
 

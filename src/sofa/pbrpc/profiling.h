@@ -60,6 +60,12 @@ private:
     
     static void DestroyProfiling();
 
+    struct EXEDir
+    {
+        std::string path;
+        std::string name;
+    };
+
 private:
     boost::atomic<bool> _is_profiling;
 
@@ -67,7 +73,7 @@ private:
 
     ThreadGroupImplPtr _profiling_thread_group;
 
-    std::string _self_path;
+    EXEDir _dir;
 
     static pthread_once_t _init_once;
 
