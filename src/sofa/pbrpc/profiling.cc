@@ -241,9 +241,10 @@ Profiling::ErrorCode Profiling::DoCpuProfiling()
 std::string Profiling::ShowResult()
 {
     std::ostringstream oss;
-    if (!IsFileExist("./rpc_profiling/pprof.perl"))
+    if (!IsFileExist(_dir.path + "/rpc_profiling/pprof.perl"))
     {
-        std::ofstream ofs("./rpc_profiling/pprof.perl");
+        std::string path = _dir.path + "/rpc_profiling/pprof.perl";
+        std::ofstream ofs(path.c_str());
         ofs << pprof_perl;
         ofs.close();
     }
