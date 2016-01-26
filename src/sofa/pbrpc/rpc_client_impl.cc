@@ -337,7 +337,7 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
             LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
                        << ": add to timeout manager failed: timeout=" << timeout << "ms";
 #else
-            SLOG(ERROR, "CallMethod(): %s: add to timeout manager failed: timeout=%llsms",
+            SLOG(ERROR, "CallMethod(): %s: add to timeout manager failed: timeout=%lldms",
                     RpcEndpointToString(cntl->RemoteEndpoint()).c_str(), timeout);
 #endif
             cntl->Done(RPC_ERROR_REQUEST_TIMEOUT, "add to timeout manager failed, maybe too short timeout");
