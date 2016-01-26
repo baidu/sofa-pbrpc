@@ -143,6 +143,12 @@ void HTTPRpcRequest::ProcessRequest(
     cntl->SetRpcServerStream(server_stream);
     cntl->SetRequestReceivedTime(_received_time);
     cntl->SetResponseCompressType(CompressTypeNone);
+    // ATTENTION: because the lifetime of HttpRpcRequest covers CallMethod() of service,
+    // so we can just store pointers to avoid unnecessary data copy.
+    cntl->SetHttp();
+    cntl->SetHttpPath(&_path);
+    cntl->SetHttpQueryParams(&_query_params);
+    cntl->SetHttpHeaders(&_headers);
 
     CallMethod(method_board, controller, request, response);
 }
@@ -200,17 +206,17 @@ ReadBufferPtr HTTPRpcRequest::AssembleFailedResponse(
 
 bool HTTPRpcRequest::ParsePath()
 {
-    if (_path.empty() || _path[0] != '/')
+    if (_original_path.empty() || _original_path[0] != '/')
     {
         return false;
     }
     // decode
-    _decoded_path = StringUtils::decode_url(_path,
+    _decoded_path = StringUtils::decode_url(_original_path,
             (StringUtils::E_DECODE_RESERVED_CHAR | StringUtils::E_DECODE_PERCENT_SIGN_CHAR));
 #if defined( LOG )
 #else
-        SLOG(DEBUG, "ParsePath(): path=[%s], decoded_path=[%s]",
-                _path.c_str(), _decoded_path.c_str());
+        SLOG(DEBUG, "ParsePath(): original_path=[%s], decoded_path=[%s]",
+                _original_path.c_str(), _decoded_path.c_str());
 #endif
     // parse method
     size_t start = 1; // skip first '/'
@@ -223,6 +229,7 @@ bool HTTPRpcRequest::ParsePath()
             break;
         }
     }
+    _path = _decoded_path.substr(0, end);
     _method = _decoded_path.substr(start, end - start);
     // parse query
     if (end < _decoded_path.size() && _decoded_path[end] == '?')

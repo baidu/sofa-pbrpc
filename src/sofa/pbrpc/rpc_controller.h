@@ -128,6 +128,21 @@ public:
     // These calls should be made from the server side only.  Their results
     // are undefined on the client side (may crash).
 
+    // If the request is in http protocal, returns true;
+    // otherwise returns false.
+    bool IsHttp() const;
+
+    // If IsHttp() is true, returns PATH field in the http request.
+    // For example, the path of "http://www.baidu.com/s?k=123" is "/s".
+    const std::string& HttpPath() const;
+
+    // If IsHttp() is true, returns query parameters in the http request.
+    // For example, the params of "http://www.baidu.com/s?k=123" are {"k":"123"}.
+    const std::map<std::string, std::string>& HttpQueryParams() const;
+
+    // If IsHttp() is true, returns headers in the http request.
+    const std::map<std::string, std::string>& HttpHeaders() const;
+
     // Causes Failed() to return true on the client side.  "reason" will be
     // incorporated into the message returned by ErrorText().  If you find
     // you need to return machine-readable information about failures, you

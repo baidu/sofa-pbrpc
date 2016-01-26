@@ -11,10 +11,17 @@
 
 bool WebServlet(const sofa::pbrpc::HTTPRequest& request, sofa::pbrpc::HTTPResponse& response)
 {
-    std::map<std::string, std::string>::const_iterator it = request.headers->begin();
-    for (; it != request.headers->end(); ++it)
-    {
-        SLOG(INFO, "%s: %s", it->first.c_str(), it->second.c_str());
+    SLOG(INFO, "WebServlet(): request message from %s:%u",
+            request.client_ip.c_str(), request.client_port);
+    SLOG(INFO, "HTTP-PATH=\"%s\"", request.path.c_str());
+    std::map<std::string, std::string>::const_iterator it;
+    const std::map<std::string, std::string>& query_params = *request.query_params;
+    for (it = query_params.begin(); it != query_params.end(); ++it) {
+        SLOG(INFO, "QueryParam[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
+    }
+    const std::map<std::string, std::string>& headers = *request.headers;
+    for (it = headers.begin(); it != headers.end(); ++it) {
+        SLOG(INFO, "Header[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
     }
     return response.content->Append("<h1>Hello from sofa-pbrpc web server</h1>");
 }
@@ -31,9 +38,21 @@ private:
                       sofa::pbrpc::test::EchoResponse* response,
                       google::protobuf::Closure* done)
     {
-        SLOG(NOTICE, "Echo(): request message from %s: %s",
-                static_cast<sofa::pbrpc::RpcController*>(controller)->RemoteAddress().c_str(),
-                request->message().c_str());
+        sofa::pbrpc::RpcController* cntl = static_cast<sofa::pbrpc::RpcController*>(controller);
+        SLOG(INFO, "Echo(): request message from %s: %s",
+                cntl->RemoteAddress().c_str(), request->message().c_str());
+        if (cntl->IsHttp()) {
+            SLOG(INFO, "HTTP-PATH=\"%s\"", cntl->HttpPath().c_str());
+            std::map<std::string, std::string>::const_iterator it;
+            const std::map<std::string, std::string>& query_params = cntl->HttpQueryParams();
+            for (it = query_params.begin(); it != query_params.end(); ++it) {
+                SLOG(INFO, "QueryParam[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
+            }
+            const std::map<std::string, std::string>& headers = cntl->HttpHeaders();
+            for (it = headers.begin(); it != headers.end(); ++it) {
+                SLOG(INFO, "Header[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
+            }
+        }
         response->set_message("echo message: " + request->message());
         done->Run();
     }
