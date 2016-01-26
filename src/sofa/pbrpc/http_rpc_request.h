@@ -94,8 +94,9 @@ private:
         POST_PB = 2
     };
     Type                               _type;
-    std::string                        _path;
+    std::string                        _original_path;
     std::string                        _decoded_path;
+    std::string                        _path;
     std::string                        _query_string;
     std::string                        _fragment_id;
     std::string                        _method;

@@ -84,6 +84,26 @@ void RpcController::StartCancel()
     _impl->StartCancel();
 }
 
+bool RpcController::IsHttp() const
+{
+    return _impl->IsHttp();
+}
+
+const std::string& RpcController::HttpPath() const
+{
+    return _impl->HttpPath();
+}
+
+const std::map<std::string, std::string>& RpcController::HttpQueryParams() const
+{
+    return _impl->HttpQueryParams();
+}
+
+const std::map<std::string, std::string>& RpcController::HttpHeaders() const
+{
+    return _impl->HttpHeaders();
+}
+
 void RpcController::SetFailed(const std::string& reason)
 {
     _impl->SetFailed(reason);
