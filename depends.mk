@@ -42,6 +42,8 @@ PROTOBUF_DIR=/usr/local
 SNAPPY_DIR=/usr
 ################################################################
 
+#INEXUS_DIR=/home/zhangdi05/svn_space/ps/opensource/ins/output
+INEXUS_DIR=/usr
 ################################################################
 ## Zlib directory containing `include' and `lib'.
 ##

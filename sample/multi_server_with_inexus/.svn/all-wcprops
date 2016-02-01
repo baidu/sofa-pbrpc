@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample
+END
+echo_service.proto
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/echo_service.proto
+END
+client.cc
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/client.cc
+END
+server.cc
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/server.cc
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/README
+END
+address_list.txt
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/ps/opensource/!svn/ver/194/branches/sofa-pbrpc/sofa-pbrpc_1-0-2_BRANCH/sample/multi_server_sample/address_list.txt
+END

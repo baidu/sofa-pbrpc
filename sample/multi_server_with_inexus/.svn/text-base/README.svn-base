@@ -1,0 +1,23 @@
+1, make
+
+2, start servers:
+   ./server 127.0.0.1 12345 &>/dev/null &
+   ./server 127.0.0.1 12346 &>/dev/null &
+   ./server 127.0.0.1 12347 &>/dev/null &
+
+3, start client:
+   ./client address_list.txt
+
+4, remove one address from `address_list.txt'.
+
+5, signal client to reload address list from `address_list.txt':
+   killall -s SIGTERM client
+
+6, add a new address into `address_list.txt'.
+
+7, signal client to reload address list from `address_list.txt':
+   killall -s SIGTERM client
+
+8, test done, stop all servers:
+   killall server
+
