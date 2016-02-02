@@ -28,10 +28,10 @@ class DynamicRpcChannelImpl : public RpcChannelImpl,
 {
 public:
     // Detect timeout, 3 second.
-    const static int64_t kDetectTimeout = 3000; // in ms
+    const static int64 kDetectTimeout = 3000; // in ms
 
     // Detect interval, 5 second.
-    const static int64_t kDetectInterval = 5000; // in ms
+    const static int64 kDetectInterval = 5000; // in ms
 
     // Retry interval and count when choose server.
     const static int kRetryInterval = 800; // in ms
@@ -52,7 +52,7 @@ private:
         volatile bool is_builtin_service_inited; // if the builtin service is already inited.
         LockType builtin_service_init_lock;
         ::sofa::pbrpc::scoped_ptr<builtin::BuiltinService_Stub> builtin_service;
-        uint64_t last_request_seq; // the last request sequence number sent by this channel.
+        uint64 last_request_seq; // the last request sequence number sent by this channel.
 
         ServerContext(const std::string& server_address_);
         ~ServerContext();
@@ -96,7 +96,7 @@ public:
                             ::google::protobuf::Message* response,
                             ::google::protobuf::Closure* done);
 
-    virtual uint32_t WaitCount();
+    virtual uint32 WaitCount();
 
     void OnAddressAdded(const std::vector<std::string>& address_list);
 

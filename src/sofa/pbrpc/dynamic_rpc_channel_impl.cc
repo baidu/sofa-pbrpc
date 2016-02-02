@@ -392,13 +392,13 @@ RpcErrorCode DynamicRpcChannelImpl::ChooseServer(ServerContextPtr& choosed_serve
 
     // first choose the channel in _live_map with minimal <wait_count,last_request_seq>.
     if (!_live_map.empty()) {
-        uint32_t min_wait_count = kuint32max;
-        uint64_t min_last_request_seq = kuint64max;
+        uint32 min_wait_count = kuint32max;
+        uint64 min_last_request_seq = kuint64max;
         for (ServerContextMap::const_iterator it = _live_map.begin();
                 it != _live_map.end(); ++it) {
             const ServerContextPtr& server = it->second;
             // if channel is not inited, set wait_count as 0.
-            uint32_t wait_count = server->is_channel_inited ? server->channel->WaitCount() : 0;
+            uint32 wait_count = server->is_channel_inited ? server->channel->WaitCount() : 0;
             // compare by <wait_count,last_request_seq>
             if (wait_count < min_wait_count
                     || (wait_count == min_wait_count
@@ -436,7 +436,7 @@ RpcErrorCode DynamicRpcChannelImpl::ChooseServer(ServerContextPtr& choosed_serve
     // and prefer channel with last_request_succeed=true.
     if (!_unlive_map.empty()) {
         bool last_request_succeed = false;
-        uint64_t min_last_request_seq = kuint64max;
+        uint64 min_last_request_seq = kuint64max;
         for (ServerContextMap::const_iterator it = _unlive_map.begin();
                 it != _unlive_map.end(); ++it) {
             const ServerContextPtr& server = it->second;

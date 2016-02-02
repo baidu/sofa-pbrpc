@@ -13,6 +13,7 @@
 #include <sofa/pbrpc/ptime.h>
 #include <sofa/pbrpc/compressed_stream.h>
 #include <sofa/pbrpc/io_service_pool.h>
+#include <sofa/pbrpc/web_service.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -30,6 +31,9 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,
     , _last_print_connection_ticks(0)
 {
     _service_pool.reset(new ServicePool(this));
+
+    _web_service.reset(new WebService(_service_pool));
+    _web_service->Init();
 
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
     _slice_quota_in = _options.max_throughput_in == -1 ?
@@ -67,6 +71,7 @@ RpcServerImpl::~RpcServerImpl()
 {
     SOFA_PBRPC_FUNCTION_TRACE;
     Stop();
+    _web_service.reset();
     _service_pool.reset();
     if (_event_handler) delete _event_handler;
 }
@@ -585,6 +590,29 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
     }
 
     _last_maintain_ticks = now_ticks;
+}
+
+WebServicePtr RpcServerImpl::GetWebService()
+{
+    return _web_service;
+}
+
+bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
+{
+    if (!_web_service) 
+    {
+        return false;
+    }
+    return _web_service->RegisterServlet(path, servlet, take_ownership);
+}
+
+Servlet RpcServerImpl::UnregisterWebServlet(const std::string& path)
+{
+    if (!_web_service)
+    {
+        return NULL;
+    }
+    return _web_service->UnregisterServlet(path);
 }
 
 } // namespace pbrpc

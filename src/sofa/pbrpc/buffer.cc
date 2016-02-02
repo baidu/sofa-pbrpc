@@ -46,7 +46,8 @@ void ReadBuffer::Append(const ReadBuffer* read_buffer)
     SCHECK(read_buffer != NULL);
     BufHandleList::const_iterator it = read_buffer->_buf_list.begin();
     BufHandleList::const_iterator end = read_buffer->_buf_list.end();
-    for (; it != end; ++it) {
+    for (; it != end; ++it) 
+    {
         _buf_list.push_back(*it);
         TranBufPool::add_ref(it->data);
     }
@@ -306,6 +307,24 @@ bool WriteBuffer::Extend()
     _buf_list.push_back(BufHandle(block, TranBufPool::capacity(block)));
     _total_block_size += TranBufPool::block_size(block);
     _total_capacity += TranBufPool::capacity(block);
+    return true;
+}
+
+bool WriteBuffer::Append(const std::string& data)
+{
+    return Append(data.c_str(), data.size());
+}
+
+bool WriteBuffer::Append(const char* data, int size)
+{
+    SCHECK_GE(size, 0);
+    if (size == 0) return true;
+    int64 head = Reserve(size);
+    if (head < 0)
+    {
+        return false;
+    }
+    SetData(head, data, size);
     return true;
 }
 

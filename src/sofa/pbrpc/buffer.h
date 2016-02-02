@@ -117,6 +117,12 @@ public:
     void BackUp(int count);
     int64 ByteCount() const;
 
+    // Append string to the buffer
+    // If succeed, return true
+    // If failed, return false
+    bool Append(const std::string& data);
+    bool Append(const char* data, int size);
+
 private:
     // Add a new block to the end of the buffer.
     bool Extend();
