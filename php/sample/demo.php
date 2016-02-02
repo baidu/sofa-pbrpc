@@ -6,11 +6,12 @@
  * **************************************************************************** */
  
 /**
-* @File: test_rpc.php
+* @File: demo.php
 * @Author: zhangdi(zhangdi05@baidu.com)
 * @Date: 2015/11/27 16:18:03
 * @Brief:      
 */
+
 require_once 'test.pb.php';
 
 ini_set('max_execution_time', '10000000');
