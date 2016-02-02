@@ -32,4 +32,5 @@ Installation
     You can generate PHP interface like this:
 
         "php -c /usr/etc/php.ini protoc-php.php test.proto"
+
     You can get a simple usage in ./sample
