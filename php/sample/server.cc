@@ -10,34 +10,27 @@
 #include <sofa/pbrpc/pbrpc.h>
 #include "test.pb.h"
 
-class AutoAdjustServiceImpl : public sofa::pbrpc::vui::AutoAdjustService
+class TestServiceImpl : public sofa::pbrpc::test::TestService
 {
 public:
-    AutoAdjustServiceImpl() {}
-    virtual ~AutoAdjustServiceImpl() {}
+    TestServiceImpl() {}
+    virtual ~TestServiceImpl() {}
 
 private:
-    virtual void auto_adjust(google::protobuf::RpcController* /*controller*/,
-                      const ::sofa::pbrpc::vui::Info* request,
-                      sofa::pbrpc::vui::OutInfo* response,
+    virtual void test_func(google::protobuf::RpcController* /*controller*/,
+                      const ::sofa::pbrpc::test::Request* request,
+                      sofa::pbrpc::test::Response* response,
                       google::protobuf::Closure* done)
     {
         SLOG(NOTICE, "request byte size : %d , uapinfo1 value is %s, uapinfo2 value %s",
-            request->ByteSize(), request->uapinfo(0).value().c_str(), request->uapinfo(1).value().c_str());
-        response->set_debuginfo("Debug Info from server");
-        response->set_query_search(9999);
-        sofa::pbrpc::vui::OutNodeInfo* out_node_info_a = response->add_resultinfo();
-        out_node_info_a->set_gsample_log("gsample_log in out_node_info_a");
-        out_node_info_a->set_index(1);
-        out_node_info_a->set_click_weight(3);
-        out_node_info_a->set_click_time_ratio_a(0.003333444);
-        out_node_info_a->set_click_time_ratio_b(0.001111222);
-        sofa::pbrpc::vui::OutNodeInfo* out_node_info_b = response->add_resultinfo();
-        out_node_info_b->set_gsample_log("gsample_log in out_node_info_b");
-        out_node_info_b->set_index(2);
-        out_node_info_b->set_click_weight(30);
-        out_node_info_b->set_click_time_ratio_a(0.007777999);
-        out_node_info_b->set_click_time_ratio_b(0.006666555);
+            request->ByteSize(), request->pair(0).value().c_str(), request->pair(1).value().c_str());
+        response->set_debug_message("Debug Info from server");
+        sofa::pbrpc::test::Result* result_a = response->add_result();
+        result_a->set_index(1);
+        result_a->set_data("Debug data in result a");
+        sofa::pbrpc::test::Result* result_b = response->add_result();
+        result_b->set_index(2);
+        result_b->set_data("Debug data in result b");
         done->Run();
     }
 };
@@ -71,8 +64,8 @@ int main()
     }
     
     // Register service.
-    sofa::pbrpc::vui::AutoAdjustService* echo_service = new AutoAdjustServiceImpl();
-    if (!rpc_server.RegisterService(echo_service)) {
+    sofa::pbrpc::test::TestService* test_service = new TestServiceImpl();
+    if (!rpc_server.RegisterService(test_service)) {
         SLOG(ERROR, "export service failed");
         return EXIT_FAILURE;
     }
