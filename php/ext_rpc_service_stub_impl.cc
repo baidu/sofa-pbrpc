@@ -14,11 +14,6 @@
  *  
  **/
 
-#include <stdio.h>
-#include <iostream>
-#include <sofa/pbrpc/pbrpc.h>
-#include <sofa/pbrpc/rpc_channel.h>
-
 #include "common.h"
 #include "ext_rpc_service_stub_impl.h"
 
@@ -982,4 +977,5 @@ void PhpRpcServiceStubImpl::CallMethod(const std::string& method_name,
     delete response_instance;
 }
     
-}/* vim: set ts=4 sw=4 sts=4 tw=100 */
+}
+/* vim: set ts=4 sw=4 sts=4 tw=100 */

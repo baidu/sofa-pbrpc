@@ -22,18 +22,8 @@ extern "C" {
 #include <Zend/zend_exceptions.h>
 }
 
-#include <sofa/pbrpc/pbrpc.h>
-
-#include "ext_rpc_service_stub_impl.h"
-
 namespace sofa_php_ext
 {
-
-zend_object_handlers rpc_service_stub_object_handlers;
-struct rpc_service_stub_object {
-    zend_object std;
-    PhpRpcServiceStubImpl* stub_impl;
-};
 
 zend_class_entry* rpc_service_stub_ce;
 

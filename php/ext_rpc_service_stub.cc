@@ -13,6 +13,7 @@
  * @brief 
  *  
  **/
+
 extern "C" {
 #include <php.h>
 #include <php_ini.h>
@@ -20,23 +21,30 @@ extern "C" {
 #include <ext/standard/php_string.h>
 #include <Zend/zend_exceptions.h>
 }
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sofa/pbrpc/pbrpc.h>
-
 #include "ext_rpc_service_stub.h"
+#include "ext_rpc_service_stub_impl.h"
 
 namespace sofa_php_ext
 {
+
+#define PB_CONSTANT(name) \
+	zend_declare_class_constant_long(rpc_service_stub_ce, #name, sizeof(#name) - 1, name TSRMLS_CC)
 
 sofa::pbrpc::RpcClientOptions client_options;
 sofa::pbrpc::RpcClient client_a(client_options);
 sofa::pbrpc::RpcClient client_b(client_options);
 
-#define PB_CONSTANT(name) \
-	zend_declare_class_constant_long(rpc_service_stub_ce, #name, sizeof(#name) - 1, name TSRMLS_CC)
+zend_object_handlers rpc_service_stub_object_handlers;
+struct rpc_service_stub_object 
+{
+    zend_object std;
+    PhpRpcServiceStubImpl* stub_impl;
+};
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_initservice, 0, 0, 3)
 	ZEND_ARG_INFO(0, address_str)
@@ -329,5 +337,4 @@ ZEND_GET_MODULE(sofa_pbrpc)
 #endif
 
 }
-
 /* vim: set ts=4 sw=4 sts=4 tw=100 */

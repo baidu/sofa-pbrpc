@@ -19,13 +19,13 @@ Installation
 
 4) Build the extension
 
-    Run "sh config.sh" to generate configure file
+    Run "/usr/local/php/bin/phpize ./config.m4"
 
-    Run "./configure --with-php-config=./php-config" to generate Makefile
+        "./configure --with-php-config=/usr/local/php/bin/php-config" to generate Makefile
 
-    "make clean && make -j10 && make install"
+    Run "make clean && make -j10 && make install" to build the extension
 
-    you can get extension in ./modules
+    You can get extension in ./modules
 
 5) Generate PHP interface
 
