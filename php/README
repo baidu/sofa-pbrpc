@@ -3,35 +3,35 @@ This directory contains the php extension for sofa-pbrpc client.
 Installation
 ============
 
-1) Make sure you have installed sofa-pbrpc library in sofa-pbrpc output
+1) Make sure your PHP version is at least 5.4 and you have installed sofa-pbrpc library in sofa-pbrpc output
 
-2) Because this lib depends on the 'allegro/php-protobuf' lib to serialize and unserialize data,
+2) Because this lib depends on the "allegro/php-protobuf" lib to serialize and unserialize data,
 
-   You should install the allegro/php-protobuf and use this lib in your PHP codes and you can get 
+   You should install the allegro/php-protobuf and use this lib in your PHP codes and you can get
 
-   'allegro/php-protobuf' on this page:
+   "allegro/php-protobuf" on this page:
 
     https://github.com/allegro/php-protobuf
 
 3) Change the dependences path:
 
-    Change the dependences path 'RPCLIB_DIR' and 'PROTOBUFLIB_DIR' in comfig.m4 
+    Change the dependences path "RPCLIB_DIR" and "PROTOBUFLIB_DIR" in comfig.m4
 
 4) Build the extension
 
-    Run sh config.sh to generate 'configure' file
+    Run "sh config.sh" to generate configure file
 
-    Run ./configure to generate 'Makefile'
+    Run "./configure --with-php-config=./php-config" to generate Makefile
 
-    make clean && make -j10 && make install
-    
+    "make clean && make -j10 && make install"
+
     you can get extension in ./modules
 
-5) Generate PHP interface 
+5) Generate PHP interface
 
     You can generate PHP interface like this:
-        
-        php -c /usr/etc/php.ini protoc-php.php echo.proto
 
-    Require the interface in your PHP code, and you can get usage in ./sample 
+        "php -c /usr/etc/php.ini protoc-php.php test.proto"
+
+    Require the interface in your PHP code, and you can get usage in ./sample
 
