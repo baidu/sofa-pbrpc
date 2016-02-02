@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Some comment -->
+<command>
+    <force_posix>true</force_posix>
+    <name>test</name>
+    <description>zip/unzip files</description>
+    <version>1.0.0</version>
+    <!-- Comment -->
+    <option name="choice">
+        <short_name>-c</short_name>
+        <long_name>--choice</long_name>
+        <description>choice option</description>
+        <action>StoreString</action>
+        <!-- Comment -->
+        <choices>
+            <choice>ham</choice>
+            <choice>spam</choice>
+        </choices>
+        <add_list_option>True</add_list_option>
+        <default>null</default>
+        <help_name>choice</help_name>
+    </option>
+    <option name="password">
+        <action>Password</action>
+        <short_name>-p</short_name>
+        <long_name>--password</long_name>
+        <description>zip file password</description>
+    </option>
+    <option name="verbose">
+        <long_name>--verbose</long_name>
+        <description>turn on verbose output</description>
+        <action>StoreTrue</action>
+        <short_name>-v</short_name>
+    </option>
+    <command>
+        <aliases>
+            <alias>compress</alias>
+            <alias>zp</alias>
+        </aliases>
+        <name>zip</name>
+        <!-- Comment -->
+        <description>zip given files in the destination file</description>
+        <argument name="files">
+            <description>a list of files to zip together</description>
+            <multiple>True</multiple>
+        </argument>
+        <argument name="zipfile">
+            <!-- Comment -->
+            <description>path to the zip file to generate</description>
+        </argument>
+    </command>
+    <command>
+        <argument name="outputdir">
+            <description>destination directory</description>
+            <multiple>False</multiple>
+        </argument>
+        <name>unzip</name>
+        <aliases>
+            <alias>uzp</alias>
+        </aliases>
+        <description>unzip given file in the destination dir</description>
+        <argument name="zipfile">
+            <description>path to the zip file to unzip</description>
+        </argument>
+    </command>
+</command>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<command>
+    <description>A great program that can foo and bar !</description>
+    <version>1.0.0</version>
+    <option name="verbose">
+        <short_name>-v</short_name>
+        <long_name>--verbose</long_name>
+        <description>turn on verbose output</description>
+        <action>StoreTrue</action>
+    </option>
+    <command>
+        <name>foo</name>
+        <description>output the given string with a foo prefix</description>
+        <option name="reverse">
+            <short_name>-r</short_name>
+            <long_name>--reverse</long_name>
+            <description>reverse the string before echoing it</description>
+            <action>StoreTrue</action>
+        </option>
+        <argument name="text">
+            <description>the text to output</description>
+        </argument>
+    </command>
+    <command>
+        <name>bar</name>
+        <description>output the given string with a bar prefix</description>
+        <option name="reverse">
+            <short_name>-r</short_name>
+            <long_name>--reverse</long_name>
+            <description>reverse the string before echoing it</description>
+            <action>StoreTrue</action>
+        </option>
+        <argument name="text">
+            <description>the text to output</description>
+        </argument>
+    </command>
+</command>

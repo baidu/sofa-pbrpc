@@ -1,0 +1,129 @@
+package sofa.pbrpc.vui;
+option cc_generic_services = true;
+message uap_result_item_t {
+    optional string id = 1;
+    optional string value = 2;
+}
+
+message OutNodeInfo {
+    optional int32 index = 1;
+    optional string gsample_log = 2;
+    optional int32 click_weight = 3;
+    optional int32 click_weight_merge = 4;
+    optional int32 click_weight_merged_time = 5;
+    optional int32 click_weight_orig = 6;
+    optional int32 click_time_weight = 7;
+    optional float  click_time_ratio = 8;
+    optional float  click_time_ratio_a = 9;
+    optional float  click_time_ratio_b = 10;
+    optional int32 click_time_level = 11;
+    optional int32 click_orig_ala_pos = 12;
+    optional int32 click_orig_pos = 13;
+    optional int32 url_display = 14;
+    optional int32 url_exam = 15;
+    optional int32 url_click = 16;
+    optional int32 url_satisfy = 17;
+    optional int32 url_skip = 18;
+    optional int32 url_satisfy_degree = 19;
+    optional int32 url_click_need = 20;
+    optional int32 url_click_ratio = 21;
+    optional int32 url_satisfy_ratio = 22;
+    optional bool  click_auto_hold_orig = 23;
+    optional bool  click_conf_filter = 24;
+    optional bool  click_rtse_hold = 25;
+    optional int32 cstra = 26;
+}
+
+message OutInfo {
+    optional string debugInfo = 1;   
+    optional int32 query_search = 2;
+    repeated OutNodeInfo resultInfo = 3;
+}
+
+message query_url_features_t{
+    optional string click_url_sign = 1;
+    repeated int32 features = 2;
+}
+
+message click_features_t{
+    optional int32 query_search = 1;
+    optional int32 query_click = 2;
+    optional int32 query_satisfy = 3;
+    optional int32 time_query_search = 4;
+    repeated int32 query_feature = 5;
+    repeated query_url_features_t query_url_feas = 6;
+    repeated query_url_features_t more_query_url_feas = 7;
+    repeated query_url_features_t time_query_url_feas = 8;
+}
+
+message QueryInfo{
+    optional string query_word = 1;
+    optional string queryId = 2;
+    optional string resultLang = 3;
+    optional string pre_query = 4;
+    optional string uri_md5 = 5;
+    repeated uint32 url_cannot_cluster_srcid_list = 6;
+    repeated uint32 site_cannot_cluster_srcid_list = 7;
+    repeated uint32 sids = 8;
+    repeated int32 srcid_list = 9;
+    optional string debugInfo = 10;
+    optional click_features_t click_features = 11;
+}
+
+message offset_t{
+    optional string title = 1;
+    optional string url = 2;
+}
+
+message SortInfo {
+    optional int32 srcid = 1; 
+    optional int32 weight = 2; 
+    optional int32 sort = 3; 
+}
+
+message SortFactor {
+    optional bool   zhida = 1;
+    optional bool   extAladdin = 2;
+    optional bool   extSynAladdin = 3;
+}
+
+message NodeInfo {
+    optional int32 source = 1;
+    optional string comeFrome = 2;
+    optional offset_t offsetInfo = 3;
+    optional string siteSign = 4;
+    optional uint32 urlSignHigh32 = 5;
+    optional uint32 urlSignLow32 = 6;
+    optional uint32 uniUrlSignHigh32 = 7;
+    optional uint32 uniUrlSignLow32 = 8; 
+    optional string gSampleLog = 9;
+
+    optional SortInfo sortInfo = 10;
+
+    optional string click_url_sign = 11;
+    optional int32 click_tuichang = 12;
+    optional bool   need_click_adjust = 13;
+    optional int32 url_zdzx_on = 14;
+    optional int32 url_zdzx_tc = 15;
+    optional string uap_signed_key_for_query_url = 16;
+    optional string uap_signed_key_for_site = 17;
+
+    optional string uap_signed_key_for_url = 18;
+    optional int32 click_pred_pos = 19;
+    optional double card_q = 20;
+    optional SortFactor sortFactor = 21;
+    repeated double personal_eoff = 22;
+    optional bool   showgw = 23;
+    optional bool   yunying_merge_shia = 24;
+}
+
+message Info {
+    optional QueryInfo queryInfo = 1;
+    repeated NodeInfo resultInfo = 2;
+    repeated uap_result_item_t uapInfo = 3;
+}
+
+service AutoAdjustService {
+    rpc auto_adjust(Info) returns (OutInfo);
+}
+

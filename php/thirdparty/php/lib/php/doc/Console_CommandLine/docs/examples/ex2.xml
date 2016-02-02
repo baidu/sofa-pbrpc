@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<command>
+    <description>zip given files using the php zip module.</description>
+    <version>1.0.0</version>
+    <option name="choice">
+        <short_name>-c</short_name>
+        <long_name>--choice</long_name>
+        <description>choice option</description>
+        <action>StoreString</action>
+        <choices>
+            <choice>ham</choice>
+            <choice>spam</choice>
+        </choices>
+    </option>
+    <option name="verbose">
+        <short_name>-v</short_name>
+        <long_name>--verbose</long_name>
+        <description>turn on verbose output</description>
+        <action>StoreTrue</action>
+    </option>
+    <option name="delete">
+        <short_name>-d</short_name>
+        <long_name>--delete</long_name>
+        <description>delete original files after zip operation</description>
+        <action>StoreTrue</action>
+    </option>
+    <argument name="files">
+        <description>a list of files to zip together</description>
+        <multiple>true</multiple>
+    </argument>
+    <argument name="zipfile">
+        <description>path to the zip file to generate</description>
+    </argument>
+</command>

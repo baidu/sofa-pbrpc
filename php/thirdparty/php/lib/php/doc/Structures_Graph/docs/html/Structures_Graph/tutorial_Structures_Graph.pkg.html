@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml">
+		<head>
+			<!-- template designed by Marco Von Ballmoos -->
+			<title>Structures_Graph Tutorial</title>
+			<link rel="stylesheet" href="../media/stylesheet.css" />
+			<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'/>
+		</head>
+		<body>
+			<div class="page-body">			
+
+<div><a name="package.database.structures_graph.tutorial"></a><div class="ref-title-box"><h1 class="ref-title">Structures_Graph Tutorial</h1>
+  <h2 class="ref-purpose">A first tour of graph datastructure manipulation</h2></div>
+ <span><a name="package.database.structures_graph.tutorial.intro"></a><h2 class="title">Introduction</h2><p>Structures_Graph is a package for creating and manipulating graph datastructures. A graph is a set of objects, called nodes, connected by arcs. When used as a datastructure, usually nodes contain data, and arcs represent relationships between nodes. When arcs have a direction, and can be travelled only one way, graphs are said to be directed. When arcs have no direction, and can always be travelled both ways, graphs are said to be non directed.</p>
+  <p>Structures_Graph provides an object oriented API to create and directly query a graph, as well as a set of Manipulator classes to extract information from the graph.</p></span>
+ <span><a name="package.database.structures_graph.tutorial.creation"></a><h2 class="title">Creating a Graph</h2><p>Creating a graph is done using the simple constructor:
+   <pre class="listing"><pre>
+require_once 'Structures/Graph.php';
+
+$directedGraph =&amp; new Structures_Graph(true);
+$nonDirectedGraph =&amp; new Structures_Graph(false);
+    </pre></pre>
+   and passing the constructor a flag telling it whether the graph should be directed. A directed graph will always be directed during its lifetime. It's a permanent characteristic.</p>
+  <p>To fill out the graph, we'll need to create some nodes, and then call Graph::addNode.
+   <pre class="listing"><pre>
+require_once 'Structures/Graph/Node.php';
+
+$nodeOne =&amp; new Structures_Graph_Node();
+$nodeTwo =&amp; new Structures_Graph_Node();
+$nodeThree =&amp; new Structures_Graph_Node();
+
+$directedGraph-&gt;addNode(&amp;$nodeOne);
+$directedGraph-&gt;addNode(&amp;$nodeTwo);
+$directedGraph-&gt;addNode(&amp;$nodeThree);
+    </pre></pre>
+   and then setup the arcs:
+   <pre class="listing"><pre>
+$nodeOne-&gt;connectTo($nodeTwo);
+$nodeOne-&gt;connectTo($nodeThree);
+    </pre></pre>
+   Note that arcs can only be created after the nodes have been inserted into the graph.</p></span>
+ <span><a name="package.database.structures_graph.tutorial.nodesanddata"></a><h2 class="title">Associating Data</h2><p>Graphs are only useful as datastructures if they can hold data. Structure_Graph stores data in nodes. Each node contains a setter and a getter for its data.
+   <pre class="listing"><pre>
+$nodeOne-&gt;setData(&quot;Node One's Data is a String&quot;);
+$nodeTwo-&gt;setData(1976);
+$nodeThree-&gt;setData('Some other string');
+
+print(&quot;NodeTwo's Data is an integer: &quot; . $nodeTwo-&gt;getData());
+    </pre></pre></p>
+  <p>Structure_Graph nodes can also store metadata, alongside with the main data. Metadata differs from regular data just because it is stored under a key, making it possible to store more than one data reference per node. The metadata getter and setter need the key to perform the operation:
+   <pre class="listing"><pre>
+$nodeOne-&gt;setMetadata('example key', &quot;Node One's Sample Metadata&quot;);
+print(&quot;Metadata stored under key 'example key' in node one: &quot; . $nodeOne-&gt;getMetadata('example key'));
+$nodeOne-&gt;unsetMetadata('example key');
+    </pre></pre></p></span>
+ <span><a name="package.database.structures_graph.tutorial.querying"></a><h2 class="title">Querying a Graph</h2><p>Structures_Graph provides for basic querying of the graph:
+   <pre class="listing"><pre>
+// Nodes are able to calculate their indegree and outdegree
+print(&quot;NodeOne's inDegree: &quot; . $nodeOne-&gt;inDegree());
+print(&quot;NodeOne's outDegree: &quot; . $nodeOne-&gt;outDegree());
+
+// and naturally, nodes can report on their arcs
+$arcs = $nodeOne-&gt;getNeighbours();
+for ($i=0;$i&lt;sizeof($arcs);$i++) {
+    print(&quot;NodeOne has an arc to &quot; . $arcs[$i]-&gt;getData());
+}
+    </pre></pre></p></span></div>
+
+
+	<p class="notes" id="credit">
+		Documentation generated on Fri, 30 Jan 2004 16:37:28 +0000 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.2.3</a>
+	</p>
+	</div></body>
+</html>

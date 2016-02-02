@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<command>
+    <description>A great program that can list foo elements !</description>
+    <version>1.0.0</version>
+    <option name="verbose">
+        <short_name>-v</short_name>
+        <long_name>--verbose</long_name>
+        <description>turn on verbose output</description>
+        <action>StoreTrue</action>
+    </option>
+    <command>
+        <name>list</name>
+        <description>output the list of foo elements</description>
+        <argument name="item">
+            <description>May be either "foo", "bar", "baz"</description>
+            <multiple>true</multiple>
+            <choices>
+                <choice>foo</choice>
+                <choice>bar</choice>
+                <choice>baz</choice>
+            </choices>
+        </argument>
+    </command>
+</command>
