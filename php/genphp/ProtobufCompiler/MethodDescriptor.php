@@ -1,16 +1,9 @@
 <?php
-/* * *****************************************************************************
-* 
-* Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
-* 
- * **************************************************************************** */
- 
+
 /**
-* @File: MethodDescriptor.php
-* @Author: spider(spider@baidu.com)
-* @Date: 2015/11/29 14:34:44
-* @Brief: method descriptor for rpc     
-*/
+ * generates Method interface
+ */
+
 class MethodDescriptor implements DescriptorInterface
 {
     private $_containing;
@@ -24,8 +17,10 @@ class MethodDescriptor implements DescriptorInterface
      * Constructs new message descriptor
      *
      * @param string            $name       Message name
+     * @param string            $input      input type
+     * @param string            $output     output type
      * @param FileDescriptor    $file       File defining message
-     * @param MessageDescriptor $containing Parent message
+     * @param ServiceDescriptor $service    service descriptor
      */
     public function __construct(
         $name, $input, $output, FileDescriptor $file, ServiceDescriptor $service) {
@@ -48,7 +43,7 @@ class MethodDescriptor implements DescriptorInterface
     /**
      * Returns parent message
      *
-     * @return MessageDescriptor
+     * @return ServiceDescriptor
      */
     public function getContaining()
     {
@@ -66,9 +61,9 @@ class MethodDescriptor implements DescriptorInterface
     }
 
     /**
-     * Returns file descriptor
+     * Returns service descriptor
      *
-     * @return FileDescriptor
+     * @return ServiceDescriptor
      */
     public function getService()
     {

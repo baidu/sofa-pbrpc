@@ -1,16 +1,9 @@
 <?php
-/* * *****************************************************************************
-* 
-* Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
-* 
- * **************************************************************************** */
- 
+
 /**
-* @File: ServiceDescriptor.php
-* @Author: spider(spider@baidu.com)
-* @Date: 2015/11/29 14:28:24
-* @Brief: service descriptor for pb rpc      
-*/
+ * generates service class
+ */
+
 class ServiceDescriptor implements DescriptorInterface
 {
     private $_containing;
@@ -38,13 +31,12 @@ class ServiceDescriptor implements DescriptorInterface
         if (!is_null($file)) {
             $file->addService($this);
         }
-
     }
 
     /**
-     * Returns parent message
+     * Returns file descriptor 
      *
-     * @return MessageDescriptor
+     * @return FileDescriptorDescriptor
      */
     public function getContaining()
     {
@@ -52,9 +44,9 @@ class ServiceDescriptor implements DescriptorInterface
     }
 
     /**
-     * Adds new enum to message
+     * Adds new method to service
      *
-     * @param EnumDescriptor $enum Enum
+     * @param MethodDescriptor $method
      *
      * @return null
      */
@@ -84,15 +76,14 @@ class ServiceDescriptor implements DescriptorInterface
     }
 
     /**
-     * Returns parent message
+     * Returns get method descriptor
      *
-     * @return MessageDescriptor
+     * @return MethodDescriptor
      */
     public function getMethods()
     {
         return $this->_methods;
-    }
-    
+    } 
 }
 
 ?>

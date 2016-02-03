@@ -1,18 +1,9 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file ext_rpc_service_stub_impl.h
- * @author zhangdi(zhangdi05@baidu.com)
- * @date 2016/01/06 10:28:29
- * @version $Revision$ 
- * @brief 
- *  
- **/
+// Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhangdi Di)
+
 #ifndef EXT_RPC_SERVICE_STUB_IMPL_H
 #define EXT_RPC_SERVICE_STUB_IMPL_H
 

@@ -5,9 +5,9 @@ PHP_ARG_ENABLE(sofa_pbrpc, whether to enable sofa_pbrpc support,
 
 if test "$PHP_SOFAPBRPC" != "no"; then
     RPC_LIBNAME=sofa-pbrpc
-    RPCLIB_DIR=/home/zhangdi05/svn_space/ps/opensource/sofa-pbrpc
+    RPCLIB_DIR=/usr/local/sofa-pbrpc
     PROTOBUF_LIBNAME=protobuf
-    PROTOBUFLIB_DIR=/home/zhangdi05/svn_space/third-64/protobuf
+    PROTOBUFLIB_DIR=/usr/local/protobuf
     PHP_REQUIRE_CXX()
     PHP_SUBST(SOFA_PBRPC_SHARED_LIBADD)
     PHP_ADD_LIBRARY(stdc++, 1, SOFA_PBRPC_SHARED_LIBADD)

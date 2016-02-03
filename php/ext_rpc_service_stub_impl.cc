@@ -1,18 +1,8 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file ext_rpc_service_stub_impl.c
- * @author zhangdi(zhangdi05@baidu.com)
- * @date 2016/01/06 10:28:32
- * @version $Revision$ 
- * @brief 
- *  
- **/
+// Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhangdi Di)
 
 #include "common.h"
 #include "ext_rpc_service_stub_impl.h"
@@ -25,85 +15,79 @@ zval* PhpRpcServiceStubImpl::GetFieldDescriptors(zval* obj)
     zval method;
     zval* descriptors
     TSRMLS_FETCH();
-	INIT_ZVAL(method);
-	ZVAL_STRINGL(&method, PB_FIELDS_METHOD.c_str(), PB_FIELDS_METHOD.length(), 0);
-
-	if (call_user_function_ex(NULL, &obj, &method, &descriptors, 0, NULL, 0, NULL TSRMLS_CC) != SUCCESS)
+    INIT_ZVAL(method);
+    ZVAL_STRINGL(&method, PB_FIELDS_METHOD.c_str(), PB_FIELDS_METHOD.length(), 0);
+    if (call_user_function_ex(NULL, &obj, &method, &descriptors, 0, NULL, 0, NULL TSRMLS_CC) != SUCCESS)
     {
         return NULL;
     }
-	return descriptors;
+    return descriptors;
 }
 
 zval** PhpRpcServiceStubImpl::GetFieldType(zval** field_descriptor, uint32_t field_number)
 {
-	zval** field_type;
+    zval** field_type;
     TSRMLS_FETCH();
-
-	if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
+    if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
                 PB_FIELD_TYPE.c_str(), PB_FIELD_TYPE.length() + 1, 
                 (void**) &(field_type)) == FAILURE)
     {
         return NULL;
     }
-	return field_type;
+    return field_type;
 }
 
 zval** PhpRpcServiceStubImpl::GetRequiredLabel(zval** field_descriptor, uint32_t field_number)
 {
-	zval** field_required;
+    zval** field_required;
     TSRMLS_FETCH();
-
-	if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
+    if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
                 PB_FIELD_REQUIRED.c_str(), 
                 PB_FIELD_REQUIRED.length() + 1, 
                 (void**) &(field_required)) == FAILURE)
     {
         return NULL;
     }
-	return field_required;
+    return field_required;
 }
 
 zval** PhpRpcServiceStubImpl::GetRepeatedLabel(zval** field_descriptor, uint32_t field_number)
 {
-	zval** field_repeated;
+    zval** field_repeated;
     TSRMLS_FETCH();
-
-	if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
+    if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
                 PB_FIELD_REPEATED.c_str(), 
                 PB_FIELD_REPEATED.length() + 1, 
                 (void**) &(field_repeated)) == FAILURE)
     {
         return NULL;
     }
-	return field_repeated;
+    return field_repeated;
 }
 
 const char* PhpRpcServiceStubImpl::GetFieldName(zval** field_descriptor)
 {
     zval** field_name;
     TSRMLS_FETCH();
-
-	if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
+    if (zend_hash_find(Z_ARRVAL_PP((field_descriptor)), 
                 PB_FIELD_NAME.c_str(), 
                 PB_FIELD_NAME.length() + 1, 
                 (void**) &(field_name)))
     {
         return NULL;
     }
-
-	return (const char*) Z_STRVAL_PP(field_name);
+    return (const char*) Z_STRVAL_PP(field_name);
 }
 
 zval** PhpRpcServiceStubImpl::GetUserValues(zval* obj)
 {
-	zval** values = NULL;
+    zval** values;
     TSRMLS_FETCH();
-	zend_hash_find((Z_OBJPROP_P(obj)), 
+    zend_hash_find((Z_OBJPROP_P(obj)), 
             PB_VALUES_PROPERTY.c_str(), 
             PB_VALUES_PROPERTY.length() + 1, 
             (void**) &(values));
-	return values;
+    return values;
 }
 
 void PhpRpcServiceStubImpl::GetMessageType(zval* obj, 
@@ -112,11 +96,9 @@ void PhpRpcServiceStubImpl::GetMessageType(zval* obj,
     zval method;
     zval* msg_type;
     TSRMLS_FETCH();
-
-	INIT_ZVAL(method);
-	ZVAL_STRINGL(&method, CLASS_TYPE.c_str(), CLASS_TYPE.length(), 0);
-	call_user_function_ex(NULL, &obj, &method, &msg_type, 0, NULL, 0, NULL TSRMLS_CC);
-
+    INIT_ZVAL(method);
+    ZVAL_STRINGL(&method, CLASS_TYPE.c_str(), CLASS_TYPE.length(), 0);
+    call_user_function_ex(NULL, &obj, &method, &msg_type, 0, NULL, 0, NULL TSRMLS_CC);
     convert_to_string(msg_type);
     message_type = Z_STRVAL_P(msg_type);
 }
@@ -124,27 +106,26 @@ void PhpRpcServiceStubImpl::GetMessageType(zval* obj,
 zval* PhpRpcServiceStubImpl::GetSubMessage(zval* obj,
                                         ulong field_number)
 {
-	zval** tmp_val;
+    zval** tmp_val;
     zval** sub_msg;
     zval** values;
-
-	if ((values = GetUserValues(obj)) == NULL)
+    if ((values = GetUserValues(obj)) == NULL)
     {
-		return NULL;
+        return NULL;
     }
     if (zend_hash_index_find((Z_ARRVAL_PP(values)), field_number, (void**) &(sub_msg)) == FAILURE) 
     {
         return NULL;
     }
-	if (Z_TYPE_PP(sub_msg) == IS_ARRAY) 
+    if (Z_TYPE_PP(sub_msg) == IS_ARRAY) 
     {
-	    if (zend_hash_index_find((Z_ARRVAL_PP(sub_msg)), 0, (void**) &(tmp_val)) == FAILURE)
+        if (zend_hash_index_find((Z_ARRVAL_PP(sub_msg)), 0, (void**) &(tmp_val)) == FAILURE)
         {
-			return NULL;
+            return NULL;
         }
-		sub_msg = tmp_val;
-	}
-	return *sub_msg;
+        sub_msg = tmp_val;
+    }
+    return *sub_msg;
 }
 
 int PhpRpcServiceStubImpl::GetSofaFieldType(zval** type, 
@@ -228,7 +209,7 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         SLOG(ERROR, "transform to sofa field failed for sofa message not initialized");
         return -1;
     }
-    int array_size = 0;
+    int array_size;
     if (repeated)
     {
         array_size = reflection->FieldSize(*sofa_msg, field);
@@ -240,11 +221,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **) &item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **) &item, &i);
                 reflection->AddDouble(sofa_msg, field, Z_DVAL_PP(item));
             }
         }
@@ -259,11 +240,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddUInt32(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -278,11 +259,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddInt32(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -297,11 +278,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddBool(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -316,11 +297,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddUInt64(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -335,11 +316,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddFloat(sofa_msg, field, Z_DVAL_PP(item));
             }
         } 
@@ -354,11 +335,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddInt32(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -373,11 +354,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddString(sofa_msg, field, Z_STRVAL_PP(item));
             }
         } 
@@ -392,11 +373,11 @@ int PhpRpcServiceStubImpl::ToSofaField(zval** type,
         if (repeated) 
         {
             zval** array = value;
-            zval** item; 
-	        HashPosition i;
+            zval** item;
+            HashPosition i;
             EXT_ZEND_FOREACH(&i, Z_ARRVAL_PP(value))
             {
-				zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
+                zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **)&item, &i);
                 reflection->AddUInt64(sofa_msg, field, Z_LVAL_PP(item));
             }
         } 
@@ -439,15 +420,13 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
         zval** type;
         zval** required;
         bool repeated = false;
-
         zval** field_descriptor;
         zend_hash_get_current_key_ex(Z_ARRVAL_P(field_descriptors), NULL, NULL, &field_number, 0, &i);
-		zend_hash_get_current_data_ex(Z_ARRVAL_P(field_descriptors), (void **) &field_descriptor, &i);
-
-		if (zend_hash_index_find(Z_ARRVAL_PP(values), field_number, (void **) &value) == FAILURE) 
+        zend_hash_get_current_data_ex(Z_ARRVAL_P(field_descriptors), (void **) &field_descriptor, &i);
+        if (zend_hash_index_find(Z_ARRVAL_PP(values), field_number, (void **) &value) == FAILURE) 
         {
             return -1;
-		}
+        }
         if (Z_TYPE_PP(value) == IS_NULL)
         {
             continue;
@@ -456,12 +435,10 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
         {
             repeated = true;
         }
-
-		if ((type = GetFieldType(field_descriptor, field_number)) == NULL)
+        if ((type = GetFieldType(field_descriptor, field_number)) == NULL)
         {
             return -1;
         }
-        //std::string field_name 
         const char* field_name = GetFieldName(field_descriptor);
         if (!field_name)
         {
@@ -472,7 +449,7 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
             = message_descriptor->FindFieldByName(field_name);
         if (!field)
         {
-            SLOG(ERROR, "field not found");
+            SLOG(ERROR, "field %s not found", field_name);
             return -1;
         }
         if (Z_TYPE_PP(type) == IS_LONG)
@@ -492,17 +469,12 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
                     zend_throw_exception_ex(NULL, 
                             0 TSRMLS_CC, 
                             "'%s' field is required and must be set", 
-                            GetFieldName(field_descriptor));
+                            field_name);
                     return -1;
                 }
                 continue;
             }
-            if(ToSofaField(type, 
-                           repeated,
-                           value, 
-                           sofa_msg, 
-                           field, 
-                           reflection) != 0)
+            if(ToSofaField(type, repeated, value, sofa_msg, field, reflection) != 0)
             {
                 SLOG(ERROR, "transform to sofa field failed");
                 return -1;
@@ -513,12 +485,12 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
             if (repeated)
             {
                 zval** array = value;
-	            HashPosition i;
+                HashPosition i;
                 EXT_ZEND_FOREACH (&i, Z_ARRVAL_PP(value))
                 {
                     zval** item;
                     google::protobuf::Message* sub_message_item = reflection->AddMessage(sofa_msg, field);
-				    zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **) &item, &i);
+                    zend_hash_get_current_data_ex(Z_ARRVAL_PP(array), (void **) &item, &i);
                     PhpTransformToSofa(*item, sub_message_item); 
                 }
             }
@@ -723,9 +695,9 @@ int PhpRpcServiceStubImpl::CreateMessageDescriptor(zval* message,
         zval** type;
 
         zend_hash_get_current_key_ex(Z_ARRVAL_P(message_descriptor), NULL, NULL, &field_number, 0, &i);
-		zend_hash_get_current_data_ex(Z_ARRVAL_P(message_descriptor), (void **) &field_descriptor, &i);
+        zend_hash_get_current_data_ex(Z_ARRVAL_P(message_descriptor), (void **) &field_descriptor, &i);
         std::string field_name = GetFieldName(field_descriptor);
-		if ((type = GetFieldType(field_descriptor, field_number)) == NULL)
+        if ((type = GetFieldType(field_descriptor, field_number)) == NULL)
         {
             return -1;
         }

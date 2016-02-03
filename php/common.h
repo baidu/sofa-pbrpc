@@ -1,18 +1,9 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file common.h
- * @author spider(spider@baidu.com)
- * @date 2016/01/06 11:23:53
- * @version $Revision$ 
- * @brief 
- *  
- **/
+// Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhangdi Di)
+
 #ifndef COMMON_H
 #define COMMON_H
 

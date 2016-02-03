@@ -1,18 +1,8 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file ext_rpc_service_stub.c
- * @author zhangdi(zhangdi05@baidu.com)
- * @date 2016/01/06 10:28:23
- * @version $Revision$ 
- * @brief 
- *  
- **/
+// Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhangdi Di)
 
 extern "C" {
 #include <php.h>
@@ -47,13 +37,13 @@ struct rpc_service_stub_object
 };
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_initservice, 0, 0, 3)
-	ZEND_ARG_INFO(0, address_str)
-	ZEND_ARG_INFO(0, package_name)
-	ZEND_ARG_INFO(0, service_name)
+    ZEND_ARG_INFO(0, address_str)
+    ZEND_ARG_INFO(0, package_name)
+    ZEND_ARG_INFO(0, service_name)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_settimeout, 0, 0, 1)
-	ZEND_ARG_INFO(0, timeout)
+    ZEND_ARG_INFO(0, timeout)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_getfailed, 0, 0, 0)
@@ -63,19 +53,19 @@ ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_geterrortext, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_registermethod, 0, 0, 3)
-	ZEND_ARG_INFO(0, method_name)
-	ZEND_ARG_INFO(0, request)
-	ZEND_ARG_INFO(0, response)
+    ZEND_ARG_INFO(0, method_name)
+    ZEND_ARG_INFO(0, request)
+    ZEND_ARG_INFO(0, response)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_initmethod, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(rpc_service_stub_arginfo_callmethod, 0, 0, 4)
-	ZEND_ARG_INFO(0, method_name)
-	ZEND_ARG_INFO(0, request)
-	ZEND_ARG_INFO(0, response)
-	ZEND_ARG_INFO(0, closure)
+    ZEND_ARG_INFO(0, method_name)
+    ZEND_ARG_INFO(0, request)
+    ZEND_ARG_INFO(0, response)
+    ZEND_ARG_INFO(0, closure)
 ZEND_END_ARG_INFO()
 
 void rpc_service_stub_free_storage(void *object TSRMLS_DC) 
@@ -168,6 +158,7 @@ PHP_METHOD(PhpRpcServiceStub, SetTimeout)
     zval* stub_zval = getThis();
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout) == FAILURE)
     {
+        SLOG(ERROR, "set timeout failed for bad parameters");
         return;
     }
     rpc_service_stub_object* stub_obj 
@@ -212,6 +203,7 @@ PHP_METHOD(PhpRpcServiceStub, RegisterMethod)
                               &request,
                               &response) == FAILURE)
     {
+        SLOG(ERROR, "register method failed for bad parameters");
         return;
     }
     std::string method_name_str(method_name, method_length);
@@ -249,6 +241,7 @@ PHP_METHOD(PhpRpcServiceStub, CallMethod)
                               &response_zval,
                               &closure_zval) == FAILURE)
     {
+        SLOG(ERROR, "call method  failed for bad parameters");
         return;
     }
 
@@ -262,14 +255,14 @@ PHP_METHOD(PhpRpcServiceStub, CallMethod)
 
 const zend_function_entry sofa_pbrpc_functions[] = {
 
-	PHP_ME(PhpRpcServiceStub, InitService, rpc_service_stub_arginfo_initservice, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, SetTimeout, rpc_service_stub_arginfo_settimeout, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, GetFailed, rpc_service_stub_arginfo_getfailed, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, GetErrorText, rpc_service_stub_arginfo_geterrortext, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, RegisterMethod, rpc_service_stub_arginfo_registermethod, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, InitMethods, rpc_service_stub_arginfo_initmethod, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpRpcServiceStub, CallMethod, rpc_service_stub_arginfo_callmethod, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL, 0, 0}
+    PHP_ME(PhpRpcServiceStub, InitService, rpc_service_stub_arginfo_initservice, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, SetTimeout, rpc_service_stub_arginfo_settimeout, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, GetFailed, rpc_service_stub_arginfo_getfailed, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, GetErrorText, rpc_service_stub_arginfo_geterrortext, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, RegisterMethod, rpc_service_stub_arginfo_registermethod, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, InitMethods, rpc_service_stub_arginfo_initmethod, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRpcServiceStub, CallMethod, rpc_service_stub_arginfo_callmethod, ZEND_ACC_PUBLIC)
+    {NULL, NULL, NULL, 0, 0}
 };
 
 PHP_MINIT_FUNCTION(sofa_pbrpc)
@@ -281,55 +274,55 @@ PHP_MINIT_FUNCTION(sofa_pbrpc)
     memcpy(&rpc_service_stub_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
     rpc_service_stub_object_handlers.clone_obj = NULL;
 
-	PB_CONSTANT(PB_TYPE_DOUBLE);
-	PB_CONSTANT(PB_TYPE_FIXED32);
-	PB_CONSTANT(PB_TYPE_FIXED64);
-	PB_CONSTANT(PB_TYPE_FLOAT);
-	PB_CONSTANT(PB_TYPE_INT);
-	PB_CONSTANT(PB_TYPE_SIGNED_INT);
-	PB_CONSTANT(PB_TYPE_STRING);
-	PB_CONSTANT(PB_TYPE_BOOL);
+    PB_CONSTANT(PB_TYPE_DOUBLE);
+    PB_CONSTANT(PB_TYPE_FIXED32);
+    PB_CONSTANT(PB_TYPE_FIXED64);
+    PB_CONSTANT(PB_TYPE_FLOAT);
+    PB_CONSTANT(PB_TYPE_INT);
+    PB_CONSTANT(PB_TYPE_SIGNED_INT);
+    PB_CONSTANT(PB_TYPE_STRING);
+    PB_CONSTANT(PB_TYPE_BOOL);
 
     return SUCCESS;
 }
 
 PHP_MSHUTDOWN_FUNCTION(sofa_pbrpc)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 
 PHP_RINIT_FUNCTION(sofa_pbrpc)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 
 PHP_RSHUTDOWN_FUNCTION(sofa_pbrpc)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 
 PHP_MINFO_FUNCTION(sofa_pbrpc)
 {
     php_info_print_table_start();
-	php_info_print_table_header(2, "sofa_pbrpc support", "enabled");
-	php_info_print_table_end();
+    php_info_print_table_header(2, "sofa_pbrpc support", "enabled");
+    php_info_print_table_end();
 }
 
 zend_module_entry sofa_pbrpc_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
-	STANDARD_MODULE_HEADER,
+    STANDARD_MODULE_HEADER,
 #endif
-	"sofa_pbrpc",
-	sofa_pbrpc_functions,
+    "sofa_pbrpc",
+    sofa_pbrpc_functions,
     PHP_MINIT(sofa_pbrpc),
-	PHP_MSHUTDOWN(sofa_pbrpc),
-	PHP_RINIT(sofa_pbrpc),
-	PHP_RSHUTDOWN(sofa_pbrpc),
-	PHP_MINFO(sofa_pbrpc),
+    PHP_MSHUTDOWN(sofa_pbrpc),
+    PHP_RINIT(sofa_pbrpc),
+    PHP_RSHUTDOWN(sofa_pbrpc),
+    PHP_MINFO(sofa_pbrpc),
 #if ZEND_MODULE_API_NO >= 20010901
 	"0.1",
 #endif
-	STANDARD_MODULE_PROPERTIES
+    STANDARD_MODULE_PROPERTIES
 };
 
 #ifdef COMPILE_DL_SOFA_PBRPC
