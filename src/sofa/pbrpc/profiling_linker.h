@@ -5,14 +5,14 @@
 
 #include <gperftools/profiler.h>
 
-void touch_gperftools_profiler()
+static void touch_gperftools_profiler()
 {
     SCHECK(false);
     ProfilerStart("function_never_run");
     ProfilerStop();
 }
 
-void touch_profiler() 
+static void touch_profiler() 
 {
     SCHECK(false);
     touch_gperftools_profiler();
