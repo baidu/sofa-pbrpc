@@ -35,6 +35,14 @@ struct RpcClientOptions {
     int max_throughput_out;      // max network out throughput for all connections.
                                  // in MB/s, should >= -1, -1 means no limit, default -1.
 
+    // Timeout for connect in milliseconds
+    //
+    // If it is not set or set no more than 0, it will not consider the timeout
+    // ot the connect.
+    //
+    // default is -1
+    int connect_timeout;
+
     RpcClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
@@ -42,6 +50,7 @@ struct RpcClientOptions {
         , max_pending_buffer_size(100)
         , max_throughput_in(-1)
         , max_throughput_out(-1)
+        , connect_timeout(-1)
     {}
 };
 
