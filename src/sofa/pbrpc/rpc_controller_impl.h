@@ -9,7 +9,6 @@
 
 #include <deque>
 #include <list>
-#include <iostream>
 
 #include <google/protobuf/descriptor.h>
 
