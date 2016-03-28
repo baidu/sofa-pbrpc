@@ -119,6 +119,12 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);
 
+    WriteBuffer write_buffer;
+    write_buffer.Append(_req_header.attach_buffer, _req_header.attach_size);
+    ReadBufferPtr read_buffer(new ReadBuffer());
+    write_buffer.SwapOut(read_buffer.get());
+    cntl->SetRequestAttachBuffer(read_buffer);
+
     CallMethod(method_board, controller, request, response);
 }
 
@@ -167,6 +173,13 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
     header.message_size = header.meta_size + header.data_size;
+
+    std::string response_attach_str = cntl->GetResponseAttachBuffer()->ToString();
+    size_t attach_size = response_attach_str.size();
+    header.attach_size = attach_size;
+    memcpy(header.attach_buffer, response_attach_str.c_str(), attach_size);
+
+
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());

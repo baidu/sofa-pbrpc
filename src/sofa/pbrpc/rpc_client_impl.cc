@@ -318,6 +318,26 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
     header.message_size = header.meta_size + header.data_size;
+    std::string request_attach_str = cntl->GetRequestAttachBuffer()->ToString();
+    size_t attach_size = request_attach_str.size();
+    if (attach_size > 0)
+    {
+        if (attach_size > ATTACH_BUFFER_SIZE)
+        {
+#if defined( LOG )
+            LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+                       << ":attach data is too big";
+#else
+            SLOG(ERROR, "CallMethod(): %s: attach data is too big",
+                    RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
+#endif
+            cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "attach data is too big");
+            return;
+        }
+        memcpy(header.attach_buffer, request_attach_str.c_str(), attach_size);
+        header.attach_size = attach_size;
+    }
+
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());

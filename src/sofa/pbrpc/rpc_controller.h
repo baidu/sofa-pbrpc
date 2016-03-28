@@ -11,6 +11,7 @@
 
 #include <sofa/pbrpc/common.h>
 #include <sofa/pbrpc/rpc_option.pb.h>
+#include <sofa/pbrpc/rpc_attachment.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -163,6 +164,14 @@ public:
     //
     // NotifyOnCancel() must be called no more than once per request.
     virtual void NotifyOnCancel(google::protobuf::Closure* callback);
+
+    void SetRequestAttachment(RpcAttachment* request_attachment);
+
+    void GetRequestAttachment(RpcAttachment* attachment);
+
+    void SetResponseAttachment(RpcAttachment* response_attachment);
+
+    void GetResponseAttachment(RpcAttachment* attachment);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcControllerImpl>& impl() const

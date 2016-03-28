@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <list>
+#include <iostream>
 
 #include <google/protobuf/descriptor.h>
 
@@ -19,6 +20,7 @@
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/rpc_option.pb.h>
 #include <sofa/pbrpc/wait_event.h>
+#include <sofa/pbrpc/rpc_attachment.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -44,6 +46,8 @@ public:
         , _http_path(NULL)
         , _http_query_params(NULL)
         , _http_headers(NULL)
+        , _request_attach_buffer(new ReadBuffer())
+        , _response_attach_buffer(new ReadBuffer())
     {}
 
     virtual ~RpcControllerImpl() {}
@@ -329,6 +333,46 @@ public:
         return _response_buffer;
     }
 
+    void SetRequestAttachment(RpcAttachment* request_attachment)
+    {
+        request_attachment->Serialize(_request_attach_buffer);
+    }
+
+    void GetRequestAttachment(RpcAttachment* request_attachment)
+    {
+        request_attachment->Deserialize(_request_attach_buffer);
+    }
+
+    void SetResponseAttachment(RpcAttachment* response_attachment)
+    {
+        response_attachment->Serialize(_response_attach_buffer);
+    }
+
+    void GetResponseAttachment(RpcAttachment* response_attachment)
+    {
+        response_attachment->Deserialize(_response_attach_buffer);;
+    }
+
+    void SetRequestAttachBuffer(const ReadBufferPtr& request_attach_buffer)
+    {
+        _request_attach_buffer = request_attach_buffer;
+    }
+
+    ReadBufferPtr GetRequestAttachBuffer()
+    {
+        return _request_attach_buffer;
+    }
+
+    void SetResponseAttachBuffer(const ReadBufferPtr& response_attach_buffer)
+    {
+        _response_attach_buffer = response_attach_buffer;
+    }
+
+    ReadBufferPtr GetResponseAttachBuffer()
+    {
+        return _response_attach_buffer;
+    }
+
     void NotifyRequestSent(const RpcEndpoint& local_endpoint, int64 sent_bytes)
     {
         _is_request_sent = true;
@@ -447,6 +491,8 @@ private:
     uint64 _timeout_id;
     ReadBufferPtr _request_buffer;
     ReadBufferPtr _response_buffer;
+    //RpcAttachmentPtr _request_attachment;
+    //RpcAttachmentPtr _response_attachment;
     PTime _request_sent_time;
 
     struct RequestOptions {
@@ -471,6 +517,9 @@ private:
     const std::string* _http_path;
     const std::map<std::string, std::string>* _http_query_params;
     const std::map<std::string, std::string>* _http_headers;
+
+    ReadBufferPtr _request_attach_buffer;
+    ReadBufferPtr _response_attach_buffer;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcControllerImpl);
 }; // class RpcControllerImpl

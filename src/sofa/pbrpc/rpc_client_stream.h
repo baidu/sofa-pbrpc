@@ -149,7 +149,8 @@ private:
     virtual void on_received(
             const ReadBufferPtr& message,
             int meta_size,
-            int64 data_size)
+            int64 data_size,
+            const std::string& attach_buffer)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
@@ -258,6 +259,11 @@ private:
         else // !meta.failed()
         {
             SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
+            WriteBuffer write_buffer;
+            write_buffer.Append(attach_buffer);
+            ReadBufferPtr read_buffer(new ReadBuffer());
+            write_buffer.SwapOut(read_buffer.get());
+            cntl->SetResponseAttachBuffer(read_buffer);
             cntl->SetResponseBuffer(message);
             cntl->SetResponseCompressType(meta.has_compress_type() ?
                     meta.compress_type() : CompressTypeNone);
