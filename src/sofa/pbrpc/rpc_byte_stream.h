@@ -86,11 +86,14 @@ public:
         }
     }
 
-    void on_connect_timeout(const boost::system::error_code& error) {
-        if (_status != STATUS_CONNECTING) {
+    void on_connect_timeout(const boost::system::error_code& error) 
+    {
+        if (_status != STATUS_CONNECTING) 
+        {
             return;
         }
-        if (error == boost::asio::error::operation_aborted) {
+        if (error == boost::asio::error::operation_aborted) 
+        {
             return;
         }
         close("connect timeout");
@@ -106,7 +109,8 @@ public:
         _status = STATUS_CONNECTING;
         _socket.async_connect(_remote_endpoint,
                 boost::bind(&RpcByteStream::on_connect, shared_from_this(), _1));
-        if (_connect_timeout > 0) {
+        if (_connect_timeout > 0) 
+        {
             _timer.expires_from_now(boost::posix_time::milliseconds(_connect_timeout));
             _timer.async_wait(boost::bind(&RpcByteStream::on_connect_timeout, shared_from_this(), _1));
         }
@@ -242,11 +246,13 @@ public:
         return _last_rw_ticks;
     }
 
-    void set_connect_timeout(int64 timeout) {
+    void set_connect_timeout(int64 timeout) 
+    {
         _connect_timeout = timeout;
     }
 
-    int64 connect_timeout() {
+    int64 connect_timeout() 
+    {
         return _connect_timeout;
     }
 
@@ -303,7 +309,8 @@ private:
         SOFA_PBRPC_FUNCTION_TRACE;
 
         //Maybe already timeout
-        if (_status != STATUS_CONNECTING) {
+        if (_status != STATUS_CONNECTING) 
+        {
             return;
         }
 
