@@ -1,22 +1,12 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file rpc_cookie.h
- * @author zhangdi05(zhangdi05@baidu.com)
- * @date 2016/03/18 13:32:12
- * @version $Revision$ 
- * @brief 
- *  
- **/
-#ifndef _SOFA_PBRPC_RPC_COOKIE_H_
-#define _SOFA_PBRPC_RPC_COOKIE_H_
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhang Di)
 
-#include <iostream>
+#ifndef _RPC_COOKIE_H_
+#define _RPC_COOKIE_H_
+
 #include <map>
 #include <string>
 #include <sofa/pbrpc/common.h>
@@ -34,9 +24,9 @@ enum KeepType
     MANAGER_FIRST = 2
 };
 
-class RpcCookieManager; 
 typedef std::map<std::string, std::string> MapType;
 
+//class RpcCookieManager
 class RpcCookieManager
 {
 public:
@@ -58,10 +48,8 @@ private:
     MutexLock _lock;
 };
 
-typedef std::map<std::string, std::string> MapType;
-
-class Cookie : public sofa::pbrpc::RpcAttachment
 //class Cookie
+class Cookie : public sofa::pbrpc::RpcAttachment
 {
 public:
     Cookie();

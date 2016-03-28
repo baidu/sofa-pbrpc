@@ -1,9 +1,14 @@
-#ifndef SOFA_IO_SERIALIZER_H
-#define SOFA_IO_SERIALIZER_H
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
+#ifndef _SOFA_PBRPC_RPC_COOKIE_H_
+#define _SOFA_PBRPC_RPC_COOKIE_H_
 
 #include <stdint.h>
 #include <string.h>
-//#include <google/protobuf/io/zero_copy_stream.h>
 #include <sofa/pbrpc/buffer.h>
 
 // String max serialize size: 64MB.
@@ -37,9 +42,7 @@ public:
         _stream = stream;
     }
     ~Serializer()
-    {
-        //close();
-    }
+    { }
     // close serializer, backup un-used buffer
     bool close();
 
@@ -194,8 +197,8 @@ public:
         return 9;
     }
 private:
-    void* _buf;             // current buffer to write
-    int _buf_size;       // size of current buffer to write
+    void* _buf;              // current buffer to write
+    int _buf_size;           // size of current buffer to write
     WriteBufferPtr _stream;  // output stream
 };
 
@@ -209,9 +212,7 @@ public:
         _buf_size = 0;
     }
     ~Deserializer()
-    {
-        //close();
-    }
+    { }
     // close deserializer, backup un-used buffer
     void close();
 
@@ -332,15 +333,14 @@ public:
     }
     bool deserialize_varint(uint64_t& d);
 private:
-    const void* _buf;      // current buffer to read
-    int _buf_size;      // size of current buffer to read
-    //InputStream* _stream;  // input stream
-    ReadBufferPtr _stream;
+    const void* _buf;         // current buffer to read
+    int _buf_size;            // size of current buffer to read
+    ReadBufferPtr _stream;    // input stream
 };
 
-} // namespace io
+} // namespace pbrpc
 } // namespace sofa
 
-#endif // SOFA_IO_SERIALIZER_H
+#endif // _SOFA_PBRPC_RPC_COOKIE_H_
 
 /* vim: set ts=4 sw=4 sts=4 tw=100 */

@@ -326,12 +326,12 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
         {
 #if defined( LOG )
             LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
-                       << ":attach data is too big";
+                       << ":attach data exceed the limit";
 #else
-            SLOG(ERROR, "CallMethod(): %s: attach data is too big",
+            SLOG(ERROR, "CallMethod(): %s: attach data exceed the limit",
                     RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
 #endif
-            cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "attach data is too big");
+            cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "attach data exceed the limit");
             return;
         }
         memcpy(header.attach_buffer, request_attach_str.c_str(), attach_size);

@@ -1,20 +1,10 @@
-/***************************************************************************
- * 
- * Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
- * $Id$ 
- * 
- **************************************************************************/
- 
- /**
- * @file rpc_cookie.cc
- * @author zhangdi05(zhangdi05@baidu.com)
- * @date 2016/03/18 13:43:53
- * @version $Revision$ 
- * @brief 
- *  
- **/
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: zhangdi05@baidu.com (Zhang Di)
 
-#include "serialize.h"
+#include <sofa/pbrpc/serialize.h>
 #include "rpc_cookie.h"
 
 namespace sofa {

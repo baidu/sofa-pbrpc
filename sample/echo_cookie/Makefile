@@ -60,17 +60,17 @@ check_depends:
 	@if [ ! -f "$(SOFA_PBRPC)/lib/libsofa-pbrpc.a" ]; then echo "ERROR: need sofa-pbrpc lib"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) *.o *.pb.*
+	@rm -f $(BIN) *.o *.pb.* cookie_plugin/*.o
 
 rebuild: clean all
 
-server: $(PROTO_OBJ) server.o cookie_plugin/rpc_cookie.o  cookie_plugin/serialize.o
+server: $(PROTO_OBJ) server.o cookie_plugin/rpc_cookie.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_sync: $(PROTO_OBJ) client_sync.o cookie_plugin/rpc_cookie.o cookie_plugin/serialize.o
+client_sync: $(PROTO_OBJ) client_sync.o cookie_plugin/rpc_cookie.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_async: $(PROTO_OBJ) client_async.o cookie_plugin/rpc_cookie.o cookie_plugin/serialize.o
+client_async: $(PROTO_OBJ) client_async.o cookie_plugin/rpc_cookie.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc

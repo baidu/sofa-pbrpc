@@ -176,9 +176,16 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
 
     std::string response_attach_str = cntl->GetResponseAttachBuffer()->ToString();
     size_t attach_size = response_attach_str.size();
-    header.attach_size = attach_size;
-    memcpy(header.attach_buffer, response_attach_str.c_str(), attach_size);
-
+    if (attach_size > 0)
+    {
+        if (attach_size > ATTACH_BUFFER_SIZE)
+        {
+            err = "serialize response message failed for attach data exceed the limit";
+            return ReadBufferPtr();
+        }
+        memcpy(header.attach_buffer, response_attach_str.c_str(), attach_size);
+        header.attach_size = attach_size;
+    }
 
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 

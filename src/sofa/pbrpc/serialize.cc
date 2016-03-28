@@ -1,6 +1,11 @@
-#include <sofa/pbrpc/serialize.h>
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
 #include <sofa/pbrpc/string_utils.h>
-//#include <sofa/utils/logging.h>
+#include "serialize.h"
 
 namespace sofa {
 namespace pbrpc {
@@ -76,7 +81,6 @@ bool Serializer::close()
         {
             _stream->BackUp(_buf_size);
         }
-        //_stream = NULL;
         _buf = NULL;
         _buf_size = 0;
         return ret;
@@ -221,7 +225,6 @@ void Deserializer::close()
     {
         _stream->BackUp(_buf_size);
     }
-    //_stream = NULL;
     _buf = NULL;
     _buf_size = 0;
 }
