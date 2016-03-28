@@ -11,7 +11,6 @@ namespace sofa {
 namespace pbrpc {
 
 // NOTICE: When compiling by gcc with '-O2' option, the data may be out of order.
-// It seems a bug of gcc, fuck it.  So we use 'sofa_io_barrier()' to prevent it. 
 #define sofa_io_barrier() __asm__ __volatile__("": : :"memory")
 
 // fast copy small data block
@@ -121,7 +120,6 @@ bool Serializer::serialize_string(const std::string& d)
 
 // NOTICE: When compiling by gcc with '-O2' option, the data may be out of order.
 // It occurs between modify 'd' and 'serialize_X_byte', so we use 'sofa_io_barrier()' to prevent it. 
-// Fuck gcc again!
 bool Serializer::serialize_varint(uint64_t d)
 {
     if (d < (1UL << 7))
