@@ -490,8 +490,6 @@ private:
     uint64 _timeout_id;
     ReadBufferPtr _request_buffer;
     ReadBufferPtr _response_buffer;
-    //RpcAttachmentPtr _request_attachment;
-    //RpcAttachmentPtr _response_attachment;
     PTime _request_sent_time;
 
     struct RequestOptions {
