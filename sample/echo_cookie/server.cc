@@ -11,7 +11,6 @@
 #include "echo_service.pb.h"
 
 typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::Cookie> CookiePtr;
-//sofa::pbrpc::RpcCookieManager cookie_manager;
 
 bool WebServlet(const sofa::pbrpc::HTTPRequest& request, sofa::pbrpc::HTTPResponse& response)
 {
