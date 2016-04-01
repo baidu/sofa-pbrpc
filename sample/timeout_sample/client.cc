@@ -30,8 +30,9 @@ int main(int /*argc*/, char** /*argv*/)
 
     // Call 1
     SLOG(NOTICE, "----------- Call 1 ---------------------------------------");
-    SLOG(NOTICE, "Sync call SleepWithServiceTimeout(), timeout is 2 seconds.");
+    SLOG(NOTICE, "Sync call SleepWithServiceTimeout(), default timeout is 2 seconds.");
     SLOG(NOTICE, "Sleep for 1 seconds.");
+    SLOG(NOTICE, "Expect result is success.");
     cntl->Reset();
     request->set_sleep_time(1);
     stub->SleepWithServiceTimeout(cntl, request, response, NULL);
@@ -42,11 +43,15 @@ int main(int /*argc*/, char** /*argv*/)
     else {
         SLOG(NOTICE, "Succeed: %s", response->message().c_str());
     }
+    if (cntl->Failed()) {
+        SLOG(ERROR, "!!!! unexpected result");
+    }
 
     // Call 2
     SLOG(NOTICE, "----------- Call 2 ---------------------------------------");
-    SLOG(NOTICE, "Sync call SleepWithServiceTimeout(), timeout is 2 seconds.");
+    SLOG(NOTICE, "Sync call SleepWithServiceTimeout(), default timeout is 2 seconds.");
     SLOG(NOTICE, "Sleep for 3 seconds.");
+    SLOG(NOTICE, "Expect result is failure.");
     cntl->Reset();
     request->set_sleep_time(3);
     stub->SleepWithServiceTimeout(cntl, request, response, NULL);
@@ -57,11 +62,15 @@ int main(int /*argc*/, char** /*argv*/)
     else {
         SLOG(NOTICE, "Succeed: %s", response->message().c_str());
     }
+    if (!cntl->Failed()) {
+        SLOG(ERROR, "!!!! unexpected result");
+    }
 
     // Call 3
     SLOG(NOTICE, "----------- Call 3 ---------------------------------------");
-    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), timeout is 4 seconds.");
+    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), default timeout is 4 seconds.");
     SLOG(NOTICE, "Sleep for 3 seconds.");
+    SLOG(NOTICE, "Expect result is success.");
     cntl->Reset();
     request->set_sleep_time(3);
     stub->SleepWithMethodTimeout(cntl, request, response, NULL);
@@ -72,11 +81,15 @@ int main(int /*argc*/, char** /*argv*/)
     else {
         SLOG(NOTICE, "Succeed: %s", response->message().c_str());
     }
+    if (cntl->Failed()) {
+        SLOG(ERROR, "!!!! unexpected result");
+    }
 
     // Call 4
     SLOG(NOTICE, "----------- Call 4 ---------------------------------------");
-    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), timeout is 4 seconds.");
+    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), default timeout is 4 seconds.");
     SLOG(NOTICE, "Sleep for 5 seconds.");
+    SLOG(NOTICE, "Expect result is failure.");
     cntl->Reset();
     request->set_sleep_time(5);
     stub->SleepWithMethodTimeout(cntl, request, response, NULL);
@@ -87,12 +100,16 @@ int main(int /*argc*/, char** /*argv*/)
     else {
         SLOG(NOTICE, "Succeed: %s", response->message().c_str());
     }
+    if (!cntl->Failed()) {
+        SLOG(ERROR, "!!!! unexpected result");
+    }
 
     // Call 5
     SLOG(NOTICE, "----------- Call 5 ---------------------------------------");
-    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), timeout is 4 seconds.");
+    SLOG(NOTICE, "Sync call SleepWithMethodTimeout(), default timeout is 4 seconds.");
     SLOG(NOTICE, "Set timeout of RpcController to 1 seconds.");
     SLOG(NOTICE, "Sleep for 3 seconds.");
+    SLOG(NOTICE, "Expect result is failure.");
     cntl->Reset();
     cntl->SetTimeout(1000);
     request->set_sleep_time(3);
@@ -103,6 +120,9 @@ int main(int /*argc*/, char** /*argv*/)
     }
     else {
         SLOG(NOTICE, "Succeed: %s", response->message().c_str());
+    }
+    if (!cntl->Failed()) {
+        SLOG(ERROR, "!!!! unexpected result");
     }
 
     delete cntl;
