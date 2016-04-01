@@ -260,6 +260,11 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     meta.set_type(RpcMeta::REQUEST);
     meta.set_sequence_id(cntl->SequenceId());
     meta.set_method(cntl->MethodId());
+    int64 timeout = cntl->Timeout();
+    if (timeout > 0)
+    {
+        meta.set_server_timeout(timeout);
+    }
     meta.set_compress_type(cntl->RequestCompressType());
     meta.set_expected_response_compress_type(cntl->ResponseCompressType());
 
@@ -328,7 +333,6 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     cntl->PushDoneCallback(boost::bind(&RpcClientImpl::DoneCallback, shared_from_this(), response, _1));
 
     // add to timeout manager if need
-    int64 timeout = cntl->Timeout();
     if (timeout > 0)
     {
         if (!_timeout_manager->add(cntl))

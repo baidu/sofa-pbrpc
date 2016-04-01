@@ -120,6 +120,8 @@ private:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
+        // TODO: set rpc_meta.server_timeout here to make it more accurate.
+
         // if already done (may be done by timeout manager),
         // should cancel sending.
         return !cntl->IsDone() && !cntl->IsStartCancel();
