@@ -17,6 +17,7 @@
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
+#include <sofa/pbrpc/rpc_client_stream.h>
 #include <sofa/pbrpc/timer_worker.h>
 
 namespace sofa {
@@ -202,9 +203,20 @@ private:
     void notify_timeout(const RpcControllerImplWPtr& weak_cntl)
     {
         RpcControllerImplPtr cntl = weak_cntl.lock();
-        if (cntl) {
+        if (cntl)
+        {
+            // ATTENTION: here we reset timeout id to 0 to avoid unnecessarily erasing
+            // from timeout manager in RpcClientImpl::DoneCallback(), because when
+            // timeout id is 0, then RpcTimeoutManager::erase() will do nothing.
             cntl->SetTimeoutId(0u);
             cntl->Done(RPC_ERROR_REQUEST_TIMEOUT, "timeout");
+
+            // erase from RpcClientStream
+            RpcClientStreamPtr stream = cntl->RpcClientStream().lock();
+            if (stream)
+            {
+                stream->erase_request(cntl->SequenceId());
+            }
         }
     }
 
