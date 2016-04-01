@@ -364,8 +364,7 @@ bool RpcClientImpl::ResolveAddress(const std::string& address,
     return sofa::pbrpc::ResolveAddress(_work_thread_group->io_service(), address, endpoint);
 }
 
-RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
-        const RpcEndpoint& remote_endpoint)
+RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_endpoint)
 {
     RpcClientStreamPtr stream;
     bool create = false;
@@ -382,6 +381,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
             stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
+            stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
                     boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
 
