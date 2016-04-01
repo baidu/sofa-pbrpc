@@ -17,18 +17,57 @@ void RpcRequest::CallMethod(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
+    PTime time_now = ptime_now();
     const RpcControllerImplPtr& cntl = controller->impl();
+
     RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
-    if (stream)
+    if (!stream)
     {
-        stream->increase_pending_process_count();
+#if defined( LOG )
+        LOG(WARNING) << "CallMethod(): " << RpcEndpointToString(_remote_endpoint)
+                     << " {" << cntl->SequenceId() << "}"
+                     << ": stream already closed, not process request";
+#else
+        SLOG(WARNING, "CallMethod(): %s {%lu}: stream already closed, not process request",
+                RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId());
+#endif
+        delete request;
+        delete response;
+        delete controller;
+        return;
     }
 
-    method_board->ReportProcessBegin();
+    if (cntl->ServerTimeout() > 0)
+    {
+        int64 server_wait_time_us =
+            (time_now - cntl->RequestReceivedTime()).total_microseconds();
+        if (server_wait_time_us > cntl->ServerTimeout() * 1000)
+        {
+#if defined( LOG )
+        LOG(WARNING) << "CallMethod(): " << RpcEndpointToString(_remote_endpoint)
+                     << " {" << cntl->SequenceId() << "}"
+                     << ": wait processing timeout, not process request"
+                     << ": server_timeout_us=" << (cntl->ServerTimeout() * 1000)
+                     << ", server_wait_time_us=" << server_wait_time_us;
+#else
+        SLOG(WARNING, "CallMethod(): %s {%lu}: wait processing timeout, not process request: "
+                "server_timeout_us=%lld, server_wait_time_us=%lld",
+                RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),
+                (cntl->ServerTimeout() * 1000), server_wait_time_us);
+#endif
+            delete request;
+            delete response;
+            delete controller;
+            return;
+        }
+    }
+
     google::protobuf::Closure* done = NewClosure(
             shared_from_this(), &RpcRequest::OnCallMethodDone,
             method_board, controller, request, response);
-    cntl->SetStartProcessTime(ptime_now());
+    cntl->SetStartProcessTime(time_now);
+    stream->increase_pending_process_count();
+    method_board->ReportProcessBegin();
     method_board->GetServiceBoard()->Service()->CallMethod(
             method_board->Descriptor(), controller, request, response, done);
 }
@@ -39,26 +78,50 @@ void RpcRequest::OnCallMethodDone(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
+    PTime time_now = ptime_now();
     const RpcControllerImplPtr& cntl = controller->impl();
-    cntl->SetFinishProcessTime(ptime_now());
+    cntl->SetFinishProcessTime(time_now);
+    int64 process_time_us =
+        (cntl->FinishProcessTime() - cntl->StartProcessTime()).total_microseconds();
+    method_board->ReportProcessEnd(!cntl->Failed(), process_time_us);
+
+    RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
+    if (!stream)
+    {
+#if defined( LOG )
+        LOG(WARNING) << "OnCallMethodDone(): " << RpcEndpointToString(_remote_endpoint)
+                     << " {" << cntl->SequenceId() << "}"
+                     << ": stream already closed, not response";
+#else
+        SLOG(WARNING, "OnCallMethodDone(): %s {%lu}: stream already closed, not response",
+                RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId());
+#endif
+        delete request;
+        delete response;
+        delete controller;
+        return;
+    }
+    stream->decrease_pending_process_count();
 
     if (cntl->ServerTimeout() > 0)
     {
-        int64 server_time_ms =
-            (cntl->FinishProcessTime() - cntl->RequestReceivedTime()).total_milliseconds();
-        if (server_time_ms > cntl->ServerTimeout())
+        int64 server_used_time_us =
+            (cntl->FinishProcessTime() - cntl->RequestReceivedTime()).total_microseconds();
+        if (server_used_time_us > cntl->ServerTimeout() * 1000)
         {
 #if defined( LOG )
         LOG(WARNING) << "OnCallMethodDone(): " << RpcEndpointToString(_remote_endpoint)
                      << " {" << cntl->SequenceId() << "}"
-                     << ": call method \"" << cntl->MethodId() << "\" timeout"
-                     << ": server_timeout_ms=" << cntl->ServerTimeout()
-                     << ", server_used_time_ms=" << server_time_ms;
+                     << ": call method \"" << cntl->MethodId() << "\" timeout, not response"
+                     << ": server_timeout_us=" << (cntl->ServerTimeout() * 1000)
+                     << ", server_used_time_us=" << server_used_time_us;
+                     << ", process_time_us=" << process_time_us;
 #else
-        SLOG(WARNING, "OnCallMethodDone(): %s {%lu}: call method \"%s\" timeout: "
-                "server_timeout_ms=%lld, server_used_time_ms=%lld",
+        SLOG(WARNING, "OnCallMethodDone(): %s {%lu}: call method \"%s\" timeout, not response: "
+                "server_timeout_us=%lld, server_used_time_us=%lld, process_time_us=%lld",
                 RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),
-                cntl->MethodId().c_str(), cntl->ServerTimeout(), server_time_ms);
+                cntl->MethodId().c_str(), (cntl->ServerTimeout() * 1000),
+                server_used_time_us, process_time_us);
 #endif
             delete request;
             delete response;
@@ -67,8 +130,6 @@ void RpcRequest::OnCallMethodDone(
         }
     }
 
-    int64 process_time_us =
-        (cntl->FinishProcessTime() - cntl->StartProcessTime()).total_microseconds();
     if (cntl->Failed())
     {
 #if defined( LOG )
@@ -82,7 +143,6 @@ void RpcRequest::OnCallMethodDone(
                 cntl->MethodId().c_str(),
                 RpcErrorCodeToString(cntl->ErrorCode()), cntl->Reason().c_str());
 #endif
-        method_board->ReportProcessEnd(false, process_time_us);
         SendFailedResponse(cntl->RpcServerStream(), cntl->ErrorCode(), cntl->Reason());
     }
     else
@@ -93,14 +153,7 @@ void RpcRequest::OnCallMethodDone(
                 RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),
                 cntl->MethodId().c_str());
 #endif
-        method_board->ReportProcessEnd(true, process_time_us);
         SendSucceedResponse(cntl, response);
-    }
-
-    RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
-    if (stream)
-    {
-        stream->decrease_pending_process_count();
     }
 
     delete request;
