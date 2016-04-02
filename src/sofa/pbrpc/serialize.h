@@ -4,8 +4,8 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
-#ifndef _SOFA_PBRPC_RPC_COOKIE_H_
-#define _SOFA_PBRPC_RPC_COOKIE_H_
+#ifndef _SOFA_PBRPC_SERIALIZE_H_
+#define _SOFA_PBRPC_SERIALIZE_H_
 
 #include <stdint.h>
 #include <string.h>
@@ -341,6 +341,6 @@ private:
 } // namespace pbrpc
 } // namespace sofa
 
-#endif // _SOFA_PBRPC_RPC_COOKIE_H_
+#endif // _SOFA_PBRPC_SERIALIZE_H_
 
 /* vim: set ts=4 sw=4 sts=4 tw=100 */

@@ -103,6 +103,16 @@ bool ReadBuffer::Next(const void** data, int* size)
     }
 }
 
+char* ReadBuffer::CurrentHandle()
+{
+    return _cur_it->data;
+}
+
+int ReadBuffer::CurrentHandleOffset()
+{
+    return _cur_it->offset + _cur_pos; 
+}
+
 // BackUp() can only be called after a successful Next().
 // "count" should be greater than or equal to 0.
 void ReadBuffer::BackUp(int count)

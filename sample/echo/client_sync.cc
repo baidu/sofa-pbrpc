@@ -5,7 +5,11 @@
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/pbrpc.h>
+#include <sofa/pbrpc/plugin/cookie/rpc_cookie.h>
 #include "echo_service.pb.h"
+
+typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::Cookie> CookiePtr;
+sofa::pbrpc::RpcCookieManager cookie_manager;
 
 // Using global RpcClient object can help share resources such as threads and buffers.
 sofa::pbrpc::RpcClient g_rpc_client;
@@ -21,6 +25,11 @@ int main()
     // Prepare parameters.
     sofa::pbrpc::RpcController* cntl = new sofa::pbrpc::RpcController();
     cntl->SetTimeout(3000);
+    CookiePtr cookie(new sofa::pbrpc::Cookie(&cookie_manager));
+    cookie->Load();
+    cookie->Set("type", "sync");
+    cookie->Set("logid", "123456");
+    cntl->SetRequestAttachment(cookie.get());
     sofa::pbrpc::test::EchoRequest* request =
         new sofa::pbrpc::test::EchoRequest();
     request->set_message("Hello from qinzuoyan01");
@@ -50,6 +59,12 @@ int main()
     else
     {
         SLOG(NOTICE, "request succeed: %s", response->message().c_str());
+        cookie.reset(new sofa::pbrpc::Cookie(&cookie_manager));
+        cntl->GetResponseAttachment(cookie.get());
+        std::string version;
+        cookie->Get("version", version);
+        SLOG(NOTICE, "cookie version : %s", version.c_str());
+        cookie->Store();
     }
 
     // Destroy objects.

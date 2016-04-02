@@ -10,6 +10,7 @@
 #include <sofa/pbrpc/rpc_message_stream.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/rpc_meta.pb.h>
+#include <sofa/pbrpc/buffer.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -150,7 +151,7 @@ private:
             const ReadBufferPtr& message,
             int meta_size,
             int64 data_size,
-            const std::string& attach_buffer)
+            int attach_size)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
@@ -258,13 +259,9 @@ private:
         }
         else // !meta.failed()
         {
-            SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
-            WriteBuffer write_buffer;
-            write_buffer.Append(attach_buffer);
-            ReadBufferPtr read_buffer(new ReadBuffer());
-            write_buffer.SwapOut(read_buffer.get());
-            cntl->SetResponseAttachBuffer(read_buffer);
+            SCHECK_EQ(data_size + attach_size, message->TotalCount() - message->ByteCount());
             cntl->SetResponseBuffer(message);
+            cntl->SetResponseSize(data_size);
             cntl->SetResponseCompressType(meta.has_compress_type() ?
                     meta.compress_type() : CompressTypeNone);
             cntl->Done(RPC_SUCCESS, "succeed");

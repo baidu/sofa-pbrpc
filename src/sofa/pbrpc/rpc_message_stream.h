@@ -202,7 +202,7 @@ protected:
             const ReadBufferPtr& message,
             int meta_size,
             int64 data_size,
-            const std::string& attach_buffer) = 0;
+            int attach_size) = 0;
 
 private:
     virtual bool on_connected()
@@ -278,7 +278,7 @@ private:
         while (!is_closed() && !received_messages.empty())
         {
             const ReceivedItem& item = received_messages.front();
-            on_received(item.message, item.meta_size, item.data_size, item.attach_buffer);
+            on_received(item.message, item.meta_size, item.data_size, item.attach_size);
             received_messages.pop_front();
         }
     }
@@ -606,9 +606,9 @@ private:
             {
                 _receiving_message->Append(BufHandle(_tran_buf, consume_size, data - _tran_buf));
             }
-            std::string response_attach_str(_receiving_header.attach_buffer, _receiving_header.attach_size);
+            int attach_size = _receiving_header.message_size - _receiving_header.meta_size - _receiving_header.data_size;
             received_messages->push_back(ReceivedItem(_receiving_message, 
-                        _receiving_header.meta_size, _receiving_header.data_size, response_attach_str));
+                        _receiving_header.meta_size, _receiving_header.data_size, attach_size));
             reset_receiving_env();
             data += consume_size;
             size -= consume_size;
@@ -652,22 +652,20 @@ private:
 #endif
                 return -1;
             }
-            if (_receiving_header.meta_size + _receiving_header.data_size != _receiving_header.message_size)
+            if (_receiving_header.meta_size + _receiving_header.data_size > _receiving_header.message_size)
             {
 #if defined( LOG )
                 LOG(ERROR) << "identify_message_header(): " << RpcEndpointToString(_remote_endpoint)
                            << ": check size in header failed"
                            << ": meta_size=" << _receiving_header.meta_size
                            << ", data_size=" << _receiving_header.data_size
-                           << ", attach_size=" << _receiving_header.attach_size
                            << ", message_size=" << _receiving_header.message_size;
 #else
                 SLOG(ERROR, "identify_message_header(): %s: "
-                        "check size in header failed: meta_size=%d, data_size=%lld, attach_size=%lld, message_size=%lld",
+                        "check size in header failed: meta_size=%d, data_size=%lld, message_size=%lld",
                         RpcEndpointToString(_remote_endpoint).c_str(),
                         _receiving_header.meta_size,
                         _receiving_header.data_size,
-                        _receiving_header.attach_size,
                         _receiving_header.message_size);
 #endif
                 return -1;
@@ -741,15 +739,15 @@ private:
         ReadBufferPtr message;
         int meta_size;
         int64 data_size;
-        std::string attach_buffer;
+        int attach_size;
         ReceivedItem(const ReadBufferPtr& _message,
                      int _meta_size,
                      int64 _data_size,
-                     const std::string& _attach_buffer)
+                     int _attach_size)
             : message(_message)
             , meta_size(_meta_size)
             , data_size(_data_size)
-            , attach_buffer(_attach_buffer) {}
+            , attach_size(_attach_size) {}
     };
 
     // TODO improve sync queue performance

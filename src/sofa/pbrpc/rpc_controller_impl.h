@@ -467,6 +467,26 @@ public:
         return *_http_headers;
     }
 
+    void SetRequestSize(int request_size)
+    {
+        _request_size = request_size;
+    }
+    
+    int RequestSize()
+    {
+        return _request_size;
+    }
+
+    void SetResponseSize(int response_size)
+    {
+        _response_size = response_size;
+    }
+    
+    int ResponseSize()
+    {
+        return _response_size;
+    }
+
 private:
     uint64 _sequence_id;
     std::string _method_id;
@@ -517,6 +537,9 @@ private:
 
     ReadBufferPtr _request_attach_buffer;
     ReadBufferPtr _response_attach_buffer;
+
+    int _request_size;
+    int _response_size;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcControllerImpl);
 }; // class RpcControllerImpl

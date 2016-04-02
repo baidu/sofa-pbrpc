@@ -14,7 +14,6 @@ namespace pbrpc {
 
 // Magic string "SOFA" in little endian.
 #define SOFA_RPC_MAGIC 1095126867u
-#define ATTACH_BUFFER_SIZE 65536u
 
 // total 24 bytes
 struct RpcMessageHeader {
@@ -23,18 +22,12 @@ struct RpcMessageHeader {
         uint32  magic_str_value;
     };                    // 4 bytes
     int32   meta_size;    // 4 bytes
-    int64   attach_size;  // 4 bytes
     int64   data_size;    // 8 bytes
     int64   message_size; // 8 bytes: message_size = meta_size + data_size, for check
-    char    attach_buffer[ATTACH_BUFFER_SIZE];
 
     RpcMessageHeader()
         : magic_str_value(SOFA_RPC_MAGIC)
-        , meta_size(0), attach_size(0)
-        , data_size(0), message_size(0) 
-    {
-        memset(attach_buffer, '0', ATTACH_BUFFER_SIZE);
-    }
+        , meta_size(0), data_size(0), message_size(0) {}
 
     bool CheckMagicString() const
     {
