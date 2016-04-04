@@ -30,18 +30,18 @@ struct HTTPRequest
     // method in http header
     Type type;
 
-    // http request headers
-    const std::map<std::string, std::string>* headers;
+    // PATH field in http request
+    // for example, http://www.baidu.com/s?k=123
+    // path is "/s"
+    std::string path;
 
     // query parameters 
     // http://www.baidu.com/s?k=123
     // will be parsed to {"k":"123"}
     const std::map<std::string, std::string>* query_params;
 
-    // PATH field in http request
-    // for example, http://www.baidu.com/s?k=123
-    // path is "/s"
-    std::string path;
+    // http request headers
+    const std::map<std::string, std::string>* headers;
 
     // server ip adddress
     std::string server_ip;
@@ -60,15 +60,11 @@ struct HTTPRequest
     ReadBufferPtr body;
 
     HTTPRequest() : type(GET)
-                  , headers(NULL)
                   , query_params(NULL)
-                  , path() 
-                  , server_ip()
+                  , headers(NULL)
                   , server_port(0)
-                  , client_ip()
-                  , client_port()
-                  , body()
-    { }
+                  , client_port(0)
+    {}
 };
 
 /**
@@ -91,7 +87,7 @@ struct HTTPResponse
     HTTPResponse() : status_line("HTTP/1.1 200 OK")
                    , content_type("text/html; charset=UTF-8")
                    , content(new WriteBuffer()) 
-    { }
+    {}
 };
 
 } // namespace pbrpc

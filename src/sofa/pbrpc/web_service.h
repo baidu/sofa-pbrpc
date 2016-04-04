@@ -71,7 +71,7 @@ private:
     static void ErrorPage(std::ostream& out, 
                           const std::string& reason);
 
-    void ListServlet(std::ostream& out);
+    void ServletList(std::ostream& out);
 
     ServletMapPtr GetServletPtr();
 

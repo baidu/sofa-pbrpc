@@ -41,6 +41,32 @@ void RpcRequest::OnCallMethodDone(
 {
     const RpcControllerImplPtr& cntl = controller->impl();
     cntl->SetFinishProcessTime(ptime_now());
+
+    if (cntl->ServerTimeout() > 0)
+    {
+        int64 server_time_ms =
+            (cntl->FinishProcessTime() - cntl->RequestReceivedTime()).total_milliseconds();
+        if (server_time_ms > cntl->ServerTimeout())
+        {
+#if defined( LOG )
+        LOG(WARNING) << "OnCallMethodDone(): " << RpcEndpointToString(_remote_endpoint)
+                     << " {" << cntl->SequenceId() << "}"
+                     << ": call method \"" << cntl->MethodId() << "\" timeout"
+                     << ": server_timeout_ms=" << cntl->ServerTimeout()
+                     << ", server_used_time_ms=" << server_time_ms;
+#else
+        SLOG(WARNING, "OnCallMethodDone(): %s {%lu}: call method \"%s\" timeout: "
+                "server_timeout_ms=%lld, server_used_time_ms=%lld",
+                RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),
+                cntl->MethodId().c_str(), cntl->ServerTimeout(), server_time_ms);
+#endif
+            delete request;
+            delete response;
+            delete controller;
+            return;
+        }
+    }
+
     int64 process_time_us =
         (cntl->FinishProcessTime() - cntl->StartProcessTime()).total_microseconds();
     if (cntl->Failed())
@@ -48,8 +74,8 @@ void RpcRequest::OnCallMethodDone(
 #if defined( LOG )
         LOG(ERROR) << "OnCallMethodDone(): " << RpcEndpointToString(_remote_endpoint)
                    << " {" << cntl->SequenceId() << "}"
-                   << ": call method \"" << cntl->MethodId() << "\" failed"
-                   ": " << RpcErrorCodeToString(cntl->ErrorCode()) << ": " << cntl->Reason();
+                   << ": call method \"" << cntl->MethodId() << "\" failed: "
+                   << RpcErrorCodeToString(cntl->ErrorCode()) << ": " << cntl->Reason();
 #else
         SLOG(ERROR, "OnCallMethodDone(): %s {%lu}: call method \"%s\" failed: %s: %s",
                 RpcEndpointToString(_remote_endpoint).c_str(), cntl->SequenceId(),

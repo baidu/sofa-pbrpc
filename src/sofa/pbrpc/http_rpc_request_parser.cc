@@ -136,13 +136,13 @@ int HTTPRpcRequestParser::ParseInternal(char c, std::string& err)
         {
             if (!_req->ParsePath())
             {
-                err = "invalid path: " + _req->_path;
+                err = "invalid path: " + _req->_original_path;
                 return -1;
             }
             _state = PS_HTTP_VERSION;
             return 0;
         }
-        _req->_path.push_back(c);
+        _req->_original_path.push_back(c);
         return 0;
     case PS_HTTP_VERSION:
         if (c == '\r')

@@ -40,6 +40,11 @@ public:
         , _is_start_cancel(false)
         , _is_sync(false)
         , _timeout_id(0)
+        , _server_timeout(0)
+        , _is_http(false)
+        , _http_path(NULL)
+        , _http_query_params(NULL)
+        , _http_headers(NULL)
     {}
 
     virtual ~RpcControllerImpl() {}
@@ -347,6 +352,16 @@ public:
         return _server_stream;
     }
 
+    void SetServerTimeout(int64 timeout)
+    {
+        _server_timeout = timeout;
+    }
+
+    int64 ServerTimeout() const
+    {
+        return _server_timeout;
+    }
+
     void SetRequestReceivedTime(const PTime& time)
     {
         _request_received_time = time;
@@ -375,6 +390,49 @@ public:
     const PTime& FinishProcessTime()
     {
         return _finish_process_time;
+    }
+
+    void SetHttp()
+    {
+        _is_http = true;
+    }
+
+    bool IsHttp() const
+    {
+        return _is_http;
+    }
+
+    void SetHttpPath(const std::string* path)
+    {
+        _http_path = path;
+    }
+
+    const std::string& HttpPath() const
+    {
+        SCHECK(_is_http);
+        return *_http_path;
+    }
+
+    void SetHttpQueryParams(const std::map<std::string, std::string>* params)
+    {
+        _http_query_params = params;
+    }
+
+    const std::map<std::string, std::string>& HttpQueryParams() const
+    {
+        SCHECK(_is_http);
+        return *_http_query_params;
+    }
+
+    void SetHttpHeaders(const std::map<std::string, std::string>* headers)
+    {
+        _http_headers = headers;
+    }
+
+    const std::map<std::string, std::string>& HttpHeaders() const
+    {
+        SCHECK(_is_http);
+        return *_http_headers;
     }
 
 private:
@@ -416,9 +474,15 @@ private:
 
     // used only in server side
     RpcServerStreamWPtr _server_stream;
+    int64 _server_timeout;
     PTime _request_received_time;
     PTime _start_process_time;
     PTime _finish_process_time;
+
+    bool _is_http;
+    const std::string* _http_path;
+    const std::map<std::string, std::string>* _http_query_params;
+    const std::map<std::string, std::string>* _http_headers;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcControllerImpl);
 }; // class RpcControllerImpl

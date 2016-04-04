@@ -302,8 +302,8 @@ bool WebService::DefaultHome(const HTTPRequest& request,
     ServerBrief(oss, request);
     ServerStatus(oss);
     ServiceList(oss);
+    ServletList(oss);
     ServerOptions(oss);
-    ListServlet(oss);
     PageFooter(oss);
     return response.content->Append(oss.str());
 }
@@ -451,7 +451,7 @@ void WebService::ServerOptions(std::ostream& out)
         << "</table>";
 }
 
-void WebService::ListServlet(std::ostream& out)
+void WebService::ServletList(std::ostream& out)
 {
     ServletMapPtr servlets = GetServletPtr();
     ServletMap::iterator it = servlets->begin();
