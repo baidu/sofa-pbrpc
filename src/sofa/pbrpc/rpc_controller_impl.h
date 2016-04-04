@@ -332,24 +332,24 @@ public:
         return _response_buffer;
     }
 
-    void SetRequestAttachment(RpcAttachment* request_attachment)
+    bool SetRequestAttachment(RpcAttachment* request_attachment)
     {
-        request_attachment->Serialize(_request_attach_buffer);
+        return request_attachment->Serialize(_request_attach_buffer);
     }
 
-    void GetRequestAttachment(RpcAttachment* request_attachment)
+    bool GetRequestAttachment(RpcAttachment* request_attachment)
     {
-        request_attachment->Deserialize(_request_attach_buffer);
+        return request_attachment->Deserialize(_request_attach_buffer);
     }
 
-    void SetResponseAttachment(RpcAttachment* response_attachment)
+    bool SetResponseAttachment(RpcAttachment* response_attachment)
     {
-        response_attachment->Serialize(_response_attach_buffer);
+        return response_attachment->Serialize(_response_attach_buffer);
     }
 
-    void GetResponseAttachment(RpcAttachment* response_attachment)
+    bool GetResponseAttachment(RpcAttachment* response_attachment)
     {
-        response_attachment->Deserialize(_response_attach_buffer);;
+        return response_attachment->Deserialize(_response_attach_buffer);;
     }
 
     void SetRequestAttachBuffer(const ReadBufferPtr& request_attach_buffer)

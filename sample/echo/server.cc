@@ -57,15 +57,17 @@ private:
             }
         }
         CookiePtr cookie(new sofa::pbrpc::Cookie());
-        cntl->GetRequestAttachment(cookie.get());
-        std::string type;
-        std::string logid;
-        cookie->Get("type", type);
-        cookie->Get("logid", logid);
-        SLOG(INFO, "cookie info : type=%s, logid=%s", type.c_str(), logid.c_str());
-        response->set_message("echo message: " + request->message());
+        if (cntl->GetRequestAttachment(cookie.get()))
+        {
+            std::string type;
+            std::string logid;
+            cookie->Get("type", type);
+            cookie->Get("logid", logid);
+            SLOG(INFO, "cookie info : type=%s, logid=%s", type.c_str(), logid.c_str());
+        }
         cookie->Set("version", "1.00");
         cntl->SetResponseAttachment(cookie.get());
+        response->set_message("echo message: " + request->message());
         done->Run();
     }
 };

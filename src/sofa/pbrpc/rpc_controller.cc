@@ -119,24 +119,24 @@ void RpcController::NotifyOnCancel(google::protobuf::Closure* callback)
     _impl->NotifyOnCancel(callback);
 }
 
-void RpcController::SetRequestAttachment(RpcAttachment* request_attachment)
+bool RpcController::SetRequestAttachment(RpcAttachment* request_attachment)
 {
-    _impl->SetRequestAttachment(request_attachment);
+    return _impl->SetRequestAttachment(request_attachment);
 }
 
-void RpcController::GetRequestAttachment(RpcAttachment* request_attachment)
+bool RpcController::GetRequestAttachment(RpcAttachment* request_attachment)
 {
-    _impl->GetRequestAttachment(request_attachment);
+    return _impl->GetRequestAttachment(request_attachment);
 }
 
-void RpcController::SetResponseAttachment(RpcAttachment* response_attachment)
+bool RpcController::SetResponseAttachment(RpcAttachment* response_attachment)
 {
-    _impl->SetResponseAttachment(response_attachment);
+    return _impl->SetResponseAttachment(response_attachment);
 }
 
-void RpcController::GetResponseAttachment(RpcAttachment* response_attachment)
+bool RpcController::GetResponseAttachment(RpcAttachment* response_attachment)
 {
-    _impl->GetResponseAttachment(response_attachment);
+    return _impl->GetResponseAttachment(response_attachment);
 }
 
 } // namespace pbrpc

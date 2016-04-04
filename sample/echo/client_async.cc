@@ -31,11 +31,13 @@ void EchoCallback(sofa::pbrpc::RpcController* cntl,
     else {
         SLOG(NOTICE, "request succeed: %s", response->message().c_str());
         CookiePtr cookie(new sofa::pbrpc::Cookie(&cookie_manager));
-        cntl->GetResponseAttachment(cookie.get());
-        std::string version;
-        cookie->Get("version", version);
-        SLOG(NOTICE, "cookie version : %s", version.c_str());
-        cookie->Store();
+        if (cntl->GetResponseAttachment(cookie.get()))
+        {
+            std::string version;
+            cookie->Get("version", version);
+            SLOG(NOTICE, "cookie version=%s", version.c_str());
+            cookie->Store();
+        }
     }
 
     delete cntl;
