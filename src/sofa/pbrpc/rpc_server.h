@@ -12,6 +12,7 @@
 #include <sofa/pbrpc/common.h>
 #include <sofa/pbrpc/ext_closure.h>
 #include <sofa/pbrpc/rpc_error_code.h>
+#include <sofa/pbrpc/profiling_linker.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -101,7 +102,8 @@ public:
     // @param handler The event handler.  It will be taken overby the rpc server and will be
     //                deleted when the server destroys.
     explicit RpcServer(const RpcServerOptions& options = RpcServerOptions(),
-                       EventHandler* handler = NULL);
+                       EventHandler* handler = NULL, 
+                       const ProfilingLinker& linker = ProfilingLinker());
     virtual ~RpcServer();
 
     // Start the server, and listen on the "server_address".  If succeed started

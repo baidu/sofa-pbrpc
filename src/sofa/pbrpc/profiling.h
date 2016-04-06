@@ -18,16 +18,21 @@ namespace pbrpc {
 class Profiling
 {
 public:
-
-    enum Type
+    enum ProfilingType
     {
-        DEFAULT = 1, 
+        DEFAULT = 1,
         CPU = 2, 
-        MEMORY = 3,
-        GRAPH = 4
+        MEMORY = 4,
     };
 
-    enum ErrorCode
+    enum DataType
+    {
+        PAGE = 1,
+        GRAPH = 2,
+        NEW_GRAPH = 3
+    };
+
+    enum Status
     {
         OK = 1,
         PROFILING = 2, 
@@ -35,9 +40,10 @@ public:
         FINISHED = 4
     };
 
-    std::string ProfilingPage(Type type);
+    std::string ProfilingPage(ProfilingType profiling_type, 
+                              DataType data_type);
 
-    ErrorCode DoCpuProfiling();
+    Status DoCpuProfiling(DataType data_type);
 
     int DoMemoryProfiling();
 

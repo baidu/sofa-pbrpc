@@ -82,7 +82,7 @@ void Profiling::CpuProfilingFunc()
     {
         return;
     }
-    std::string path = _dir.path + "/rpc_profiling/test.prof";
+    std::string path = _dir.path + "/rpc_profiling/tmp.prof";
     ProfilerStart(path.c_str());
     sleep(10);
     ProfilerStop();
@@ -92,15 +92,6 @@ void Profiling::CpuProfilingFunc()
 void Profiling::MemoryProfilingFunc()
 {
     // TODO
-    // bool ret = Mkdir("./rpc_profiling");
-    // if (ret == false)
-    // {
-    //     return;
-    // }
-    // ProfilerStart("./rpc_profiling/test.prof");
-    // // TODO
-    // sleep(10);
-    // ProfilerStop();
 }
 
 Profiling::Profiling() 
@@ -152,21 +143,11 @@ Profiling::~Profiling()
     }
 }
 
-std::string Profiling::ProfilingPage(Type type)
+std::string Profiling::ProfilingPage(ProfilingType profiling_type, 
+                                     DataType data_type)
 {
     std::ostringstream oss;
-    // TODO transfer request response
-    if (type == GRAPH)
-    {
-        // TODO perl exist
-        std::string dot = exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
-                               + _dir.path + "/"+ _dir.name + " " + _dir.path + "/rpc_profiling/test.prof");
-        oss << dot;
-        return oss.str();
-    }
-
     oss << "<html><h1>Sofa-pbrpc Profiling</h1>";
-
     if (!_is_initialized)
     {
         int ret = Init();
@@ -177,35 +158,55 @@ std::string Profiling::ProfilingPage(Type type)
         }
     }
 
-    switch (type) 
+    switch (profiling_type) 
     {
         case CPU:
-            int ret = DoCpuProfiling();
-            if (ret == DISABLE)
+            if (data_type == GRAPH)
             {
-                oss << "<h2>To enable profiling, link profiler and add -DSOFA_PBRPC_PROFILING to CXXFLAGS</h2>";
-            }
-            else if (ret == PROFILING)
-            {
-                oss << "<h2>other profiling in processing, please wait a minute</h2>";
-            }
-            else if (ret == FINISHED)
-            {
-                oss << ShowResult();
+                oss.str("");
+                oss.clear();
+                std::string dot = 
+                    exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
+                         + _dir.path + "/"+ _dir.name + " " + _dir.path 
+                         + "/rpc_profiling/tmp.prof");
+                oss << dot;
+                return oss.str();
             }
             else
             {
-                oss << "<h2>do cpu profiling</h2>";
+                Status ret = DoCpuProfiling(data_type);
+                if (ret == DISABLE)
+                {
+                    oss << "<h2>To enable profiling, link profiler and add" 
+                           " -DSOFA_PBRPC_PROFILING to CXXFLAGS</h2>";
+                }
+                else if (ret == PROFILING)
+                {
+                    oss << "<h2>other profiling in processing, please wait a minute</h2>";
+                    oss << "<script>setTimeout(function(){"
+                           "window.location.href='/profiling?cpu=page';}, 1000);</script>";
+                }
+                else if (ret == FINISHED)
+                {
+                    oss << ShowResult();
+                }
+                else
+                {
+                    oss << "<h2>do cpu profiling</h2>";
+                    oss << "<script>setTimeout(function(){"
+                           "window.location.href='/profiling?cpu=page';}, 1000);</script>";
+                }
             }
             break;
         case MEMORY:
+            // TODO
             oss << "<h2>do memory profiling</h2>";
             break;
         default:
             oss << "<div>";
-            oss << "<a href=\"/profiling?cpu=1\">cpu</a>";
+            oss << "<a href=\"/profiling?cpu=page\">cpu</a>";
             oss << "<br>";
-            oss << "<a href=\"/profiling?memory=1\">memory</a>";
+            oss << "<a href=\"/profiling?memory=page\">memory</a>";
             oss << "</div>";
             break;
     }
@@ -213,7 +214,7 @@ std::string Profiling::ProfilingPage(Type type)
     return oss.str();
 }
 
-Profiling::ErrorCode Profiling::DoCpuProfiling()
+Profiling::Status Profiling::DoCpuProfiling(DataType data_type)
 {
     if (ProfilerStart == NULL)
     {
@@ -225,7 +226,13 @@ Profiling::ErrorCode Profiling::DoCpuProfiling()
         return PROFILING;
     }
 
-    if (IsFileExist(_dir.path + "/rpc_profiling/test.prof"))
+    if (data_type == NEW_GRAPH)
+    {
+        std::string profiling_path(_dir.path + "/rpc_profiling/tmp.prof");
+        ::remove(profiling_path.c_str());
+    }
+
+    if (IsFileExist(_dir.path + "/rpc_profiling/tmp.prof"))
     {
         return FINISHED;
     }
@@ -237,7 +244,6 @@ Profiling::ErrorCode Profiling::DoCpuProfiling()
     _profiling_thread_group->post(done);
     return OK;
 }
-
 
 std::string Profiling::ShowResult()
 {
@@ -257,16 +263,13 @@ std::string Profiling::ShowResult()
     oss << "</script>";
     oss << "</head>";
 
-    oss << "<div> exec path:[" << _dir.path << "]</div>";
-    oss << "<div> exec binary:[" << _dir.name << "]</div>";
-
-    // std::string dot = exec("perl ./rpc_profiling/pprof.perl --dot " + _self_path + " ./rpc_profiling/test.prof");
-
-    // dot = StringUtils::replace_all(dot, "\n", "");
+    oss << "<div><a href='/profiling?cpu=newgraph'>start new cpu profiling</a></div>";
+    oss << "<div>exec path:[" << _dir.path << "]</div>";
+    oss << "<div>exec binary:[" << _dir.name << "]</div>";
 
     oss << "<div id='result'></div>";
     oss << "<script>";
-    oss << "$.ajax({ type:'GET', url:'/profiling?cpu=4', success:function(data){";
+    oss << "$.ajax({ type:'GET', url:'/profiling?cpu=graph', success:function(data){";
     oss << "$('#result').html(Viz(data, \"svg\"));";
     oss << "}});";
     oss << "</script>";
@@ -276,6 +279,7 @@ std::string Profiling::ShowResult()
 
 int Profiling::DoMemoryProfiling()
 {
+    // TODO
     return 0;
 }
 

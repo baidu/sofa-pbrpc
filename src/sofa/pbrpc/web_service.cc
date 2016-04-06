@@ -373,30 +373,41 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     typedef const std::map<std::string, std::string> QueryParams;
     QueryParams* query_params = request.query_params;
 
+    Profiling::ProfilingType profiling_type = Profiling::DEFAULT;
+    Profiling::DataType data_type = Profiling::PAGE;
+
     QueryParams::const_iterator it = query_params->find("cpu");
-    Profiling::Type type = Profiling::DEFAULT;
     if (it != query_params->end())
     {
-        if (it->second == "4")
-        {
-            type = Profiling::GRAPH;
-        }
-        else
-        {
-            type = Profiling::CPU;
-        }
+        
+        profiling_type = Profiling::CPU;
     }
     else
     {
         it = query_params->find("memory");
         if (it != query_params->end())
         {
-            type = Profiling::MEMORY;
+            profiling_type = Profiling::MEMORY;
+        }
+    }
+    if (it != query_params->end())
+    {
+        if (it->second == "graph")
+        {
+            data_type = Profiling::GRAPH;
+        }
+        else if (it->second == "newgraph")
+        {
+            data_type = Profiling::NEW_GRAPH;
+        }
+        else
+        {
+            data_type = Profiling::PAGE;
         }
     }
 
     Profiling* instance = Profiling::Instance();
-    return response.content->Append(instance->ProfilingPage(type));
+    return response.content->Append(instance->ProfilingPage(profiling_type, data_type));
 }
 
 void WebService::PageHeader(std::ostream& out)

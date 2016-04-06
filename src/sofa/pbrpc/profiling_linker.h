@@ -2,22 +2,19 @@
 #define SOFA_PBRPC_PROFILING_LINKER_H
 
 #if defined(SOFA_PBRPC_PROFILING)
-
 #include <gperftools/profiler.h>
+#endif // SOFA_PBRPC_PROFILING
 
-static void touch_gperftools_profiler()
+class ProfilingLinker
 {
-    SCHECK(false);
-    ProfilerStart("function_never_run");
-    ProfilerStop();
-}
+public:
+    ProfilingLinker()
+    {
+#if defined(SOFA_PBRPC_PROFILING)
+        ProfilerStart("never_run");
+        ProfilerStop();
+#endif // SOFA_PBRPC_PROFILING
+    }
+};
 
-static void touch_profiler() 
-{
-    SCHECK(false);
-    touch_gperftools_profiler();
-}
-
-#endif
-
-#endif
+#endif // SOFA_PBRPC_PROFILING_LINKER_H
