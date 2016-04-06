@@ -11,8 +11,8 @@ public:
     ProfilingLinker()
     {
 #if defined(SOFA_PBRPC_PROFILING)
-        ProfilerStart("never_run");
-        ProfilerStop();
+        // make libprofiler be linked
+        (void)ProfilingIsEnabledForAllThreads();
 #endif // SOFA_PBRPC_PROFILING
     }
 };
