@@ -118,7 +118,11 @@ int Profiling::Init()
     char buf[PATH_MAX];
     memset(buf, 0, PATH_MAX);
     const char* link = "/proc/self/exe";
-    readlink(link, buf, PATH_MAX);
+    ssize_t r = readlink(link, buf, PATH_MAX);
+    if (r == -1)
+    {
+        return -1;
+    }
 
     // TODO
     std::string path(buf);
@@ -177,12 +181,20 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 Status ret = DoCpuProfiling(data_type);
                 if (ret == DISABLE)
                 {
-                    oss << "<h2>To enable profiling, link profiler and add" 
-                           " -DSOFA_PBRPC_PROFILING to CXXFLAGS</h2>";
+                    oss << "<h2>To enable profiling, please add compile and link options when compiling binary:</h2>";
+                    oss << "<ol>";
+                    oss << "<li>Install gperftools:</li>";
+                    oss << "<ul>";
+                    oss << "<li>For Ubuntu: sudo apt-get install libgoogle-perftools-dev</li>";
+                    oss << "<li>For CentOS: sudo yum install google-perftools-devel</li>";
+                    oss << "</ul>";
+                    oss << "<li>Add '-DSOFA_PBRPC_PROFILING' to CXXFLAGS</li>";
+                    oss << "<li>Add '-lprofiler' to LDFLAGS</li>";
+                    oss << "</ol>";
                 }
                 else if (ret == PROFILING)
                 {
-                    oss << "<h2>other profiling in processing, please wait a minute</h2>";
+                    oss << "<h2>Profiling is in processing, please wait ...</h2>";
                     oss << "<script>setTimeout(function(){"
                            "window.location.href='/profiling?cpu=page';}, 1000);</script>";
                 }
@@ -192,7 +204,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 else
                 {
-                    oss << "<h2>do cpu profiling</h2>";
+                    oss << "<h2>Profiling is starting, please wait ...</h2>";
                     oss << "<script>setTimeout(function(){"
                            "window.location.href='/profiling?cpu=page';}, 1000);</script>";
                 }
@@ -200,7 +212,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             break;
         case MEMORY:
             // TODO
-            oss << "<h2>do memory profiling</h2>";
+            oss << "<h2>Memory profiling not supported now</h2>";
             break;
         default:
             oss << "<div>";
