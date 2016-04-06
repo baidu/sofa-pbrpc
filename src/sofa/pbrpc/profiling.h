@@ -8,7 +8,6 @@
 #define _SOFA_PBRPC_PROFILING_H_
 
 #include <string>
-#include <boost/atomic.hpp>
 #include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/thread_group_impl.h>
 
@@ -73,9 +72,9 @@ private:
     };
 
 private:
-    boost::atomic<bool> _is_profiling;
+    volatile bool _is_profiling;
 
-    boost::atomic<bool> _is_initialized;
+    volatile bool _is_initialized;
 
     ThreadGroupImplPtr _profiling_thread_group;
 
