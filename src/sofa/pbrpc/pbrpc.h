@@ -24,6 +24,7 @@
 #include <sofa/pbrpc/thread_group.h>
 #include <sofa/pbrpc/timeout_manager.h>
 #include <sofa/pbrpc/wait_event.h>
+#include <sofa/pbrpc/profiling_linker.h>
 
 #endif  // _SOFA_PBRPC_PBRPC_H_
 
