@@ -83,6 +83,13 @@ public:
         async_send_message(cntl->RequestBuffer(), cntl);
     }
 
+    // erase request from controller map by sequence id.
+    void erase_request(uint64 sequence_id)
+    {
+        ScopedLocker<FastLock> _(_controller_map_lock);
+        _controller_map.erase(sequence_id);
+    }
+
 private:
     virtual void on_closed()
     {
@@ -112,6 +119,8 @@ private:
             const RpcControllerImplPtr& cntl)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
+
+        // TODO: set rpc_meta.server_timeout here to make it more accurate.
 
         // if already done (may be done by timeout manager),
         // should cancel sending.
@@ -203,11 +212,25 @@ private:
             //
             // just ignore it
 #if defined( LOG )
-            LOG(ERROR) << "on_received(): " << RpcEndpointToString(_remote_endpoint)
-                       << " {" << meta.sequence_id() << "}"
-                       << ": sequence id not found, ignore";
+            LOG(WARNING) << "on_received(): " << RpcEndpointToString(_remote_endpoint)
+                         << " {" << meta.sequence_id() << "}"
+                         << ": sequence id not found (maybe already timeout), ignore";
 #else
-            SLOG(ERROR, "on_received(): %s {%lu}: sequence id not found, ignore",
+            SLOG(WARNING, "on_received(): %s {%lu}: sequence id not found (maybe already timeout), ignore",
+                    RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+#endif
+            return;
+        }
+
+        if (cntl->IsDone())
+        {
+            // just ignore it
+#if defined( LOG )
+            LOG(WARNING) << "on_received(): " << RpcEndpointToString(_remote_endpoint)
+                         << " {" << meta.sequence_id() << "}"
+                         << ": request already done (maybe already timeout), ignore";
+#else
+            SLOG(WARNING, "on_received(): %s {%lu}: request already done (maybe already timeout), ignore",
                     RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
 #endif
             return;

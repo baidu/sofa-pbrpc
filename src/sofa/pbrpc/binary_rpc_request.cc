@@ -151,6 +151,10 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetLocalEndpoint(_local_endpoint);
     cntl->SetRemoteEndpoint(_remote_endpoint);
     cntl->SetRpcServerStream(stream);
+    if (_req_meta.has_server_timeout() && _req_meta.server_timeout() > 0)
+    {
+        cntl->SetServerTimeout(_req_meta.server_timeout());
+    }
     cntl->SetRequestReceivedTime(_received_time);
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);

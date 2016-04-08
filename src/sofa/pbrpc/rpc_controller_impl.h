@@ -41,6 +41,7 @@ public:
         , _is_start_cancel(false)
         , _is_sync(false)
         , _timeout_id(0)
+        , _server_timeout(0)
         , _is_http(false)
         , _http_path(NULL)
         , _http_query_params(NULL)
@@ -394,6 +395,16 @@ public:
         return _server_stream;
     }
 
+    void SetServerTimeout(int64 timeout)
+    {
+        _server_timeout = timeout;
+    }
+
+    int64 ServerTimeout() const
+    {
+        return _server_timeout;
+    }
+
     void SetRequestReceivedTime(const PTime& time)
     {
         _request_received_time = time;
@@ -526,6 +537,7 @@ private:
 
     // used only in server side
     RpcServerStreamWPtr _server_stream;
+    int64 _server_timeout;
     PTime _request_received_time;
     PTime _start_process_time;
     PTime _finish_process_time;

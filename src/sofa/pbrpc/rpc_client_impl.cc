@@ -260,6 +260,11 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     meta.set_type(RpcMeta::REQUEST);
     meta.set_sequence_id(cntl->SequenceId());
     meta.set_method(cntl->MethodId());
+    int64 timeout = cntl->Timeout();
+    if (timeout > 0)
+    {
+        meta.set_server_timeout(timeout);
+    }
     meta.set_compress_type(cntl->RequestCompressType());
     meta.set_expected_response_compress_type(cntl->ResponseCompressType());
 
@@ -331,7 +336,6 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     cntl->PushDoneCallback(boost::bind(&RpcClientImpl::DoneCallback, shared_from_this(), response, _1));
 
     // add to timeout manager if need
-    int64 timeout = cntl->Timeout();
     if (timeout > 0)
     {
         if (!_timeout_manager->add(cntl))
@@ -363,8 +367,7 @@ bool RpcClientImpl::ResolveAddress(const std::string& address,
     return sofa::pbrpc::ResolveAddress(_work_thread_group->io_service(), address, endpoint);
 }
 
-RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
-        const RpcEndpoint& remote_endpoint)
+RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_endpoint)
 {
     RpcClientStreamPtr stream;
     bool create = false;
@@ -381,6 +384,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
             stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
+            stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
                     boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
 
