@@ -4,7 +4,7 @@
 //
 // Author: zhangdi05@baidu.com (Zhang Di)
 
-#include <vector>
+#include <set>
 #include <sofa/pbrpc/serialize.h>
 #include <sofa/pbrpc/plugin/cookie/rpc_cookie.h>
 
@@ -17,59 +17,74 @@ bool RpcCookieManager::Has(const std::string& key)
     return _kv_map.find(key) != _kv_map.end();
 }
 
-void RpcCookieManager::Load(MapType& kv_map)
+void RpcCookieManager::Load(std::map<std::string, std::string>& kv_map)
 {
     ScopedLocker<MutexLock> _(_lock);
     kv_map = _kv_map;
 }
 
-void RpcCookieManager::Store(const MapType& kv_map)
+void RpcCookieManager::Store(const std::map<std::string, std::string>& kv_map)
 {
     ScopedLocker<MutexLock> _(_lock);
-    _kv_map.insert(kv_map.begin(), kv_map.end());
-
-    std::vector<std::string> remove_list;
-    MapType::const_iterator old_it = _kv_map.begin();
-    MapType::const_iterator old_end = _kv_map.end();
-    MapType::const_iterator new_it = kv_map.begin();
-    MapType::const_iterator new_end = kv_map.end();
-    while (old_it != old_end && new_it != new_end)
+    std::set<std::string> remove_keys;
+    std::map<std::string, std::string> add_or_modify_pairs;
+    std::map<std::string, std::string>::const_iterator old_it = _kv_map.begin();
+    std::map<std::string, std::string>::const_iterator new_it = kv_map.begin();
+    while (old_it != _kv_map.end() && new_it != kv_map.end())
     {
         if(old_it->first < new_it->first)
         {
-            remove_list.push_back(old_it->first);
+            remove_keys.insert(old_it->first);
             ++old_it;
+        }
+        else if (old_it->first > new_it->first)
+        {
+            add_or_modify_pairs.insert(*new_it);
+            ++new_it;
         }
         else
         {
-            ++new_it;
+            if (old_it->second != new_it->second)
+            {
+                add_or_modify_pairs.insert(*new_it);
+            }
             ++old_it;
+            ++new_it;
         }
     }
-    while (old_it != old_end)
+    while (old_it != _kv_map.end())
     {
-        remove_list.push_back(old_it->first);
+        remove_keys.insert(old_it->first);
         ++old_it;
     }
-    if (!remove_list.empty())
+    if (new_it != kv_map.end())
     {
-        for (std::vector<std::string>::const_iterator it = remove_list.begin();
-                it != remove_list.end(); ++it)
-        {
-            _kv_map.erase(*it);
-        }
+        add_or_modify_pairs.insert(new_it, kv_map.end());
+    }
+    for (std::set<std::string>::const_iterator it = remove_keys.begin();
+            it != remove_keys.end(); ++it)
+    {
+        _kv_map.erase(*it); 
+    }
+    for (std::map<std::string, std::string>::const_iterator it = add_or_modify_pairs.begin();
+            it != add_or_modify_pairs.end(); ++it)
+    {
+        _kv_map[it->first] = it->second;
     }
 }
 
-Cookie::Cookie() : _manager(NULL)
+RpcCookie::RpcCookie() : _manager(NULL)
 { }
 
-Cookie::Cookie(RpcCookieManager* manager) : _manager(manager)
+RpcCookie::RpcCookie(RpcCookieManager* manager) : _manager(manager)
 { }
 
-bool Cookie::Get(const std::string& key, std::string& value)
+RpcCookie::~RpcCookie()
+{ }
+
+bool RpcCookie::Get(const std::string& key, std::string& value)
 {
-    MapType::const_iterator it = _kv_map.find(key);   
+    std::map<std::string, std::string>::const_iterator it = _kv_map.find(key);   
     if (it == _kv_map.end())
     {
         return false;
@@ -78,12 +93,12 @@ bool Cookie::Get(const std::string& key, std::string& value)
     return true;
 }
 
-void Cookie::Set(const std::string& key, const std::string& value)
+void RpcCookie::Set(const std::string& key, const std::string& value)
 {
     _kv_map[key] = value;
 }
 
-void Cookie::Load()
+void RpcCookie::Load()
 {
     if (_manager != NULL)
     {
@@ -91,7 +106,7 @@ void Cookie::Load()
     }
 }
 
-void Cookie::Store()
+void RpcCookie::Store()
 {
     if (_manager != NULL)
     {
@@ -99,17 +114,17 @@ void Cookie::Store()
     }
 }
 
-bool Cookie::Has(const std::string& key)
+bool RpcCookie::Has(const std::string& key)
 {
     return _kv_map.find(key) != _kv_map.end();
 }
 
-bool Cookie::Empty()
+bool RpcCookie::Empty()
 {
     return _kv_map.empty();
 }
 
-bool Cookie::Erase(const std::string& key)
+bool RpcCookie::Erase(const std::string& key)
 {
     if (_kv_map.find(key) == _kv_map.end())
     {
@@ -119,12 +134,12 @@ bool Cookie::Erase(const std::string& key)
     return true;
 }
 
-void Cookie::Clear()
+void RpcCookie::Clear()
 {
     _kv_map.clear();
 }
 
-bool Cookie::Serialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
+bool RpcCookie::Serialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
 {
     int size = _kv_map.size();
     SCHECK_LE(static_cast<size_t>(size), SOFA_CONTAINER_MAX_SERIALIZE_SIZE);
@@ -134,7 +149,7 @@ bool Cookie::Serialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
     {
         return false;
     }
-    MapType::const_iterator it = _kv_map.begin();
+    std::map<std::string, std::string>::const_iterator it = _kv_map.begin();
     for (; it != _kv_map.end(); ++it)
     {
         if (!serializer.serialize_string(it->first))
@@ -150,10 +165,10 @@ bool Cookie::Serialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
     return true;
 }
 
-int Cookie::SerializeLen() const
+int RpcCookie::SerializeLen() const
 {
     int len = Serializer::varint_len(_kv_map.size());
-    MapType::const_iterator it = _kv_map.begin();
+    std::map<std::string, std::string>::const_iterator it = _kv_map.begin();
     for (; it != _kv_map.end(); ++it)
     {
         len += Serializer::string_len(it->first);
@@ -162,7 +177,7 @@ int Cookie::SerializeLen() const
     return len;
 }
 
-bool Cookie::Deserialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
+bool RpcCookie::Deserialize(sofa::pbrpc::ReadBufferPtr& attach_buffer)
 {
     int size = 0;
     Deserializer deserializer(attach_buffer);

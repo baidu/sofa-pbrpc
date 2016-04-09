@@ -60,7 +60,7 @@ check_depends:
 	@if [ ! -f "$(SOFA_PBRPC)/lib/libsofa-pbrpc-full.a" ]; then echo "ERROR: need sofa-pbrpc-full lib"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) *.o *.pb.* 
+	@rm -f $(BIN) *.o *.pb.*
 
 rebuild: clean all
 

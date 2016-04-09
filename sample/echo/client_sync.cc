@@ -8,8 +8,8 @@
 #include <sofa/pbrpc/plugin/cookie/rpc_cookie.h>
 #include "echo_service.pb.h"
 
-typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::Cookie> CookiePtr;
-sofa::pbrpc::RpcCookieManager cookie_manager;
+typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::RpcCookie> RpcCookiePtr;
+sofa::pbrpc::RpcCookieManager g_cookie_manager;
 
 // Using global RpcClient object can help share resources such as threads and buffers.
 sofa::pbrpc::RpcClient g_rpc_client;
@@ -25,7 +25,7 @@ int main()
     // Prepare parameters.
     sofa::pbrpc::RpcController* cntl = new sofa::pbrpc::RpcController();
     cntl->SetTimeout(3000);
-    CookiePtr cookie(new sofa::pbrpc::Cookie(&cookie_manager));
+    RpcCookiePtr cookie(new sofa::pbrpc::RpcCookie(&g_cookie_manager));
     cookie->Load();
     cookie->Set("type", "sync");
     cookie->Set("logid", "123456");
@@ -59,7 +59,7 @@ int main()
     else
     {
         SLOG(NOTICE, "request succeed: %s", response->message().c_str());
-        cookie.reset(new sofa::pbrpc::Cookie(&cookie_manager));
+        cookie.reset(new sofa::pbrpc::RpcCookie(&g_cookie_manager));
         if (cntl->GetResponseAttachment(cookie.get()))
         {
             std::string version;

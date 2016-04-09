@@ -452,7 +452,6 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
                 const char* read_pos = NULL;
                 int cur_size;
                 int bytes_remain = data_size - bytes_read;
-                char* handle_data = buffer->CurrentHandle();
                 int handle_offset = buffer->CurrentHandleOffset();
                 if (!buffer->Next(reinterpret_cast<const void**>(&read_pos), &cur_size))
                 {
@@ -466,6 +465,7 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
                     cntl->SetFailed(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "bad response buffer");
                     return;
                 }
+                char* handle_data = const_cast<char*>(read_pos) - handle_offset;
                 if (bytes_remain >= cur_size)
                 {
                     read_buffer->Append(BufHandle(handle_data, cur_size, handle_offset));

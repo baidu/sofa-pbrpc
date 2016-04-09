@@ -10,7 +10,7 @@
 #include <sofa/pbrpc/plugin/cookie/rpc_cookie.h>
 #include "echo_service.pb.h"
 
-typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::Cookie> CookiePtr;
+typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::RpcCookie> RpcCookiePtr;
 
 bool WebServlet(const sofa::pbrpc::HTTPRequest& request, sofa::pbrpc::HTTPResponse& response)
 {
@@ -56,7 +56,7 @@ private:
                 SLOG(INFO, "Header[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
             }
         }
-        CookiePtr cookie(new sofa::pbrpc::Cookie());
+        RpcCookiePtr cookie(new sofa::pbrpc::RpcCookie());
         if (cntl->GetRequestAttachment(cookie.get()))
         {
             std::string type;

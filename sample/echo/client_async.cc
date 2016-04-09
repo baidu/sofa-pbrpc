@@ -9,8 +9,8 @@
 #include <sofa/pbrpc/plugin/cookie/rpc_cookie.h>
 #include "echo_service.pb.h"
 
-typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::Cookie> CookiePtr;
-sofa::pbrpc::RpcCookieManager cookie_manager;
+typedef sofa::pbrpc::shared_ptr<sofa::pbrpc::RpcCookie> RpcCookiePtr;
+sofa::pbrpc::RpcCookieManager g_cookie_manager;
 
 void EchoCallback(sofa::pbrpc::RpcController* cntl,
         sofa::pbrpc::test::EchoRequest* request,
@@ -28,9 +28,10 @@ void EchoCallback(sofa::pbrpc::RpcController* cntl,
     if (cntl->Failed()) {
         SLOG(ERROR, "request failed: %s", cntl->ErrorText().c_str());
     }
-    else {
+    else 
+    {
         SLOG(NOTICE, "request succeed: %s", response->message().c_str());
-        CookiePtr cookie(new sofa::pbrpc::Cookie(&cookie_manager));
+        RpcCookiePtr cookie(new sofa::pbrpc::RpcCookie(&g_cookie_manager));
         if (cntl->GetResponseAttachment(cookie.get()))
         {
             std::string version;
@@ -58,7 +59,7 @@ int main()
     sofa::pbrpc::RpcChannelOptions channel_options;
     sofa::pbrpc::RpcChannel rpc_channel(&rpc_client, "127.0.0.1:12321", channel_options);
 
-    CookiePtr cookie(new sofa::pbrpc::Cookie(&cookie_manager));
+    RpcCookiePtr cookie(new sofa::pbrpc::RpcCookie(&g_cookie_manager));
     cookie->Load();
     cookie->Set("type", "async");
     cookie->Set("logid", "123456");

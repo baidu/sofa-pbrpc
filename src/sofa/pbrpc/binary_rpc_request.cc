@@ -95,7 +95,6 @@ void BinaryRpcRequest::ProcessRequest(
             const char* read_pos = NULL;
             int cur_size;
             int bytes_remain = _req_header.data_size - bytes_read;
-            char* handle_data = _req_body->CurrentHandle();
             int handle_offset = _req_body->CurrentHandleOffset();
             if (!_req_body->Next(reinterpret_cast<const void**>(&read_pos), &cur_size))
             {
@@ -111,6 +110,7 @@ void BinaryRpcRequest::ProcessRequest(
                 SendFailedResponse(stream, RPC_ERROR_PARSE_REQUEST_MESSAGE, "bad request buffer");
                 return;
             }
+            char* handle_data = const_cast<char*>(read_pos) - handle_offset;
             if (bytes_remain >= cur_size)
             {
                 read_buffer->Append(BufHandle(handle_data, cur_size, handle_offset));

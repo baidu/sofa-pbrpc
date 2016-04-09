@@ -9,7 +9,6 @@
 
 #include <map>
 #include <string>
-#include <sofa/pbrpc/common.h>
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/locks.h>
 #include <sofa/pbrpc/rpc_attachment.h>
@@ -17,9 +16,6 @@
 namespace sofa {
 namespace pbrpc {
 
-typedef std::map<std::string, std::string> MapType;
-
-//class RpcCookieManager
 class RpcCookieManager
 {
 public:
@@ -31,25 +27,24 @@ public:
 
     bool Has(const std::string& key);
 
-    void Load(MapType& kv_map);
+    void Load(std::map<std::string, std::string>& kv_map);
 
-    void Store(const MapType& kv_map);
+    void Store(const std::map<std::string, std::string>& kv_map);
 
 private:
-    MapType _kv_map;
+    std::map<std::string, std::string> _kv_map;
 
     MutexLock _lock;
-};
+}; // class RpcCookieManager
 
-//class Cookie
-class Cookie : public sofa::pbrpc::RpcAttachment
+class RpcCookie : public sofa::pbrpc::RpcAttachment
 {
 public:
-    Cookie();
+    RpcCookie();
 
-    Cookie(RpcCookieManager* manager);
+    explicit RpcCookie(RpcCookieManager* manager);
 
-    virtual ~Cookie() { }
+    virtual ~RpcCookie();
 
     bool Get(const std::string& key, std::string& value);
 
@@ -74,12 +69,12 @@ public:
     int SerializeLen() const;
 
 private:
-    MapType _kv_map;
+    std::map<std::string, std::string> _kv_map;
 
     RpcCookieManager* _manager;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Cookie);
-}; //class RpcCookie
+    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcCookie);
+}; // class RpcCookie
 
 } // namespace pbrpc
 } // namespace sofa
