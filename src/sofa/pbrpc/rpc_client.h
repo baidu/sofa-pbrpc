@@ -43,6 +43,12 @@ struct RpcClientOptions {
     // default is -1
     int connect_timeout;
 
+    // Network connection count limit.
+    // connection_count should >=1. 
+    // 1 means single connection mode. 
+    // >1 means multiple connection mode.
+    int connection_count;
+
     RpcClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
@@ -51,6 +57,7 @@ struct RpcClientOptions {
         , max_throughput_in(-1)
         , max_throughput_out(-1)
         , connect_timeout(-1)
+        , connection_count(1)
     {}
 };
 

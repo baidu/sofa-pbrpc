@@ -117,9 +117,15 @@ private:
     TimerWorkerPtr _timer_worker;
     RpcTimeoutManagerPtr _timeout_manager;
 
-    typedef std::map<RpcEndpoint, RpcClientStreamPtr> StreamMap;
+    typedef std::multimap<RpcEndpoint, RpcClientStreamPtr> StreamMap;
     StreamMap _stream_map;
     FastLock _stream_map_lock;
+    enum ConnectionType
+    {
+        SINGLE_CONNECTION = 1,
+        MULTI_CONNECTION = 2,
+    };
+    ConnectionType _connection_type;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcClientImpl);
 }; // class RpcClientImpl

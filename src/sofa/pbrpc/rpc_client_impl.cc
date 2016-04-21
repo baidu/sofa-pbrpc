@@ -33,6 +33,8 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
         std::max(0L, _options.max_pending_buffer_size * 1024L * 1024L);
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
+    _connection_type = _options.connection_count > 1 ?
+        MULTI_CONNECTION : SINGLE_CONNECTION;
 
 #if defined( LOG )
     LOG(INFO) << "RpcClientImpl(): quota_in="
@@ -367,15 +369,63 @@ bool RpcClientImpl::ResolveAddress(const std::string& address,
 RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_endpoint)
 {
     RpcClientStreamPtr stream;
-    bool create = false;
+    bool is_find = false;
     {
         ScopedLocker<FastLock> _(_stream_map_lock);
-        StreamMap::iterator find = _stream_map.find(remote_endpoint);
-        if (find != _stream_map.end() && !find->second->is_closed())
+        switch (_connection_type)
         {
-            stream = find->second;
+            case SINGLE_CONNECTION:
+            {
+                StreamMap::iterator find = _stream_map.find(remote_endpoint);
+                if (find != _stream_map.end())
+                {
+                    if (!find->second->is_closed())
+                    {
+                        stream = find->second;
+                        is_find = true;
+                    }
+                    else
+                    {
+                        _stream_map.erase(remote_endpoint);
+                    }
+                }
+                break;
+            }
+            case MULTI_CONNECTION:
+            {
+                if (_stream_map.count(remote_endpoint) == 
+                        static_cast<size_t>(_options.connection_count))
+                {
+                    int64 min_pending_count = _max_pending_buffer_size;
+                    std::pair<StreamMap::iterator, StreamMap::iterator> bounds = 
+                        _stream_map.equal_range(remote_endpoint);
+                    StreamMap::iterator begin = bounds.first;
+                    StreamMap::iterator end = bounds.second;
+                    for (StreamMap::iterator it = begin; it != end;)
+                    {
+                        if (it->second->is_closed())
+                        {
+                            _stream_map.erase(it++);
+                            continue;
+                        }
+                        if (it->second->pending_message_count() < min_pending_count)
+                        {
+                            stream = it->second;
+                            min_pending_count = it->second->pending_message_count();
+                            is_find = true;
+                        }
+                        ++it;
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                SCHECK(false);
+                break;
+            }
         }
-        else
+        if (!is_find)
         {
             stream.reset(new RpcClientStream(_work_thread_group->io_service(), remote_endpoint));
             stream->set_flow_controller(_flow_controller);
@@ -385,13 +435,9 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
             stream->set_closed_stream_callback(
                     boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
 
-            _stream_map[remote_endpoint] = stream;
-            create = true;
+            _stream_map.insert(std::make_pair(remote_endpoint, stream));
+            stream->async_connect();
         }
-    }
-    if (create)
-    {
-        stream->async_connect();
     }
     return stream;
 }
@@ -402,7 +448,18 @@ void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
         return;
 
     ScopedLocker<FastLock> _(_stream_map_lock);
-    _stream_map.erase(stream->remote_endpoint());
+    std::pair<StreamMap::iterator, StreamMap::iterator> bounds = 
+        _stream_map.equal_range(stream->remote_endpoint());
+    StreamMap::iterator begin = bounds.first;
+    StreamMap::iterator end = bounds.second;
+    for (StreamMap::iterator it = begin; it != end; ++it)
+    {
+        if (it->second == stream)
+        {
+            _stream_map.erase(it);
+            return;
+        }
+    }
 }
 
 void RpcClientImpl::StopStreams()
