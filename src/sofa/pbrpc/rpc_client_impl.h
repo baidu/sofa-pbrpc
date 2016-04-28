@@ -8,7 +8,7 @@
 #define _SOFA_PBRPC_RPC_CLIENT_IMPL_H_
 
 #include <list>
-#include <map>
+#include <ext/hash_map>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_client.h>
@@ -75,6 +75,8 @@ private:
 
     uint64 GenerateSequenceId();
 
+    uint64 StreamSetIndex(const RpcEndpoint& remote_endpoint);
+
 private:
     struct FlowControlItem
     {
@@ -86,6 +88,21 @@ private:
         bool operator< (const FlowControlItem& o) const
         {
             return token > o.token;
+        }
+    };
+
+    struct StreamSet
+    {
+        std::set<RpcClientStreamPtr> streams;
+        FastLock set_lock;
+
+        StreamSet()
+        { }
+
+        ~StreamSet()
+        {
+            ScopedLocker<FastLock> _(set_lock);
+            streams.clear();
         }
     };
 
@@ -107,6 +124,7 @@ private:
     int64 _max_pending_buffer_size;
     int64 _keep_alive_ticks;
     int64 _print_connection_interval_ticks;
+    int _multi_connection_count;
 
     FlowControllerPtr _flow_controller;
 
@@ -117,7 +135,7 @@ private:
     TimerWorkerPtr _timer_worker;
     RpcTimeoutManagerPtr _timeout_manager;
 
-    typedef std::multimap<RpcEndpoint, RpcClientStreamPtr> StreamMap;
+    typedef __gnu_cxx::hash_map<uint64, StreamSet*> StreamMap;
     StreamMap _stream_map;
     FastLock _stream_map_lock;
     enum ConnectionType
