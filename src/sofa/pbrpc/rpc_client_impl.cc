@@ -157,7 +157,7 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
     if (_max_pending_buffer_size != old_max_pending_buffer_size)
     {
         ScopedLocker<FastLock> _(_stream_map_lock);
-        for (StreamMap::iterator it = _stream_map.begin(); it != _stream_map.end(); )
+        for (StreamMap::iterator it = _stream_map.begin(); it != _stream_map.end(); ++it)
         {
             it->second->set_max_pending_buffer_size(_max_pending_buffer_size);
         }
