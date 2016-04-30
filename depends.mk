@@ -16,7 +16,7 @@
 ##   $(BOOST_HEADER_DIR)/boost/smart_ptr.hpp
 ##
 #BOOST_HEADER_DIR=/home/users/qinzuoyan01/libs/boost_1_53_0
-BOOST_HEADER_DIR=/usr
+BOOST_HEADER_DIR=/usr/local/Cellar/boost/1.57.0/include
 ################################################################
 
 ################################################################
@@ -28,7 +28,7 @@ BOOST_HEADER_DIR=/usr
 ##   $(PROTOBUF_DIR)/lib/libprotobuf.a 
 ##
 #PROTOBUF_DIR=/home/users/qinzuoyan01/libs/protobuf-2.4.1/output
-PROTOBUF_DIR=/usr/local
+PROTOBUF_DIR=/usr/local/Cellar/protobuf/2.6.1
 ################################################################
 
 ################################################################
@@ -39,7 +39,7 @@ PROTOBUF_DIR=/usr/local
 ##   $(SNAPPY_DIR)/lib/libsnappy.a
 ##
 #SNAPPY_DIR=/home/users/qinzuoyan01/libs/snappy-1.1.1/output
-SNAPPY_DIR=/usr
+SNAPPY_DIR=/usr/local/Cellar/snappy/1.1.1
 ################################################################
 
 ################################################################
