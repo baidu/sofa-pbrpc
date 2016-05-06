@@ -501,8 +501,8 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
         // flow control in
         if (_slice_quota_in != -1)
         {
-            // reset quota pool
-            _flow_controller->reset_read_quota(_slice_quota_in);
+            // recharge quota pool
+            _flow_controller->recharge_read_quota(_slice_quota_in);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
@@ -536,8 +536,8 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
         // flow control out
         if (_slice_quota_out != -1)
         {
-            // reset quota pool
-            _flow_controller->reset_write_quota(_slice_quota_out);
+            // recharge quota pool
+            _flow_controller->recharge_write_quota(_slice_quota_out);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;

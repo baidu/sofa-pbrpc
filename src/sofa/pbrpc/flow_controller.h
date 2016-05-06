@@ -31,11 +31,19 @@ public:
         _read_quota = quota;
     }
 
-    // Reset read quota.
-    // @param quota  the new quota.
-    void reset_read_quota(int quota)
+    // Recharge read quota.
+    // @param quota  the quota to recharge.
+    void recharge_read_quota(int quota)
     {
-        _read_quota = quota;
+        if (_read_no_limit)
+            return;
+        int old_quota = _read_quota;
+        int new_quota = old_quota > 0 ? quota : old_quota + quota;
+        while (atomic_comp_swap(&_read_quota, new_quota, old_quota) != old_quota)
+        {
+            old_quota = _read_quota;
+            new_quota = old_quota > 0 ? quota : old_quota + quota;
+        }
     }
 
     // Reset write quota.
@@ -47,11 +55,19 @@ public:
         _write_quota = quota;
     }
 
-    // Reset write quota.
-    // @param quota  the new quota.
-    void reset_write_quota(int quota)
+    // Recharge write quota.
+    // @param quota  the quota to recharge.
+    void recharge_write_quota(int quota)
     {
-        _write_quota = quota;
+        if (_write_no_limit)
+            return;
+        int old_quota = _write_quota;
+        int new_quota = old_quota > 0 ? quota : old_quota + quota;
+        while (atomic_comp_swap(&_write_quota, new_quota, old_quota) != old_quota)
+        {
+            old_quota = _write_quota;
+            new_quota = old_quota > 0 ? quota : old_quota + quota;
+        }
     }
 
     // Check if has more read quota.
@@ -73,7 +89,16 @@ public:
     //             to sort trigger order: closer to zero, earlier to trigger.
     int acquire_read_quota(int quota)
     {
-        return _read_no_limit ? 1 : atomic_add_ret_old(&_read_quota, -quota);
+        if (_read_no_limit)
+            return 1;
+        int old_quota = _read_quota;
+        int new_quota = old_quota > 0 ? old_quota - quota : old_quota - 1;
+        while (atomic_comp_swap(&_read_quota, new_quota, old_quota) != old_quota)
+        {
+            old_quota = _read_quota;
+            new_quota = old_quota > 0 ? old_quota - quota : old_quota - 1;
+        }
+        return old_quota;
     }
 
     // Acquire some write quota.
@@ -83,7 +108,16 @@ public:
     //             to sort trigger order: closer to zero, earlier to trigger.
     int acquire_write_quota(int quota)
     {
-        return _write_no_limit ? 1 : atomic_add_ret_old(&_write_quota, -quota);
+        if (_write_no_limit)
+            return 1;
+        int old_quota = _write_quota;
+        int new_quota = old_quota > 0 ? old_quota - quota : old_quota - 1;
+        while (atomic_comp_swap(&_write_quota, new_quota, old_quota) != old_quota)
+        {
+            old_quota = _write_quota;
+            new_quota = old_quota > 0 ? old_quota - quota : old_quota - 1;
+        }
+        return old_quota;
     }
 
 private:
