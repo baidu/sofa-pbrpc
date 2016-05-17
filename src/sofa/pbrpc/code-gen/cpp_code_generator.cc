@@ -9,8 +9,9 @@
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/string_utils.h>
 #include <google/protobuf/io/printer.h>
-#include "common.h"
 #include "cpp_code_generator.h"
+#include "common.h"
+#include "parser.h"
 #include "template/service.h.h"
 #include "template/service.cc.h"
 #include "template/method.h.h"
@@ -23,6 +24,21 @@
 namespace sofa {
 namespace pbrpc {
 namespace code_gen {
+CppCodeGenerator::CppCodeGenerator(const std::string& proto_path, 
+                                   const std::string& pbrpc_path,
+                                   const std::string& output_path)
+    : _proto_path(proto_path),
+      _pbrpc_path(pbrpc_path),
+      _output_path(output_path)
+    {
+        _parser = new Parser(_proto_path);
+    }
+
+CppCodeGenerator::~CppCodeGenerator() 
+{
+    delete _parser;
+    _parser = NULL;
+}
 
 int CppCodeGenerator::Generate()
 {

@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <sofa/pbrpc/common.h>
 
 namespace google {
 namespace protobuf {
@@ -86,6 +87,7 @@ private:
     const google::protobuf::FileDescriptor* _file_desc;
     
     google::protobuf::compiler::Importer* _importer;
+    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Parser);
 };
 
 }

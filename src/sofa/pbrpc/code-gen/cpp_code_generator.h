@@ -10,31 +10,23 @@
 #include <map>
 #include <string>
 #include <sofa/pbrpc/buffer.h>
-#include "parser.h"
+#include <sofa/pbrpc/common.h>
 #include "code_generator.h"
 
 namespace sofa {
 namespace pbrpc {
 namespace code_gen {
 
+class Parser;
+
 class CppCodeGenerator : public CodeGenerator
 {
 public:
     CppCodeGenerator(const std::string& proto_path, 
                      const std::string& pbrpc_path,
-                     const std::string& output_path)
-        : _proto_path(proto_path),
-          _pbrpc_path(pbrpc_path),
-          _output_path(output_path)
-    {
-        _parser = new Parser(_proto_path);
-    }
+                     const std::string& output_path);
 
-    ~CppCodeGenerator() 
-    {
-        delete _parser;
-        _parser = NULL;
-    }
+    ~CppCodeGenerator();
 
     /**
      * @brief Generate rpc sever & client code
@@ -78,6 +70,7 @@ private:
     std::string _proto_path;
     std::string _pbrpc_path;
     std::string _output_path;
+    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(CppCodeGenerator);
 };
 
 }
