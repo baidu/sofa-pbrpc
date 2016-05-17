@@ -6,6 +6,7 @@
 
 #include <map>
 #include <fstream>
+#include <stdlib.h>
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/string_utils.h>
 #include <google/protobuf/io/printer.h>
