@@ -6,7 +6,6 @@
 
 #include <map>
 #include <fstream>
-#include <stdlib.h>
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/string_utils.h>
 #include <google/protobuf/io/printer.h>
@@ -199,7 +198,7 @@ int CppCodeGenerator::GenerateMakefile()
     protos.append(_parser->GetProtoFileName());
     std::map<std::string, std::string> vars;
     vars["PROTOS"] = protos;
-    char resolved_path[PATH_MAX];
+    char resolved_path[4096];
     char* ret = realpath(_pbrpc_path.c_str(), resolved_path);
     if (ret == NULL)
     {
