@@ -163,13 +163,8 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
 
     if (_max_pending_buffer_size != old_max_pending_buffer_size)
     {
-<<<<<<< HEAD
         StreamHashSlot* slot = _slot_head;
         while (slot != NULL)
-=======
-        ScopedLocker<FastLock> _(_stream_map_lock);
-        for (StreamMap::iterator it = _stream_map.begin(); it != _stream_map.end(); ++it)
->>>>>>> e8ec4539b66dbcd263263a042ab0f2d5e52665ae
         {
             ScopedLocker<FastLock> _(slot->lock);
             for (StreamMap::iterator stream_map_it = slot->streams.begin();
