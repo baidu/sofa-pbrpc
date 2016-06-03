@@ -5,7 +5,7 @@
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/string_utils.h>
-#include "serialize.h"
+#include <sofa/pbrpc/serialize.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -352,11 +352,7 @@ bool Deserializer::deserialize_varint(uint64_t& d)
     return deserialize_raw_data(d);
 }
 
-} // namespace io
+} // namespace pbrpc
 } // namespace sofa
-
-void sofa_touch_sofa_io_serializer()
-{
-}
 
 /* vim: set ts=4 sw=4 sts=4 tw=100 */
