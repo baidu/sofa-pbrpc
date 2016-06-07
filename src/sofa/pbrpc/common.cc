@@ -8,6 +8,12 @@
 #include <cstdarg>
 #include <cstdlib>
 
+#if defined( SOFA_PBRPC_ENABLE_DETAILED_LOGGING )
+#include <time.h>
+#include <sys/time.h>
+#include <pthread.h>
+#endif
+
 #include <sofa/pbrpc/common.h>
 #include <sofa/pbrpc/ptime.h>
 
@@ -42,16 +48,28 @@ void default_log_handler(
                                          "INFO", "TRACE", "DEBUG" };
     char buf[1024];
     vsnprintf(buf, 1024, fmt, ap);
-#if 0
-    fprintf(stderr, "libsofa_pbrpc %s %s %s:%d] %s\n",
+#if defined( SOFA_PBRPC_ENABLE_DETAILED_LOGGING )
+    struct timeval now_tv;
+    gettimeofday(&now_tv, NULL);
+    const time_t seconds = now_tv.tv_sec;
+    struct tm t;
+    localtime_r(&seconds, &t);
+    fprintf(stderr, "libsofa_pbrpc %s %04d/%02d/%02d-%02d:%02d:%02d.%06d %llx %s:%d] %s\n",
             level_names[level],
-            boost::posix_time::to_simple_string(
-                boost::posix_time::microsec_clock::local_time()).c_str(),
+            t.tm_year + 1900,
+            t.tm_mon + 1,
+            t.tm_mday,
+            t.tm_hour,
+            t.tm_min,
+            t.tm_sec,
+            static_cast<int>(now_tv.tv_usec),
+            static_cast<long long unsigned int>(pthread_self()),
             filename, line, buf);
-#endif
+#else
     fprintf(stderr, "libsofa_pbrpc %s %s:%d] %s\n",
             level_names[level],
             filename, line, buf);
+#endif
     fflush(stderr);
 
     if (level == ::sofa::pbrpc::LOG_LEVEL_FATAL)
