@@ -18,6 +18,15 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #-----------------------------------------------
 
 #-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
+#   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
+#   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
+#
+CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
+#-----------------------------------------------
+
+#-----------------------------------------------
 # !!! Do not change the following lines !!!
 #-----------------------------------------------
 
