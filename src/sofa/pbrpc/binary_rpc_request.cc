@@ -209,14 +209,14 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
         return ReadBufferPtr();
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
-    write_buffer.Append(cntl->GetResponseAttachBuffer()->ToString());
-    int attach_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size - header.data_size;
-    header.message_size = header.meta_size + header.data_size + attach_size;
+    ReadBufferPtr response_attach_buffer = cntl->GetResponseAttachBuffer();
+    header.message_size = header.meta_size + header.data_size + response_attach_buffer->TotalCount();
 
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    read_buffer->Append(response_attach_buffer.get());
 
     return read_buffer;
 }

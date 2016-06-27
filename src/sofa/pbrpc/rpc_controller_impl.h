@@ -335,21 +335,25 @@ public:
 
     bool SetRequestAttachment(RpcAttachment* request_attachment)
     {
+        SCHECK(request_attachment);
         return request_attachment->Serialize(_request_attach_buffer);
     }
 
     bool GetRequestAttachment(RpcAttachment* request_attachment)
     {
+        SCHECK(request_attachment);
         return request_attachment->Deserialize(_request_attach_buffer);
     }
 
     bool SetResponseAttachment(RpcAttachment* response_attachment)
     {
+        SCHECK(response_attachment);
         return response_attachment->Serialize(_response_attach_buffer);
     }
 
     bool GetResponseAttachment(RpcAttachment* response_attachment)
     {
+        SCHECK(response_attachment);
         return response_attachment->Deserialize(_response_attach_buffer);;
     }
 
@@ -358,7 +362,7 @@ public:
         _request_attach_buffer = request_attach_buffer;
     }
 
-    ReadBufferPtr GetRequestAttachBuffer()
+    const ReadBufferPtr& GetRequestAttachBuffer()
     {
         return _request_attach_buffer;
     }
@@ -368,7 +372,7 @@ public:
         _response_attach_buffer = response_attach_buffer;
     }
 
-    ReadBufferPtr GetResponseAttachBuffer()
+    const ReadBufferPtr& GetResponseAttachBuffer()
     {
         return _response_attach_buffer;
     }

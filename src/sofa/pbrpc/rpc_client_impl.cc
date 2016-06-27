@@ -322,14 +322,14 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
         return;
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
-    write_buffer.Append(cntl->GetRequestAttachBuffer()->ToString());
-    int attach_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size - header.data_size;
-    header.message_size = header.meta_size + header.data_size + attach_size;
+    ReadBufferPtr request_attach_buffer = cntl->GetRequestAttachBuffer();
+    header.message_size = header.meta_size + header.data_size + request_attach_buffer->TotalCount();
 
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    read_buffer->Append(request_attach_buffer.get());
     cntl->SetRequestBuffer(read_buffer);
 
     // push callback
