@@ -591,9 +591,13 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             StreamHashSlot* slot = _slot_head;
             while (slot != NULL)
             {
-                ScopedLocker<FastLock> _(slot->lock);
-                for (StreamMap::iterator stream_map_it = slot->streams.begin();
-                        stream_map_it != slot->streams.end(); ++stream_map_it)
+                StreamMap stream_map;
+                {
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
+                }
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
                     std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
                     for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
@@ -634,9 +638,13 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             StreamHashSlot* slot = _slot_head;
             while (slot != NULL)
             {
-                ScopedLocker<FastLock> _(slot->lock);
-                for (StreamMap::iterator stream_map_it = slot->streams.begin();
-                        stream_map_it != slot->streams.end(); ++stream_map_it)
+                StreamMap stream_map;
+                {
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
+                }
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
                     std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
                     for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
@@ -682,9 +690,13 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             StreamHashSlot* slot = _slot_head;
             while (slot != NULL)
             {
-                ScopedLocker<FastLock> _(slot->lock);
-                for (StreamMap::iterator stream_map_it = slot->streams.begin();
-                        stream_map_it != slot->streams.end(); ++stream_map_it)
+                StreamMap stream_map;
+                {
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
+                }
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
                     std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
                     for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
