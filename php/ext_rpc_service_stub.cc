@@ -16,6 +16,11 @@ extern "C" {
 #include "config.h"
 #endif
 
+#ifdef add_method
+#undef add_method
+#include <sofa/pbrpc/pbrpc.h>
+#endif
+
 #include "ext_rpc_service_stub.h"
 #include "ext_rpc_service_stub_impl.h"
 
@@ -330,4 +335,5 @@ ZEND_GET_MODULE(sofa_pbrpc)
 #endif
 
 }
+
 /* vim: set ts=4 sw=4 sts=4 tw=100 */

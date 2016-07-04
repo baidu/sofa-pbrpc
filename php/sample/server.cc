@@ -1,36 +1,42 @@
-// Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Author: zhangdi05@baidu.com (Zhangdi Di)
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <signal.h>
 #include <unistd.h>
-#include <iostream>
 #include <sofa/pbrpc/pbrpc.h>
-#include "test.pb.h"
+#include "echo_service.pb.h"
 
-class TestServiceImpl : public sofa::pbrpc::test::TestService
+class EchoServerImpl : public sofa::pbrpc::test::EchoServer
 {
 public:
-    TestServiceImpl() {}
-    virtual ~TestServiceImpl() {}
+    EchoServerImpl() {}
+    virtual ~EchoServerImpl() {}
 
 private:
-    virtual void test_func(google::protobuf::RpcController* /*controller*/,
-                      const ::sofa::pbrpc::test::Request* request,
-                      sofa::pbrpc::test::Response* response,
+    virtual void TestEcho(google::protobuf::RpcController* controller,
+                      const sofa::pbrpc::test::EchoRequest* request,
+                      sofa::pbrpc::test::EchoResponse* response,
                       google::protobuf::Closure* done)
     {
-        SLOG(NOTICE, "request byte size : %d , uapinfo1 value is %s, uapinfo2 value %s",
-            request->ByteSize(), request->pair(0).value().c_str(), request->pair(1).value().c_str());
-        response->set_debug_message("Debug Info from server");
-        sofa::pbrpc::test::Result* result_a = response->add_result();
-        result_a->set_index(1);
-        result_a->set_data("Debug data in result a");
-        sofa::pbrpc::test::Result* result_b = response->add_result();
-        result_b->set_index(2);
-        result_b->set_data("Debug data in result b");
+        sofa::pbrpc::RpcController* cntl = static_cast<sofa::pbrpc::RpcController*>(controller);
+        SLOG(INFO, "Echo(): request message from %s: %s",
+                cntl->RemoteAddress().c_str(), request->message().c_str());
+        if (cntl->IsHttp()) {
+            SLOG(INFO, "HTTP-PATH=\"%s\"", cntl->HttpPath().c_str());
+            std::map<std::string, std::string>::const_iterator it;
+            const std::map<std::string, std::string>& query_params = cntl->HttpQueryParams();
+            for (it = query_params.begin(); it != query_params.end(); ++it) {
+                SLOG(INFO, "QueryParam[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
+            }
+            const std::map<std::string, std::string>& headers = cntl->HttpHeaders();
+            for (it = headers.begin(); it != headers.end(); ++it) {
+                SLOG(INFO, "Header[\"%s\"]=\"%s\"", it->first.c_str(), it->second.c_str());
+            }
+        }
+        response->set_message("echo message: " + request->message());
         done->Run();
     }
 };
@@ -58,14 +64,14 @@ int main()
     sofa::pbrpc::RpcServer rpc_server(options);
 
     // Start rpc server.
-    if (!rpc_server.Start("0.0.0.0:9008")) {
+    if (!rpc_server.Start("0.0.0.0:12321")) {
         SLOG(ERROR, "start server failed");
         return EXIT_FAILURE;
     }
     
     // Register service.
-    sofa::pbrpc::test::TestService* test_service = new TestServiceImpl();
-    if (!rpc_server.RegisterService(test_service)) {
+    sofa::pbrpc::test::EchoServer* echo_service = new EchoServerImpl();
+    if (!rpc_server.RegisterService(echo_service)) {
         SLOG(ERROR, "export service failed");
         return EXIT_FAILURE;
     }

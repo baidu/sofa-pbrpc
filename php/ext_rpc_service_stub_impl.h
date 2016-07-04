@@ -13,13 +13,16 @@ extern "C" {
 #include <ext/standard/php_var.h>
 #include <Zend/zend_exceptions.h>
 }
-#ifdef add_method
-#undef add_method
 
 #include <set>
 #include <google/protobuf/service.h>
 #include <google/protobuf/descriptor.h>
+
+#ifdef add_method
+#undef add_method
 #include <google/protobuf/descriptor.pb.h>
+#endif
+
 #include <google/protobuf/dynamic_message.h>
 
 #include <sofa/pbrpc/pbrpc.h>
@@ -204,8 +207,9 @@ private:
     google::protobuf::ServiceDescriptorProto* _service_proto;
     const google::protobuf::FileDescriptor* _file_descriptor;
 };
+
 }
-#endif  // add_method
+
 #endif  // EXT_RPC_SERVICE_STUB_IMPL_H
 
 /* vim: set ts=4 sw=4 sts=4 tw=100 */
