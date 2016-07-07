@@ -17,12 +17,10 @@ extern "C" {
 #include <set>
 #include <google/protobuf/service.h>
 #include <google/protobuf/descriptor.h>
-
 #ifdef add_method
 #undef add_method
 #include <google/protobuf/descriptor.pb.h>
 #endif
-
 #include <google/protobuf/dynamic_message.h>
 
 #include <sofa/pbrpc/pbrpc.h>
@@ -68,58 +66,11 @@ enum PbType
 class PhpRpcServiceStubImpl 
 {
 public:
-    PhpRpcServiceStubImpl(sofa::pbrpc::RpcChannel* channel,
-                        sofa::pbrpc::RpcController* controller,
-                       const std::string& package_name,
-                       const std::string& service_name) : 
-                       _timeout(100),
-                       _package_name(package_name),
-                       _service_name(service_name),
-                       _method_board(NULL),
-                       _pool(NULL), 
-                       _file_proto(NULL),
-                       _service_proto(NULL),
-                       _file_descriptor(NULL)
-    {
-        if (channel == NULL || controller == NULL) 
-        {
-            SLOG(FATAL, "create service stub failed");
-            return;
-        }
-        _channel = channel;
-        _cntl = controller;
-        _method_board = new MethodBoard();
-        _message_set = new MessageSet();
-        _pool = new google::protobuf::DescriptorPool();
-        _file_proto = new google::protobuf::FileDescriptorProto();
-        _file_proto->set_name(FILE_PROTO);
-        _file_proto->set_package(_package_name);
-        _service_proto = _file_proto->add_service();
-        _service_proto->set_name(_service_name);
-    }
+    PhpRpcServiceStubImpl(const std::string& server_addr,
+            const std::string& package_name,
+            const std::string& service_name);
 
-    ~PhpRpcServiceStubImpl() 
-    {
-        MethodBoard::iterator it = _method_board->begin();
-        MethodBoard::iterator end = _method_board->end();
-        for (; it != end; ++it)
-        {
-            delete it->second;
-            it->second = NULL;
-        }
-        delete _method_board;
-        _method_board = NULL;
-        delete _message_set;
-        _message_set = NULL;
-        delete _pool;
-        _pool = NULL;
-        delete _file_proto;
-        _file_proto = NULL;
-        delete _channel;
-        _channel = NULL;
-        delete _cntl;
-        _cntl = NULL;
-    }
+    ~PhpRpcServiceStubImpl();
 
     void SetTimeout(long timeout);
 
@@ -127,11 +78,11 @@ public:
 
     std::string ErrorText();
 
-    void RegisterMethod(const std::string& method_name,
+    bool RegisterMethod(const std::string& method_name,
                         zval* request,
                         zval* response);
 
-    void InitMethods();
+    bool InitMethods();
 
     void CallMethod(const std::string& method_name,
                     zval* request, 
@@ -173,9 +124,6 @@ private:
                         google::protobuf::Message* sofa_msg);
 
     int ToUserField(zval* value, 
-                    bool repeated,
-                    int array_size,
-                    google::protobuf::FieldDescriptor::Type sofa_type, 
                     const google::protobuf::Message* sofa_msg, 
                     const google::protobuf::FieldDescriptor* field, 
                     const google::protobuf::Reflection* reflection); 
@@ -191,10 +139,11 @@ private:
 
 
     int SofaTransformToPhp(zval* user_msg, 
-                            const google::protobuf::Message* sofa_msg);
+                        google::protobuf::Message* sofa_msg);
 
 private:
     long _timeout;
+    std::string _server_addr;
     std::string _package_name;
     std::string _service_name;
     MethodBoard* _method_board;

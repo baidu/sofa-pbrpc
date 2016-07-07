@@ -19,7 +19,8 @@ class FieldDescriptor
         'sfixed64' => \ProtobufMessage::PB_TYPE_FIXED64,
         'bool'     => \ProtobufMessage::PB_TYPE_BOOL,
         'string'   => \ProtobufMessage::PB_TYPE_STRING,
-        'bytes'    => \ProtobufMessage::PB_TYPE_STRING);
+        'bytes'    => \ProtobufMessage::PB_TYPE_STRING,
+    );
 
     private static $_scalarNativeTypes = array(
         'double'   => 'float',
@@ -36,7 +37,7 @@ class FieldDescriptor
         'sfixed64' => 'int',
         'bool'     => 'bool',
         'string'   => 'string',
-        'bytes'    => 'string'
+        'bytes'    => 'string',
     );
 
     private $_default;

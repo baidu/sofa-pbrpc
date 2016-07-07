@@ -30,10 +30,6 @@ namespace sofa_php_ext
 #define PB_CONSTANT(name) \
 	zend_declare_class_constant_long(rpc_service_stub_ce, #name, sizeof(#name) - 1, name TSRMLS_CC)
 
-sofa::pbrpc::RpcClientOptions client_options;
-sofa::pbrpc::RpcClient client_a(client_options);
-sofa::pbrpc::RpcClient client_b(client_options);
-
 zend_object_handlers rpc_service_stub_object_handlers;
 struct rpc_service_stub_object 
 {
@@ -89,9 +85,7 @@ zend_object_value rpc_service_stub_create_handler(zend_class_entry* type TSRMLS_
     rpc_service_stub_object* obj 
         = (rpc_service_stub_object*)emalloc(sizeof(rpc_service_stub_object));
     memset(obj, 0, sizeof(rpc_service_stub_object));
-    obj->std.ce = type; 
-    ALLOC_HASHTABLE(obj->std.properties);
-    zend_hash_init(obj->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+    zend_object_std_init(&obj->std, type TSRMLS_CC);
 #if PHP_VERSION_ID < 50399
     zend_hash_copy(obj->std.properties, 
             &(type->default_properties_table), 
@@ -99,11 +93,11 @@ zend_object_value rpc_service_stub_create_handler(zend_class_entry* type TSRMLS_
             (void*)&tmp, 
             sizeof(zval*));
 #else
-    object_properties_init((zend_object*)obj, type);
+    object_properties_init(&obj->std, type);
 #endif 
     retval.handle = zend_objects_store_put(obj, 
-                                        NULL, 
-                                        rpc_service_stub_free_storage, 
+                                        (zend_objects_store_dtor_t) zend_objects_destroy_object,
+                                        (zend_objects_free_object_storage_t) rpc_service_stub_free_storage, 
                                         NULL TSRMLS_CC);
     retval.handlers = &rpc_service_stub_object_handlers; 
     return retval;
@@ -132,29 +126,20 @@ PHP_METHOD(PhpRpcServiceStub, InitService)
         SLOG(ERROR, "create stub failed for bad parameters");
         return;
     }
-    std::string server_addr(address_str, address_str_len);
+    std::string server_addr_str(address_str, address_str_len);
     std::string package_name_str(package_name, package_len);
     std::string service_name_str(service_name, service_len);
 
-    sofa::pbrpc::RpcChannelOptions channel_options;
-    sofa::pbrpc::RpcChannel* _channel = NULL;
-    int index = rand() % 2;
-    if (index)
-    {
-        _channel = new sofa::pbrpc::RpcChannel(&client_a, server_addr.c_str(), channel_options);
-    }
-    else
-    {
-        _channel = new sofa::pbrpc::RpcChannel(&client_b, server_addr.c_str(), channel_options);
-    }
-    sofa::pbrpc::RpcController* _cntl = new sofa::pbrpc::RpcController();
-    PhpRpcServiceStubImpl* _impl = new PhpRpcServiceStubImpl(_channel,
-                                                            _cntl, 
-                                                            package_name_str, 
-                                                            service_name_str);
+    PhpRpcServiceStubImpl* _impl 
+        = new PhpRpcServiceStubImpl(server_addr_str, package_name_str, service_name_str);
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
+    if (!stub_obj)
+    {
+        RETURN_FALSE;
+    }
     stub_obj->stub_impl = _impl;
+    RETURN_TRUE;
 }
 
 PHP_METHOD(PhpRpcServiceStub, SetTimeout)
@@ -168,9 +153,13 @@ PHP_METHOD(PhpRpcServiceStub, SetTimeout)
     }
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    _impl->SetTimeout(timeout);
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        _impl->SetTimeout(timeout);
+        RETURN_TRUE;
+    }
+    RETURN_FALSE;
 }
 
 PHP_METHOD(PhpRpcServiceStub, GetFailed)
@@ -178,9 +167,12 @@ PHP_METHOD(PhpRpcServiceStub, GetFailed)
     zval* stub_zval = getThis();
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    RETURN_BOOL(_impl->Failed());
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        RETURN_BOOL(_impl->Failed());
+    }
+    RETURN_FALSE;
 }
 
 PHP_METHOD(PhpRpcServiceStub, GetErrorText)
@@ -188,10 +180,13 @@ PHP_METHOD(PhpRpcServiceStub, GetErrorText)
     zval* stub_zval = getThis();
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    std::string err_text = _impl->ErrorText();
-    RETURN_STRINGL(err_text.c_str(), err_text.length(), 1);
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        std::string err_text = _impl->ErrorText();
+        RETURN_STRINGL(err_text.c_str(), err_text.length(), 1);
+    }
+    RETURN_EMPTY_STRING();
 }
 
 PHP_METHOD(PhpRpcServiceStub, RegisterMethod)
@@ -214,9 +209,12 @@ PHP_METHOD(PhpRpcServiceStub, RegisterMethod)
     std::string method_name_str(method_name, method_length);
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    _impl->RegisterMethod(method_name_str, request, response);
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        RETURN_BOOL(_impl->RegisterMethod(method_name_str, request, response));
+    }
+    RETURN_FALSE;
 }
 
 PHP_METHOD(PhpRpcServiceStub, InitMethods)
@@ -224,9 +222,12 @@ PHP_METHOD(PhpRpcServiceStub, InitMethods)
     zval* stub_zval = getThis();
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    _impl->InitMethods();
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        RETURN_BOOL(_impl->InitMethods());
+    }
+    RETURN_FALSE; 
 }
 
 PHP_METHOD(PhpRpcServiceStub, CallMethod)
@@ -252,10 +253,12 @@ PHP_METHOD(PhpRpcServiceStub, CallMethod)
 
     rpc_service_stub_object* stub_obj 
         = (rpc_service_stub_object*)zend_object_store_get_object(stub_zval TSRMLS_CC);
-
-    PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
-    std::string method_name_str(method_name, method_length);
-    _impl->CallMethod(method_name_str, request_zval, response_zval, closure_zval);
+    if (stub_obj && stub_obj->stub_impl)
+    {
+        PhpRpcServiceStubImpl* _impl = stub_obj->stub_impl; 
+        std::string method_name_str(method_name, method_length);
+        _impl->CallMethod(method_name_str, request_zval, response_zval, closure_zval);
+    }
 }
 
 const zend_function_entry sofa_pbrpc_functions[] = {

@@ -12,11 +12,10 @@ class ServiceDescriptor implements DescriptorInterface
     private $_name;
 
     /**
-     * Constructs new message descriptor
+     * Constructs new service descriptor
      *
      * @param string            $name       Message name
      * @param FileDescriptor    $file       File defining message
-     * @param MessageDescriptor $containing Parent message
      */
     public function __construct(
         $name, FileDescriptor $file) {
@@ -28,9 +27,7 @@ class ServiceDescriptor implements DescriptorInterface
                 'file descriptor cannot be null'
             );
         }
-        if (!is_null($file)) {
-            $file->addService($this);
-        }
+        $file->addService($this);
     }
 
     /**
@@ -78,7 +75,7 @@ class ServiceDescriptor implements DescriptorInterface
     /**
      * Returns get method descriptor
      *
-     * @return MethodDescriptor
+     * @return MethodDescriptor Array
      */
     public function getMethods()
     {

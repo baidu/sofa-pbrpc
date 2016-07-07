@@ -111,6 +111,9 @@ class FileDescriptor
     }
 
     /**
+     *
+     * @param string $name name of message
+     *
      * Returns MessageDescriptor with name $name
      *
      * @return MessageDescriptor
@@ -121,6 +124,9 @@ class FileDescriptor
     }
 
     /**
+     *
+     * @param string $name name of message
+     *
      * Returns whether has mesage with name $name
      *
      * @return Boolean

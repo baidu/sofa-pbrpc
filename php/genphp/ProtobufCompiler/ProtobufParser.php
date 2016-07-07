@@ -32,6 +32,12 @@ class ProtobufParser
     private $_hasSplTypes = false;
     private $_useNativeNamespaces = false;
 
+    /**
+     * Constructs new protobuf parser
+     *
+     * @param bool  $useNativeNamespaces  if use natice namespaces 
+     *
+     */
     public function __construct($useNativeNamespaces = null)
     {
         $this->_hasSplTypes = extension_loaded('SPL_Types');
@@ -127,19 +133,15 @@ class ProtobufParser
         return $file;
     }
 
-    private function _findFieldName($fields, $type)
-    {
-        $field_names = array();
-        foreach ($fields as $index => $descriptor)
-        {
-            if ($descriptor["type"] == $type)
-            {
-                $field_names[] = $descriptor["name"];
-            } 
-        }
-        return $field_names;
-    }
-
+    /**
+     * Constructs request and response instance
+     *
+     * @param FileDescriptor $file file descriptor of proto
+     * @param MessageDescriptor $msg message descriptor to constructs instance 
+     * @param CodeStringBuffer $buffer buffer to write code in
+     *
+     * @return null
+     */
     private function _createParaConstruct(FileDescriptor $file, MessageDescriptor $msg, CodeStringBuffer $buffer)
     {
         $finished_type = self::$_finished;
@@ -148,9 +150,13 @@ class ProtobufParser
             return;
         }
         $fields = $msg->getFields();
-        $set_content = "";
-        $parent_instance = "\$" . $msg->getName() . "_instance";
-        $new_parent = str_repeat(' ', 8) . $parent_instance . " = New " . $msg->getName() . "();\n";
+        $set_content = '';
+        $parent_instance = "\$" . $msg->getName() . '_instance';
+        $is_in_array = in_array($msg->getName(), $finished_type);
+        if ($is_in_array === false)
+        {
+            $buffer->append($parent_instance . ' = New ' . $msg->getName() . '();');
+        }
         
         foreach ($fields as $index => $field)
         {
@@ -161,24 +167,20 @@ class ProtobufParser
             {
                 $child = $file->findMessage($type);
                 $this->_createParaConstruct($file, $child, $buffer);
-
-                //$new_content = $new_content .  "\$" . $type . "_instance = New " . $type . "();\n";
                 if ($label == 1 || $label == 2)
                 {
-                    $set_content = $set_content . str_repeat(' ', 8) . $parent_instance . "->set_" . $name . "(\$" .  $type . "_instance" . ");\n";
+                    $buffer->append($parent_instance . '->set_' . $name . '($' . $type . '_instance' . ');');
                 }
                 else if ($label == 3)
                 {
-                    $set_content = $set_content . str_repeat(' ', 8) . $parent_instance . "->append_" . $name . "(\$" .  $type . "_instance" . ");\n";
+                    $buffer->append($parent_instance . '->append_' . $name . '($' . $type . '_instance' . ');');
                 }
             } 
         }
         $finished_type = self::$_finished;
-        if(!in_array($msg->getName(), $finished_type))
-            $buffer->append($new_parent);
-        $buffer->append($set_content);
         self::$_finished[] = $msg->getName();
     }
+
     /**
      * Generates method description and write it to buffer
      *
@@ -189,7 +191,6 @@ class ProtobufParser
      */
     private function _createRegisterMethod(FileDescriptor $file, MethodDescriptor $method, CodeStringBuffer $buffer)
     {
-        //unset(self::$_finished);
         self::$_finished = array();
         $name = $method->getName();
         $input_type = $method->getInput();
@@ -200,49 +201,70 @@ class ProtobufParser
         $input_fields = $input_descriptor->getFields();
         $output_fields = $output_descriptor->getFields();
 
-        $content = '' . str_repeat(' ', 4) . 'private function Register' . $name . '()' . "\n";
-        $content = $content . str_repeat(" ", 4) . "{\n";
-        $buffer->append($content);
-        $content = "";
+        $buffer->increaseIdentation()
+               ->append('private function Register' . $name . '()')
+               ->append('{')
+               ->increaseIdentation();
 
         $this->_createParaConstruct($file, $input_descriptor, $buffer); 
         $this->_createParaConstruct($file, $output_descriptor, $buffer); 
 
         $request_instance = "\$" . $input_type . "_instance";
         $response_instance = "\$" . $output_type . "_instance";
-        //$content = $content . str_repeat(" ", 8) . "\$request = new " . $input_type . "();\n";
-        //$content = $content . str_repeat(" ", 8) . "\$response = new " . $output_type . "();\n";
-        $content = $content . str_repeat(" ", 8) . "\$this->RegisterMethod(\"" . $name . "\", " . $request_instance . ", " .  $response_instance. ");\n";
-        $content = $content . str_repeat(" ", 4) . "}\n";
-        $buffer->append($content);
+        $buffer->append('$this->RegisterMethod(\'' . $name . '\', ' 
+            . $request_instance . ', ' .  $response_instance. ');')
+               ->decreaseIdentation()
+               ->append('}');
         return $name;
     }
 
+    /**
+     * Generates user rpc interface which is defined in proto,
+     * such as Failed() and ErrorText()
+     *
+     * @param MethodDescriptor  $method  MethodDescriptor to generate interface
+     * @param CodeStringBuffer  $buffer  Buffer to write code to
+     *
+     * @return null
+     */
+
     private function _createUserMethod(MethodDescriptor $method, CodeStringBuffer $buffer) 
     {
-        $name = $method->getName();
-        $content = '' . str_repeat(' ', 4) . 'public function ' . $name . '($request, $response, $closure)' . "\n";
-        $content = $content . str_repeat(' ', 4) . "{\n";
-        $content = $content . str_repeat(' ', 8) . '$this->CallMethod("' .$name . '", $request, $response, $closure);';
-        $content = $content . "\n" . str_repeat(' ', 4) . "}\n";
-        $buffer->append($content);
+        $buffer->append('')
+               ->append('public function ' . $method->getName() . '($request, $response, $closure)')
+               ->append('{')
+               ->increaseIdentation()
+               ->append('$this->CallMethod(\'' .$method->getName() . '\', $request, $response, $closure);')
+               ->decreaseIdentation()
+               ->append('}');
     }
+
+    /**
+     * Generates common method in service and write it to buffer,
+     * such as Failed() and ErrorText()
+     *
+     * @param CodeStringBuffer  $buffer  Buffer to write code to
+     *
+     * @return null
+     */
 
     private function _createServiceCommonMethod(CodeStringBuffer $buffer) 
     {
-        $content = '' . str_repeat(' ', 4) . 'public function Failed()' . "\n";
-        $content = $content . str_repeat(' ', 4) . "{\n";
-        $content = $content . str_repeat(' ', 8) . 'return $this->GetFailed();';
-        $content = $content . "\n" . str_repeat(' ', 4) . "}\n";
-        $buffer->append($content);
-
-        $content = '' . str_repeat(' ', 4) . 'public function ErrorText()' . "\n";
-        $content = $content . str_repeat(' ', 4) . "{\n";
-        $content = $content . str_repeat(' ', 8) . 'return $this->GetErrorText();';
-        $content = $content . "\n" . str_repeat(' ', 4) . "}\n";
-        $buffer->append($content);
+        $buffer->append('')
+               ->append('public function Failed()')
+               ->append('{')
+               ->increaseIdentation()
+               ->append('return $this->GetFailed();')
+               ->decreaseIdentation()
+               ->append('}')
+               ->append('')
+               ->append('public function ErrorText()')
+               ->append('{')
+               ->increaseIdentation()
+               ->append('return $this->GetErrorText();')
+               ->decreaseIdentation()
+               ->append('}');
     }
-
 
     /**
      * Generates class description and write it to buffer
@@ -258,26 +280,30 @@ class ProtobufParser
         $name = $descriptor->getName();
         $class_frame = "class " . $name . " extends " . self::SERVICE_CLASS . "\n{";
         $buffer->append($class_frame);
-        $register_content = "";
-        $content = str_repeat(' ', 4) . 'function __construct($server_address)' . "\n";
-        $content = $content . str_repeat(' ', 4) . "{\n";
+        $register_func = 'Register';
         foreach ($descriptor->getMethods() as $method) {
-            $func_name = $this->_createRegisterMethod($file, $method, $buffer);
-            $func_name = "Register" . $func_name;
-            $register_content = $register_content . str_repeat(' ', 8) . "\$this->" . $func_name . "();\n";
+            $register_func = $register_func .  $this->_createRegisterMethod($file, $method, $buffer);
+            $buffer->append('');
         }
-        $content = $content . str_repeat(' ', 8) . '$this->InitService($server_address, "' . $file->getPackage() . '", "' . $descriptor->getName() . "\");\n";
-        $content = $content . $register_content;
-        $content = $content . str_repeat(' ', 8) . "\$this->InitMethods();\n";
-        $content = $content . str_repeat(' ', 4) . "}\n";
-        $buffer->append($content);
+        
+        $buffer->append('function __construct($server_address)')
+               ->append('{')
+               ->increaseIdentation()
+               ->append('$this->InitService($server_address, ' .
+                   '\'' . $file->getPackage() . '\'' . ', ' .
+                   '\'' . $descriptor->getName() . '\')' . ';')
+               ->append('$this->' . $register_func . '()' . ';')
+               ->append('$this->InitMethods();')
+               ->decreaseIdentation()
+               ->append('}');
         foreach ($descriptor->getMethods() as $method) {
             $this->_createUserMethod($method, $buffer);
             $this->_createServiceCommonMethod($buffer);
         }
-        $buffer->append('}');
-    
+        $buffer->decreaseIdentation()
+               ->append('}'); 
     }
+
     /**
      * Generates class description and write it to buffer
      *
@@ -396,6 +422,7 @@ class ProtobufParser
         FileDescriptor $file, CodeStringBuffer $buffer, $outputFile = null
     ) {
         $comment = new CommentStringBuffer(self::TAB, self::EOL);
+        date_default_timezone_set("PRC");
         $date = strftime("%Y-%m-%d %H:%M:%S");
         $comment->append('Auto generated from ' . basename($file->getName()) . ' at ' . $date);
 
@@ -480,15 +507,6 @@ class ProtobufParser
      */
     private function _createClassName(DescriptorInterface $descriptor)
     {
-        //$name = self::createTypeName($descriptor->getName());
-
-        //$prefix = $this->_createNamespaceName($descriptor);
-        //if (!empty($prefix)) {
-        //    //$name = $prefix . $this->getNamespaceSeparator() . $name;
-        //    if ($this->_useNativeNamespaces) {
-        //        $name = self::NAMESPACE_SEPARATOR_NATIVE . $name;
-        //    }
-        //}
         $name = $descriptor->getName();
         return $name;
     }
@@ -1320,17 +1338,17 @@ class ProtobufParser
         if ($match) {
             switch ($matches[1]) {
 
-            case 'optional':
-                $label = FieldLabel::OPTIONAL;
-                break;
+                case 'optional':
+                    $label = FieldLabel::OPTIONAL;
+                    break;
 
-            case 'required':
-                $label = FieldLabel::REQUIRED;
-                break;
+                case 'required':
+                    $label = FieldLabel::REQUIRED;
+                    break;
 
-            case 'repeated':
-                $label = FieldLabel::REPEATED;
-                break;
+                case 'repeated':
+                    $label = FieldLabel::REPEATED;
+                    break;
             }
 
             $field->setLabel($label);

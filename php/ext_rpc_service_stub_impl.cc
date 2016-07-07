@@ -6,9 +6,61 @@
 
 #include "common.h"
 #include "ext_rpc_service_stub_impl.h"
-
+#include <iostream>
 namespace sofa_php_ext
 {
+
+sofa::pbrpc::RpcClientOptions g_client_options;
+sofa::pbrpc::RpcClient g_client(g_client_options);
+
+PhpRpcServiceStubImpl::PhpRpcServiceStubImpl(const std::string& server_addr,
+        const std::string& package_name,
+        const std::string& service_name) : 
+        _timeout(100),
+        _server_addr(server_addr),
+        _package_name(package_name),
+        _service_name(service_name),
+        _method_board(NULL),
+        _pool(NULL), 
+        _file_proto(NULL),
+        _service_proto(NULL),
+        _file_descriptor(NULL)
+{
+    sofa::pbrpc::RpcChannelOptions channel_options;
+    _channel = new sofa::pbrpc::RpcChannel(&g_client, _server_addr, channel_options);
+    _cntl = new sofa::pbrpc::RpcController();
+    _method_board = new MethodBoard();
+    _message_set = new MessageSet();
+    _pool = new google::protobuf::DescriptorPool();
+    _file_proto = new google::protobuf::FileDescriptorProto();
+    _file_proto->set_name(FILE_PROTO);
+    _file_proto->set_package(_package_name);
+    _service_proto = _file_proto->add_service();
+    _service_proto->set_name(_service_name);
+}
+
+PhpRpcServiceStubImpl::~PhpRpcServiceStubImpl() 
+{
+    delete _channel;
+    _channel = NULL;
+    delete _cntl;
+    _cntl = NULL;
+    MethodBoard::iterator it = _method_board->begin();
+    MethodBoard::iterator end = _method_board->end();
+    for (; it != end; ++it)
+    {
+        delete it->second;
+        it->second = NULL;
+    }
+    delete _method_board;
+    _method_board = NULL;
+    delete _message_set;
+    _message_set = NULL;
+    delete _pool;
+    _pool = NULL;
+    delete _file_proto;
+    _file_proto = NULL;
+}
 
 zval* PhpRpcServiceStubImpl::GetFieldDescriptors(zval* obj)
 {
@@ -21,6 +73,7 @@ zval* PhpRpcServiceStubImpl::GetFieldDescriptors(zval* obj)
     {
         return NULL;
     }
+    Z_DELREF_P(descriptors);
     return descriptors;
 }
 
@@ -505,17 +558,22 @@ int PhpRpcServiceStubImpl::PhpTransformToSofa(zval* user_msg,
 }
 
 int PhpRpcServiceStubImpl::ToUserField(zval* value, 
-                                     bool repeated,
-                                     int array_size,
-                                     google::protobuf::FieldDescriptor::Type sofa_type, 
-                                     const google::protobuf::Message* sofa_msg, 
-                                     const google::protobuf::FieldDescriptor* field, 
-                                     const google::protobuf::Reflection* reflection) 
+                                     const google::protobuf::Message* sofa_msg,
+                                     const google::protobuf::FieldDescriptor* field,
+                                     const google::protobuf::Reflection* reflection)
 {
     if (!field || ! reflection) 
     {
         SLOG(ERROR, "transform to user field failed for sofa message not initialized");
         return -1;
+    }
+    google::protobuf::FieldDescriptor::Type sofa_type = field->type();
+    const bool repeated = field->is_repeated();
+    const bool required = field->is_required();
+    int array_size;
+    if (repeated)
+    {
+        array_size = reflection->FieldSize(*sofa_msg, field);
     }
     switch (sofa_type)
     {
@@ -523,7 +581,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {
                 zval* user_item;
@@ -545,7 +603,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {   
                 zval* user_item;
@@ -567,7 +625,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {   
                 zval* user_item;
@@ -589,7 +647,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {
                 zval* user_item;
@@ -611,7 +669,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated)
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {
                 zval* user_item;
@@ -633,7 +691,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {
                 zval* user_item;
@@ -655,7 +713,7 @@ int PhpRpcServiceStubImpl::ToUserField(zval* value,
     {
         if (repeated) 
         {
-            array_init(value);
+            //array_init(value);
             for (int i = 0; i < array_size; ++i) 
             {
                 zval* user_item;
@@ -755,22 +813,73 @@ int PhpRpcServiceStubImpl::CreateMessageDescriptor(zval* message,
 }
 
 int PhpRpcServiceStubImpl::SofaTransformToPhp(zval* user_msg,
-                                            const google::protobuf::Message* sofa_msg) 
+                                            google::protobuf::Message* sofa_msg) 
 {
-    std::string response_str;
-    sofa_msg->SerializeToString(&response_str);
-    zval method;
-    zval arg;
-    zval ret;
-    zval* args;
-    INIT_ZVAL(method);
-    ZVAL_STRINGL(&method, PARSE_FUNCTION.c_str(), PARSE_FUNCTION.length(), 0);
-    INIT_ZVAL(arg);
-    ZVAL_STRINGL(&arg, response_str.c_str(), response_str.length(), 0);
-    args = &arg;
-    if (call_user_function(NULL, &user_msg, &method, &ret, 1, &args TSRMLS_CC) == FAILURE)
+    const google::protobuf::Reflection* reflection = sofa_msg->GetReflection();
+    const google::protobuf::Descriptor* message_descriptor = sofa_msg->GetDescriptor();
+
+    if (!message_descriptor || !reflection) 
     {
+        SLOG(ERROR, "transform to php message failed for sofa message is not initialized");
         return -1;
+    }
+    zval* field_descriptors = GetFieldDescriptors(user_msg);
+    if (!field_descriptors)
+    {
+        SLOG(ERROR, "transform to php message failed for field_descriptor is null");
+        return -1;
+    }
+    zval** values = GetUserValues(user_msg);
+    zval* value = NULL;
+    zval** old_value = NULL;
+    for (int i = 0; i < message_descriptor->field_count(); ++i)
+    {
+        const google::protobuf::FieldDescriptor* field = message_descriptor->field(i);
+        bool required = field->is_required();
+        bool repeated = field->is_repeated();
+        const google::protobuf::FieldDescriptor::Type field_type = field->type(); 
+        if (zend_hash_index_find(Z_ARRVAL_PP(values), i + 1, (void **)&old_value) == FAILURE) 
+        {
+            return -1;
+        }
+        if (Z_TYPE_PP(old_value) == IS_ARRAY)
+        {
+            ALLOC_INIT_ZVAL(value);
+            add_next_index_zval(*old_value, value);
+        }
+        else
+        {
+            value = *old_value;
+        }
+
+        if (field_type != google::protobuf::FieldDescriptor::TYPE_MESSAGE)
+        {
+            if (ToUserField(value, sofa_msg, field, reflection) != 0)
+            {
+                SLOG(ERROR, "transform to sofa field failed");
+                return -1;
+            }
+        }
+
+        if (field_type == google::protobuf::FieldDescriptor::TYPE_MESSAGE)
+        {
+            if (repeated)
+            {
+                for (int i = 0; i < reflection->FieldSize(*sofa_msg, field); ++i)
+                {
+                    zval* user_item;
+                    google::protobuf::Message* sub_message_item = reflection->MutableRepeatedMessage(sofa_msg, field, i);
+                    SofaTransformToPhp(user_item, sub_message_item);
+                    add_next_index_zval(value, user_item);
+                    zval_ptr_dtor(&user_item);
+                }
+            }
+            else
+            {
+                google::protobuf::Message* sub_message = reflection->MutableMessage(sofa_msg, field);
+                SofaTransformToPhp(value, sub_message);
+            }
+        }
     }
     return 0;
 }
@@ -821,20 +930,20 @@ std::string PhpRpcServiceStubImpl::ErrorText()
     return _cntl->ErrorText();
 }
 
-void PhpRpcServiceStubImpl::RegisterMethod(const std::string& method_name,
+bool PhpRpcServiceStubImpl::RegisterMethod(const std::string& method_name,
                                           zval* request,
                                           zval* response)
 {
     if (!_service_proto)
     {
         SLOG(FATAL, "init method failed for service not initialized");
-        return;
+        return false;
     }
     MethodBoard::iterator it = _method_board->find(method_name.data());
     if (_method_board->end() != it) 
     {
         SLOG(NOTICE, "method %s already registered", method_name.data());
-        return;
+        return false;
     }
     google::protobuf::MethodDescriptorProto* method_proto = _service_proto->add_method();
     if (!method_proto)
@@ -842,7 +951,7 @@ void PhpRpcServiceStubImpl::RegisterMethod(const std::string& method_name,
         SLOG(FATAL, "register method %s to service %s failed", \
             method_name.data(),
             _service_name.c_str()); 
-        return;
+        return false;
     }
     method_proto->set_name(method_name.data());
     std::string request_type, response_type;
@@ -855,7 +964,7 @@ void PhpRpcServiceStubImpl::RegisterMethod(const std::string& method_name,
     {
         SLOG(FATAL, "init method %s failed for create message %s failed", \
             method_name.data(), request_type.c_str());
-        return;
+        return false;
     }
 
     ret = CreateMessage(response, response_type, _file_proto);
@@ -863,18 +972,19 @@ void PhpRpcServiceStubImpl::RegisterMethod(const std::string& method_name,
     {
         SLOG(FATAL, "init method %s failed for create message %s failed", \
             method_name.data(), response_type.c_str());
-        return;
+        return false;
     }
     MethodWrapper* mwrapper = new MethodWrapper();
     _method_board->insert(std::make_pair(method_name.data(), mwrapper));
+    return true;
 }
 
-void PhpRpcServiceStubImpl::InitMethods()
+bool PhpRpcServiceStubImpl::InitMethods()
 {
     _file_descriptor = _pool->BuildFile(*_file_proto);
     if (!_file_descriptor) {
         SLOG(FATAL, "init methods failed for build rpc descriptor failed");
-        return;
+        return false;
     }
     const google::protobuf::ServiceDescriptor* service_descriptor 
         = _file_descriptor->FindServiceByName(_service_name);
@@ -882,7 +992,7 @@ void PhpRpcServiceStubImpl::InitMethods()
     {
         SLOG(FATAL, "init methods failed for service %s not found in file proto", \
             _service_name.c_str());
-        return;
+        return false;
     }
     MethodBoard::iterator it = _method_board->begin();
     MethodBoard::iterator end = _method_board->end();
@@ -895,7 +1005,7 @@ void PhpRpcServiceStubImpl::InitMethods()
         if (!method_descriptor) 
         {
             SLOG(ERROR, "init methods failed for method %s not found", method_name.c_str());
-            return;
+            return false;
         }
         const google::protobuf::Descriptor* request = method_descriptor->input_type();
         const google::protobuf::Descriptor* response = method_descriptor->output_type();
@@ -903,6 +1013,7 @@ void PhpRpcServiceStubImpl::InitMethods()
         mwrapper->_request = request;
         mwrapper->_response = response;
     }
+    return true;
 }
 
 void PhpRpcServiceStubImpl::CallMethod(const std::string& method_name,
@@ -920,8 +1031,7 @@ void PhpRpcServiceStubImpl::CallMethod(const std::string& method_name,
     if (!mwrapper || !mwrapper->_method \
                   || !mwrapper->_response) 
     {
-        SLOG(FATAL, "PhpRpcServiceStub call method failed for method %s not \
-            initialized", method_name.data());
+        SLOG(FATAL, "PhpRpcServiceStub call method failed for method %s not initialized", method_name.data());
         return;
     }
     google::protobuf::DynamicMessageFactory factory(_pool);
