@@ -57,7 +57,7 @@ public:
             RpcEndpoint* endpoint);
 
 private:
-    // Get stream for "remote_endpoint".  Return null ptr if failed. 
+    // Get stream for "remote_endpoint".  Return null ptr if failed.
     RpcClientStreamPtr FindOrCreateStream(const RpcEndpoint& remote_endpoint);
 
     void OnClosed(const RpcClientStreamPtr& stream);

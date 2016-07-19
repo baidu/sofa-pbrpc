@@ -24,11 +24,14 @@ message RpcMeta {
   required uint64 sequence_id = 2;
 
   /////////////////////////////////////////////////////
-  // The following fields are used only for response.
+  // The following fields are used only for request.
 
   // Method full name.
   // For example: "test.HelloService.GreetMethod"
   optional string method = 100;
+
+  // Server timeout in milli-seconds.
+  optional int64 server_timeout = 101;
 
   /////////////////////////////////////////////////////
   // The following fields are used only for response.

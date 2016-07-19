@@ -38,6 +38,10 @@ LDFLAGS += -L$(ZLIB_DIR)/lib -lpthread -lz
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
     LDFLAGS += -lrt
+else
+    ifeq ($(UNAME_S),Darwin)
+		LDFLAGS += -undefined dynamic_lookup
+    endif
 endif
 
 PROTO_SRC=echo_service.proto

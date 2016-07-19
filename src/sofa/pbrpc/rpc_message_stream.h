@@ -389,6 +389,16 @@ private:
 
     // Get an item from the pending queue.
     //
+    // This method should only be called when send token is acquired,
+    // so will never be invoked concurrently.
+    //
+    // The "_swapped_calls" is accessed only by this method, so we need not
+    // to protect it in lock.
+    //
+    // But the "_pending_calls" is accessed also by put_into_pending_queue(),
+    // which is called by async_send_message(), so we need to protect it in
+    // "_pending_lock".
+    //
     // @return false if the pending queue is empty.
     bool get_from_pending_queue(
             ReadBufferPtr* message,
@@ -540,9 +550,39 @@ private:
             }
             else
             {
-                // empty pending queue
+                // get pending request failed, release token
                 atomic_comp_swap(&_send_token, TOKEN_FREE, TOKEN_LOCK);
-                break;
+
+                // need to check again to avoid this case:
+                //   ----------------------------------------------------------------------------
+                //           | Thread#1                           | Thread#2
+                //   ----------------------------------------------------------------------------
+                //   Time@1  | on_write_some()                    |
+                //   Time@2  | try_start_send()                   |
+                //   Time@3  | acquire token -> succeed           |
+                //   Time@4  | get_from_pending_queue() -> failed |
+                //   Time@5  |                                    | async_send_message()
+                //   Time@6  |                                    | put_into_pending_queue()
+                //   Time@7  |                                    | try_start_send()
+                //   Time@8  |                                    | acquire token -> failed
+                //   Time@9  |                                    | [finish]
+                //   Time@10 | release token                      |
+                //   Time@11 | [finish]                           |
+                //   ----------------------------------------------------------------------------
+                // In this case, the pending request added at Time@6 will not be sent immediately.
+                //
+                // How to prevent the case? check "_pending_message_count":
+                // - if check of "_pending_message_count == 0" is executed before Time@6, then the
+                //   "_pending_message_count" must be 0, and the loop break. As the token has been
+                //   release before, the operation of acquiring token at Time@8 will be succeed.
+                // - else, if check of "_pending_message_count == 0" is executed after Time@6, then
+                //   the "_pending_message_count" must not be 0, and the loop will go on to another
+                //   round, which will trigger the sending.
+                //
+                // And here we need not lock "_pending_lock" because the "_pending_message_count" is
+                // an volatile value.
+                if (_pending_message_count == 0)
+                    break;
             }
         }
         return started;

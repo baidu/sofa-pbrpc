@@ -10,6 +10,10 @@
 #include <cstdio> // for snprintf()
 #include <cstring> // for memset()
 
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
 
@@ -31,6 +35,7 @@ namespace sofa {
 namespace pbrpc {
 
 using boost::asio::ip::tcp;
+using namespace boost::asio;
 
 class RpcByteStream : public sofa::pbrpc::enable_shared_from_this<RpcByteStream>
 {
@@ -40,7 +45,9 @@ public:
         , _remote_endpoint(endpoint)
         , _ticks(0)
         , _last_rw_ticks(0)
+        , _timer(io_service)
         , _socket(io_service)
+        , _connect_timeout(-1)
         , _status(STATUS_INIT)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcByteStream);
@@ -79,6 +86,19 @@ public:
         }
     }
 
+    void on_connect_timeout(const boost::system::error_code& error) 
+    {
+        if (_status != STATUS_CONNECTING) 
+        {
+            return;
+        }
+        if (error == boost::asio::error::operation_aborted) 
+        {
+            return;
+        }
+        close("connect timeout");
+    }
+
     // Connect the channel.  Used by client.
     void async_connect()
     {
@@ -89,6 +109,11 @@ public:
         _status = STATUS_CONNECTING;
         _socket.async_connect(_remote_endpoint,
                 boost::bind(&RpcByteStream::on_connect, shared_from_this(), _1));
+        if (_connect_timeout > 0) 
+        {
+            _timer.expires_from_now(boost::posix_time::milliseconds(_connect_timeout));
+            _timer.async_wait(boost::bind(&RpcByteStream::on_connect_timeout, shared_from_this(), _1));
+        }
     }
 
     // Update remote endpoint from socket.  Used by server.
@@ -221,6 +246,16 @@ public:
         return _last_rw_ticks;
     }
 
+    void set_connect_timeout(int64 timeout) 
+    {
+        _connect_timeout = timeout;
+    }
+
+    int64 connect_timeout() 
+    {
+        return _connect_timeout;
+    }
+
     // Trigger receiving operator.
     // @return true if suceessfully triggered
     virtual bool trigger_receive() = 0;
@@ -272,6 +307,12 @@ private:
     void on_connect(const boost::system::error_code& error)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
+
+        //Maybe already timeout
+        if (_status != STATUS_CONNECTING) 
+        {
+            return;
+        }
 
         if (error)
         {
@@ -338,6 +379,8 @@ private:
 #endif
 
         _status = STATUS_CONNECTED;
+        _timer.cancel();
+
         trigger_receive();
         trigger_send();
     }
@@ -351,7 +394,9 @@ protected:
     volatile int64 _last_rw_ticks;
 
 private:
+    deadline_timer _timer;
     tcp::socket _socket;
+    int64 _connect_timeout;
 
     enum {
         STATUS_INIT       = 0,

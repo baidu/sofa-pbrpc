@@ -18,6 +18,15 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #-----------------------------------------------
 
 #-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
+#   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
+#   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
+#
+CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
+#-----------------------------------------------
+
+#-----------------------------------------------
 # !!! Do not change the following lines !!!
 #-----------------------------------------------
 
@@ -44,7 +53,7 @@ PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/cl
 	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
 	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
 	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h src/sofa/pbrpc/http.h \
-	src/sofa/pbrpc/buffer.h src/sofa/pbrpc/buf_handle.h \
+	src/sofa/pbrpc/buffer.h src/sofa/pbrpc/buf_handle.h src/sofa/pbrpc/profiling_linker.h \
 	$(PROTO) $(PROTO_HEADER)
 
 #-----------------------------------------------
