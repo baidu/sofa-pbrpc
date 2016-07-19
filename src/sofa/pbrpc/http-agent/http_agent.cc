@@ -8,7 +8,13 @@
 #include <google/protobuf/text_format.h>
 
 #include <sofa/pbrpc/http-agent/http_agent.h>
-#include <sofa/pbrpc/builtin_service.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/builtin_service.pb.h>
+#else
+#include <sofa/pbrpc/proto2/builtin_service.pb.h>
+#endif
+
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/pbjson.h>
 #include <sofa/pbrpc/string_utils.h>

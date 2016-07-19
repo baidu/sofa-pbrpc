@@ -1,6 +1,9 @@
+syntax = "proto2";
+
 package sofa.pbrpc.test;
 
 option cc_generic_services = true;
+option java_generic_services = true;
 
 message EchoRequest {
     required string message = 1;

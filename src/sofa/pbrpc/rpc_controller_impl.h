@@ -17,7 +17,13 @@
 #include <sofa/pbrpc/rpc_controller.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
 #include <sofa/pbrpc/rpc_error_code.h>
-#include <sofa/pbrpc/rpc_option.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_option.pb.h>
+#else
+#include <sofa/pbrpc/proto2/rpc_option.pb.h>
+#endif
+
 #include <sofa/pbrpc/wait_event.h>
 
 namespace sofa {
@@ -239,8 +245,10 @@ public:
                 method->options().GetExtension(method_timeout) :
                 method->service()->options().GetExtension(service_timeout);
             if (timeout_in_ms <= 0) {
-                // Just a protection, it shouldn't happen.
-                timeout_in_ms = 1;
+                // In protobuf v3 default option is not support.
+                // For numeric types, the default value is zero.
+                // set timeout_in_ms to 10 seconds when service_timeout equal to zero.
+                timeout_in_ms = 10000;
             }
             _auto_options.timeout = timeout_in_ms;
         }

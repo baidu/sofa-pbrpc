@@ -28,6 +28,8 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 include ../../depends.mk
 include depends.mk
 
+PROTO_VERSION=proto2
+
 CXX=g++
 INCPATH=-I. -I$(SOFA_PBRPC)/include -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
@@ -45,7 +47,15 @@ else
     endif
 endif
 
-PROTO_SRC=echo_service.proto
+#-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
+ifeq ($(PROTO_VERSION),proto3)
+    CXXFLAGS += -DSOFA_PBRPC_USE_PROTO3
+endif
+#-----------------------------------------------
+
+PROTO_SRC=$(PROTO_VERSION)/echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=$(SOFA_PBRPC)/include --proto_path=$(PROTOBUF_DIR)/include
 
@@ -66,7 +76,7 @@ check_depends:
 	@if [ ! -f "$(GTEST_DIR)/src/gtest-all.cc" ]; then echo "ERROR: need gtest"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) *.o *.pb.* libgtest.a
+	@rm -f $(BIN) $(PROTO_OBJ) *.o $(PROTO_VERSION)/*.pb.* libgtest.a
 
 rebuild: clean all
 

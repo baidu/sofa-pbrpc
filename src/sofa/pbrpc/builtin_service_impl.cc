@@ -83,6 +83,17 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
         return;
     }
     const ::sofa::pbrpc::builtin::ServerOptions& request_options = request->options();
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+    if (request_options.max_connection_count() == 0
+            && request_options.keep_alive_time() == 0
+            && request_options.max_pending_buffer_size() == 0
+            && request_options.max_throughput_in() == 0
+            && request_options.max_throughput_out() == 0) {
+        controller->SetFailed("no option need to update");
+        done->Run();
+        return;
+    }
+#else
     if (!request_options.has_max_connection_count()
             && !request_options.has_keep_alive_time()
             && !request_options.has_max_pending_buffer_size()
@@ -92,6 +103,7 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
         done->Run();
         return;
     }
+#endif
     RpcServerImplPtr server = _rpc_server.lock();
     if (!server) {
         controller->SetFailed("server not exist");
@@ -99,6 +111,23 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
         return;
     }
     RpcServerOptions options = server->GetOptions();
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+    if (request_options.max_connection_count() != 0) {
+        options.max_connection_count = request_options.max_connection_count();
+    }
+    if (request_options.keep_alive_time() != 0) {
+        options.keep_alive_time = request_options.keep_alive_time();
+    }
+    if (request_options.max_pending_buffer_size() != 0) {
+        options.max_pending_buffer_size = request_options.max_pending_buffer_size();
+    }
+    if (request_options.max_throughput_in() != 0) {
+        options.max_throughput_in = request_options.max_throughput_in();
+    }
+    if (request_options.max_throughput_out() != 0) {
+        options.max_throughput_out = request_options.max_throughput_out();
+    }
+#else
     if (request_options.has_max_connection_count()) {
         options.max_connection_count = request_options.max_connection_count();
     }
@@ -114,6 +143,8 @@ void BuiltinServiceImpl::UpdateOptions(::google::protobuf::RpcController* contro
     if (request_options.has_max_throughput_out()) {
         options.max_throughput_out = request_options.max_throughput_out();
     }
+#endif
+
 #if defined( LOG )
     LOG(INFO) << "UpdateOptions(): update by builtin service";
 #else

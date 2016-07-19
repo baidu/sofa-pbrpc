@@ -32,7 +32,7 @@ class BlockCompressionInputStream : public AbstractCompressedInputStream {
   bool Next(const void** data, int* size);
   void BackUp(int count);
   bool Skip(int count);
-  int64_t ByteCount() const { return _byte_count; }
+  int64 ByteCount() const { return _byte_count; }
   bool ExpectAtEnd() { return true; }
 
  protected:
@@ -62,7 +62,7 @@ class BlockCompressionOutputStream : public AbstractCompressedOutputStream {
   
   bool Next(void** data, int* size);
   void BackUp(int count);
-  int64_t ByteCount() const { return _byte_count; };
+  int64 ByteCount() const { return _byte_count; };
 
   bool Flush();
   bool Close() { return Flush(); }

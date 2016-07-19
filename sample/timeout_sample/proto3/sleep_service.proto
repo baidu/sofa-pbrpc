@@ -1,15 +1,17 @@
-import "sofa/pbrpc/rpc_option.proto";
+syntax = "proto3";
+
+import "sofa/pbrpc/proto3/rpc_option.proto";
 
 package sofa.pbrpc.test;
 
 option cc_generic_services = true;
 
 message SleepRequest {
-    required int32 sleep_time = 1; // in seconds
+    int32 sleep_time = 1; // in seconds
 }
 
 message SleepResponse {
-    required string message = 1;
+    string message = 1;
 }
 
 service SleepServer {

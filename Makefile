@@ -22,6 +22,7 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
 #   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
 #   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
 #
 CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 #-----------------------------------------------
@@ -32,10 +33,12 @@ CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 
 include depends.mk
 
+PROTO_VERSION=proto2
+
 LIB=libsofa-pbrpc.a
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
-PROTO=$(wildcard src/sofa/pbrpc/*.proto)
+PROTO=$(wildcard src/sofa/pbrpc/$(PROTO_VERSION)/*.proto)
 PROTO_SRC=$(patsubst %.proto,%.pb.cc,$(PROTO))
 PROTO_HEADER=$(patsubst %.proto,%.pb.h,$(PROTO))
 PROTO_OBJ=$(patsubst %.cc,%.o,$(PROTO_SRC))
@@ -53,8 +56,7 @@ PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/cl
 	src/sofa/pbrpc/locks.h src/sofa/pbrpc/mutex_lock.h src/sofa/pbrpc/spin_lock.h \
 	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
 	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h src/sofa/pbrpc/http.h \
-	src/sofa/pbrpc/buffer.h src/sofa/pbrpc/buf_handle.h src/sofa/pbrpc/profiling_linker.h \
-	$(PROTO) $(PROTO_HEADER)
+	src/sofa/pbrpc/buffer.h src/sofa/pbrpc/buf_handle.h src/sofa/pbrpc/profiling_linker.h
 
 #-----------------------------------------------
 ifeq ($(OS),Windows_NT)
@@ -73,6 +75,9 @@ else
     endif
 endif
 
+ifeq ($(PROTO_VERSION), proto3)
+    CXXFLAGS += -DSOFA_PBRPC_USE_PROTO3
+endif
 #-----------------------------------------------
 
 CXX=g++
@@ -124,6 +129,9 @@ install: $(LIB) $(BIN)
 	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
 	cp src/sofa/pbrpc/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/$(PROTO_VERSION)
+	cp src/sofa/pbrpc/$(PROTO_VERSION)/*.proto $(PREFIX)/include/sofa/pbrpc/$(PROTO_VERSION)
+	cp src/sofa/pbrpc/$(PROTO_VERSION)/*.pb.h $(PREFIX)/include/sofa/pbrpc/$(PROTO_VERSION)
 	mkdir -p $(PREFIX)/lib
 	cp $(LIB) $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/bin

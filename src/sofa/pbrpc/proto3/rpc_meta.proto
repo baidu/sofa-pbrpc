@@ -1,0 +1,58 @@
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
+syntax = "proto3"; 
+
+import "sofa/pbrpc/proto3/rpc_option.proto";
+
+package sofa.pbrpc;
+
+message RpcMeta {
+
+  /////////////////////////////////////////////////////
+  // The following fields are used both for request and response.
+
+  // Message type.
+  enum Type {
+    REQUEST = 0;
+    RESPONSE = 1;
+  };
+  Type type = 1;
+
+  // Message sequence id.
+  uint64 sequence_id = 2;
+
+  /////////////////////////////////////////////////////
+  // The following fields are used only for request.
+
+  // Method full name.
+  // For example: "test.HelloService.GreetMethod"
+  string method = 100;
+
+  // Server timeout in milli-seconds.
+  int64 server_timeout = 101;
+
+  /////////////////////////////////////////////////////
+  // The following fields are used only for response.
+
+  // Set as true if the call is failed.
+  bool failed = 200;
+
+  // The error code if the call is failed.
+  int32 error_code = 201;
+
+  // The error reason if the call is failed.
+  string reason = 202;
+
+  /////////////////////////////////////////////////////
+  // Compression related fields.
+
+  // Set the request/response compress type.
+  CompressType compress_type = 300;
+
+  // Set the response compress type of user expected.
+  CompressType expected_response_compress_type = 301;
+}

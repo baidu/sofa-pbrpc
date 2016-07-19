@@ -27,6 +27,8 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 
 include ../../depends.mk
 
+PROTO_VERSION=proto2
+
 CXX=g++
 INCPATH=-I. -I$(SOFA_PBRPC)/include -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
@@ -44,7 +46,15 @@ else
     endif
 endif
 
-PROTO_SRC=echo_service.proto
+#-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
+ifeq ($(PROTO_VERSION),proto3)
+    CXXFLAGS += -DSOFA_PBRPC_USE_PROTO3
+endif
+#----------------------------------------------
+
+PROTO_SRC=$(PROTO_VERSION)/echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=$(SOFA_PBRPC)/include --proto_path=$(PROTOBUF_DIR)/include
 
@@ -64,7 +74,7 @@ check_depends:
 	@if [ ! -f "$(SOFA_PBRPC)/lib/libsofa-pbrpc.a" ]; then echo "ERROR: need sofa-pbrpc lib"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) *.o *.pb.*
+	@rm -f $(BIN) $(PROTO_OBJ) *.o $(PROTO_VERSION)/*.pb.*
 
 rebuild: clean all
 

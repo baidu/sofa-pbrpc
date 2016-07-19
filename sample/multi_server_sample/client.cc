@@ -12,7 +12,12 @@
 #include <set>
 
 #include <sofa/pbrpc/pbrpc.h>
-#include "echo_service.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include "proto3/echo_service.pb.h"
+#else
+#include "proto2/echo_service.pb.h"
+#endif
 
 class ReloadableAddressProvider : public sofa::pbrpc::RpcChannel::AddressProvider
 {

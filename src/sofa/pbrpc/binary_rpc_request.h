@@ -9,7 +9,12 @@
 
 #include <sofa/pbrpc/rpc_request.h>
 #include <sofa/pbrpc/rpc_message_header.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_meta.pb.h>
+#else
+#include <sofa/pbrpc/proto2/rpc_meta.pb.h>
+#endif
 
 namespace sofa {
 namespace pbrpc {

@@ -8,7 +8,12 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sofa/pbrpc/pbrpc.h>
-#include "sleep_service.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include "proto3/sleep_service.pb.h"
+#else
+#include "proto2/sleep_service.pb.h"
+#endif
 
 class SleepServerImpl : public sofa::pbrpc::test::SleepServer
 {
