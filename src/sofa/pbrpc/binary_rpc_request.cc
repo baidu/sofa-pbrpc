@@ -79,7 +79,7 @@ void BinaryRpcRequest::ProcessRequest(
 
     google::protobuf::Message* request = service->GetRequestPrototype(method_desc).New();
 #if defined ( SOFA_PBRPC_USE_PROTO3 )
-	CompressType compress_type = _req_meta.compress_type();
+    CompressType compress_type = _req_meta.compress_type();
 #else
     CompressType compress_type =
         _req_meta.has_compress_type() ? _req_meta.compress_type(): CompressTypeNone;
@@ -134,7 +134,7 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetRequestReceivedTime(_received_time);
 
 #if defined ( SOFA_PBRPC_USE_PROTO3 )
-	cntl->SetResponseCompressType(_req_meta.expected_response_compress_type());
+    cntl->SetResponseCompressType(_req_meta.expected_response_compress_type());
 #else
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);

@@ -22,7 +22,8 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
 #   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
 #   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
-#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
+#   SOFA_PBRPC_PROFILING : use Profiling
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the Protocol Buffers language
 #
 CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 #-----------------------------------------------
@@ -32,8 +33,6 @@ CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 #-----------------------------------------------
 
 include depends.mk
-
-PROTO_VERSION=proto2
 
 LIB=libsofa-pbrpc.a
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)

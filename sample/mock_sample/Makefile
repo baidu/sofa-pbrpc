@@ -28,8 +28,6 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 include ../../depends.mk
 include depends.mk
 
-PROTO_VERSION=proto2
-
 CXX=g++
 INCPATH=-I. -I$(SOFA_PBRPC)/include -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
