@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package sofa.pbrpc.test;
+
+message TestData {
+    int32  v1 = 1;
+    int64  v2 = 2;
+    bool   v3 = 3;
+    bytes  v4 = 4;
+    string v5 = 5;
+}
