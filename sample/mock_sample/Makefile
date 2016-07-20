@@ -74,7 +74,7 @@ check_depends:
 	@if [ ! -f "$(GTEST_DIR)/src/gtest-all.cc" ]; then echo "ERROR: need gtest"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) $(PROTO_OBJ) *.o $(PROTO_VERSION)/*.pb.* libgtest.a
+	@rm -f $(BIN) *.o $(PROTO_VERSION)/*.pb.* libgtest.a
 
 rebuild: clean all
 

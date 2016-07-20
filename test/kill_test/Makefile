@@ -72,7 +72,7 @@ check_depends:
 	@if [ ! -f "$(SOFA_PBRPC)/lib/libsofa-pbrpc.a" ]; then echo "ERROR: need sofa-pbrpc lib"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) $(PROTO_OBJ) *.o $(PROTO_VERSION)/*.pb.*
+	@rm -f $(BIN) *.o $(PROTO_VERSION)/*.pb.*
 
 rebuild: clean all
 
