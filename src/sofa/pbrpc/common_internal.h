@@ -21,6 +21,8 @@
 namespace sofa {
 namespace pbrpc {
 
+static const int64 DEFAULT_SERVICE_TIMEOUT = 10000;
+
 class RpcControllerImpl;
 typedef sofa::pbrpc::shared_ptr<RpcControllerImpl> RpcControllerImplPtr;
 typedef sofa::pbrpc::weak_ptr<RpcControllerImpl> RpcControllerImplWPtr;

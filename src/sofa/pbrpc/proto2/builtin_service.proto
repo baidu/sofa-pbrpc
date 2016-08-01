@@ -110,8 +110,8 @@ message ServiceStat {
 }
 
 message StatRequest {
-    optional string service_name = 1 [default = "all"];
-    optional int64 period_seconds = 2 [default = 60]; // expect period in seconds
+    optional string service_name = 1;
+    optional int64 period_seconds = 2; // expect period in seconds
 }
 
 message StatResponse {

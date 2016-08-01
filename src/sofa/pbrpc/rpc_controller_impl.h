@@ -51,13 +51,7 @@ public:
         , _http_path(NULL)
         , _http_query_params(NULL)
         , _http_headers(NULL)
-    {
-        // Initialize the service_timeout to 10 seconds.
-        google::protobuf::ServiceOptions& service_options
-            = const_cast<google::protobuf::ServiceOptions&>(
-                    google::protobuf::ServiceOptions::default_instance());
-        service_options.SetExtension(service_timeout, 10000);
-    }
+    {}
 
     virtual ~RpcControllerImpl() {}
 
@@ -247,22 +241,28 @@ public:
         _method_id = method->full_name();
         if (_user_options.timeout <= 0)
         {
-            int64 timeout_in_ms = method->options().HasExtension(method_timeout) ?
-                method->options().GetExtension(method_timeout) :
-                method->service()->options().GetExtension(service_timeout);
-            if (timeout_in_ms <= 0) {
-                // Just a protection, it shouldn't happen.
-                timeout_in_ms = 1;
+            if (method->options().HasExtension(method_timeout))
+            {
+                _auto_options.timeout = method->options().GetExtension(method_timeout);
             }
-            _auto_options.timeout = timeout_in_ms;
+            else if (method->service()->options().HasExtension(service_timeout))
+            {
+                _auto_options.timeout = method->service()->options().GetExtension(service_timeout);
+            }
+            else
+            {
+                _auto_options.timeout = DEFAULT_SERVICE_TIMEOUT;
+            }
         }
-        if (_user_options.request_compress_type == CompressTypeAuto) {
+        if (_user_options.request_compress_type == CompressTypeAuto)
+        {
             _auto_options.request_compress_type =
                 method->options().HasExtension(request_compress_type) ?
                 method->options().GetExtension(request_compress_type) :
                 CompressTypeNone;
         }
-        if (_user_options.response_compress_type == CompressTypeAuto) {
+        if (_user_options.response_compress_type == CompressTypeAuto)
+        {
             _auto_options.response_compress_type =
                 method->options().HasExtension(response_compress_type) ?
                 method->options().GetExtension(response_compress_type) :
