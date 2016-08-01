@@ -51,7 +51,13 @@ public:
         , _http_path(NULL)
         , _http_query_params(NULL)
         , _http_headers(NULL)
-    {}
+    {
+        // Initialize the service_timeout to 10 seconds.
+        google::protobuf::ServiceOptions& service_options
+            = const_cast<google::protobuf::ServiceOptions&>(
+                    google::protobuf::ServiceOptions::default_instance());
+        service_options.SetExtension(service_timeout, 10000);
+    }
 
     virtual ~RpcControllerImpl() {}
 
@@ -245,10 +251,8 @@ public:
                 method->options().GetExtension(method_timeout) :
                 method->service()->options().GetExtension(service_timeout);
             if (timeout_in_ms <= 0) {
-                // In protobuf v3 default option is not support.
-                // For numeric types, the default value is zero.
-                // set timeout_in_ms to 10 seconds when service_timeout equal to zero.
-                timeout_in_ms = 10000;
+                // Just a protection, it shouldn't happen.
+                timeout_in_ms = 1;
             }
             _auto_options.timeout = timeout_in_ms;
         }
