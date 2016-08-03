@@ -1,19 +1,32 @@
 #ifndef SOFA_PBRPC_PROFILING_LINKER_H
 #define SOFA_PBRPC_PROFILING_LINKER_H
 
-#if defined(SOFA_PBRPC_PROFILING)
+#if defined(SOFA_PBRPC_CPU_PROFILING)
 #include <gperftools/profiler.h>
-#endif // SOFA_PBRPC_PROFILING
+#endif // SOFA_PBRPC_CPU_PROFILING
+
+#if defined(SOFA_PBRPC_HEAP_PROFILING)
+#include <gperftools/heap-profiler.h>
+#endif // SOFA_PBRPC_HEAP_PROFILING
+
+extern bool PROFILING_LINKER_FALSE;
 
 class ProfilingLinker
 {
 public:
     ProfilingLinker()
     {
-#if defined(SOFA_PBRPC_PROFILING)
         // make libprofiler be linked
-        (void)ProfilingIsEnabledForAllThreads();
-#endif // SOFA_PBRPC_PROFILING
+        if (PROFILING_LINKER_FALSE != false)
+        {
+#if defined(SOFA_PBRPC_CPU_PROFILING)
+            ProfilerStart(NULL);
+#endif // SOFA_PBRPC_CPU_PROFILING
+
+#if defined(SOFA_PBRPC_HEAP_PROFILING)
+            HeapProfilerStart(NULL);
+#endif // SOFA_PBRPC_HEAP_PROFILING
+        }
     }
 };
 

@@ -22,6 +22,8 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
 #   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
 #   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
+#   SOFA_PBRPC_CPU_PROFILING : use cpu profiling
+#   SOFA_PBRPC_HEAP_PROFILING : use heap profiling
 #
 CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 #-----------------------------------------------
@@ -79,7 +81,7 @@ CXX=g++
 INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
-LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -lpthread -lz
+LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -pthread -lz
 
 .PHONY: check_depends build rebuild install clean
 

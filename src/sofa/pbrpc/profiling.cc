@@ -8,10 +8,17 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fstream>
+#include <dirent.h>
+#include <set>
 #include <sofa/pbrpc/profiling.h>
 #include <sofa/pbrpc/pprof_perl.h>
 #include <sofa/pbrpc/viz_min_js.h>
 #include <sofa/pbrpc/closure.h>
+#include <sofa/pbrpc/string_utils.h>
+
+bool PROFILING_LINKER_FALSE = false;
+static const std::string CPU_PROFILING_PATH = "/rpc_profiling/cpu/";
+static const std::string HEAP_PROFILING_PATH = "/rpc_profiling/heap/";
 
 namespace sofa {
 namespace pbrpc {
@@ -20,6 +27,8 @@ extern "C"
 {
     int __attribute__((weak)) ProfilerStart(const char* fname);
     void __attribute__((weak)) ProfilerStop();
+    void __attribute__((weak)) HeapProfilerStart(const char* prefix);
+    void __attribute__((weak)) HeapProfilerStop();
 }
 
 pthread_once_t Profiling::_init_once = PTHREAD_ONCE_INIT;
@@ -42,6 +51,23 @@ static bool Mkdir(const std::string& path)
          path.c_str(), strerror(errno));
 #endif
     return false;
+}
+
+static void ListFile(const std::string& path, std::set<std::string>& files)
+{
+    struct dirent* dir_entry;
+    DIR* dir = opendir(path.c_str());
+    if (dir == NULL)
+    {
+        return;
+    }
+    while ((dir_entry = readdir(dir)) != NULL)
+    {
+        if (dir_entry->d_type == DT_REG)
+        {
+            files.insert(dir_entry->d_name);
+        }
+    }
 }
 
 static bool IsFileExist(const std::string& path)
@@ -77,25 +103,47 @@ static std::string exec(const std::string& cmd)
 void Profiling::CpuProfilingFunc()
 {
     // TODO
-    bool ret = Mkdir(_dir.path + "/rpc_profiling");
-    if (ret == false)
+    if (!IsFileExist(_dir.path + CPU_PROFILING_PATH))
     {
-        return;
+        bool ret = Mkdir(_dir.path + CPU_PROFILING_PATH);
+        if (ret == false)
+        {
+            return;
+        }
     }
-    std::string path = _dir.path + "/rpc_profiling/tmp.prof";
+    struct timeval tval;
+    gettimeofday(&tval, NULL);
+    std::string path = _dir.path
+        + CPU_PROFILING_PATH + "tmp."
+        + StringUtils::uint64_to_string(tval.tv_sec)
+        + ".prof";
     ProfilerStart(path.c_str());
     sleep(10);
     ProfilerStop();
-    _is_profiling = false;
+    _is_cpu_profiling = false;
 }
 
 void Profiling::MemoryProfilingFunc()
 {
     // TODO
+    if (!IsFileExist(_dir.path + HEAP_PROFILING_PATH))
+    {
+        bool ret = Mkdir(_dir.path + HEAP_PROFILING_PATH);
+        if (ret == false)
+        {
+            return;
+        }
+    }
+    std::string prefix = _dir.path + HEAP_PROFILING_PATH + "tmp";
+    HeapProfilerStart(prefix.c_str());
+    sleep(5);
+    HeapProfilerStop();
+    _is_mem_profiling = false;
 }
 
 Profiling::Profiling() 
-: _is_profiling(false)
+: _is_cpu_profiling(false)
+    , _is_mem_profiling(false)
     , _is_initialized(false)
 {
     _profiling_thread_group.reset(new ThreadGroupImpl(
@@ -134,6 +182,10 @@ int Profiling::Init()
     _dir.path = path.substr(0, pos);
     _dir.name = path.substr(pos + 1, path.size());
 
+    if (!Mkdir(_dir.path + "/rpc_profiling"))
+    {
+        return -1;
+    }
     _is_initialized = true;
     return 0;
 }
@@ -148,7 +200,9 @@ Profiling::~Profiling()
 }
 
 std::string Profiling::ProfilingPage(ProfilingType profiling_type, 
-                                     DataType data_type)
+                                     DataType data_type,
+                                     std::string& prof_file,
+                                     std::string& prof_base)
 {
     std::ostringstream oss;
     oss << "<html><h1>Sofa-pbrpc Profiling</h1>";
@@ -162,23 +216,43 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
         }
     }
 
-    switch (profiling_type) 
+    switch (profiling_type)
     {
         case CPU:
             if (data_type == GRAPH)
             {
                 oss.str("");
                 oss.clear();
-                std::string dot = 
-                    exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
-                         + _dir.path + "/"+ _dir.name + " " + _dir.path 
-                         + "/rpc_profiling/tmp.prof");
+                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
+                         + _dir.path + "/" + _dir.name + " " + _dir.path 
+                         + CPU_PROFILING_PATH + prof_file;
+                if (!prof_base.empty())
+                {
+                    cmd.append(" --base " + _dir.path + CPU_PROFILING_PATH + prof_base);
+                }
+                std::string dot = exec(cmd);
                 oss << dot;
                 return oss.str();
             }
+            else if (data_type == CLEANUP)
+            {
+                std::set<std::string> prof_files;
+                ListFile(_dir.path + CPU_PROFILING_PATH, prof_files);
+                for (std::set<std::string>::iterator it = prof_files.begin();
+                        it != prof_files.end(); ++it)
+                {
+                    std::string profiling_path(_dir.path + CPU_PROFILING_PATH + *it);
+                    ::remove(profiling_path.c_str());
+                }
+                oss << ShowResult(profiling_type, prof_file, prof_base); 
+            }
+            else if (data_type == DIFF)
+            {
+                oss << ShowResult(profiling_type, prof_file, prof_base); 
+            }
             else
             {
-                Status ret = DoCpuProfiling(data_type);
+                Status ret = DoCpuProfiling(data_type, prof_file);
                 if (ret == DISABLE)
                 {
                     oss << "<h2>To enable profiling, please add compile and link options when compiling binary:</h2>";
@@ -188,7 +262,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                     oss << "<li>For Ubuntu: sudo apt-get install libgoogle-perftools-dev</li>";
                     oss << "<li>For CentOS: sudo yum install google-perftools-devel</li>";
                     oss << "</ul>";
-                    oss << "<li>Add '-DSOFA_PBRPC_PROFILING' to CXXFLAGS</li>";
+                    oss << "<li>Add '-DSOFA_PBRPC_CPU_PROFILING' to CXXFLAGS</li>";
                     oss << "<li>Add '-lprofiler' to LDFLAGS</li>";
                     oss << "</ol>";
                 }
@@ -200,7 +274,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 else if (ret == FINISHED)
                 {
-                    oss << ShowResult();
+                    oss << ShowResult(profiling_type, prof_file, prof_base);
                 }
                 else
                 {
@@ -212,7 +286,70 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             break;
         case MEMORY:
             // TODO
-            oss << "<h2>Memory profiling not supported now</h2>";
+            if (data_type == GRAPH)
+            {
+                oss.str("");
+                oss.clear();
+                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
+                         + _dir.path + "/" + _dir.name + " " + _dir.path 
+                         + HEAP_PROFILING_PATH + prof_file;
+                if (!prof_base.empty())
+                {
+                    cmd.append(" --base " + _dir.path + HEAP_PROFILING_PATH + prof_base);
+                }
+                std::string dot = exec(cmd);
+                oss << dot;
+                return oss.str();
+            }
+            else if (data_type == CLEANUP)
+            {
+                std::set<std::string> prof_files;
+                ListFile(_dir.path + HEAP_PROFILING_PATH, prof_files);
+                for (std::set<std::string>::iterator it = prof_files.begin();
+                        it != prof_files.end(); ++it)
+                {
+                    std::string profiling_path(_dir.path + HEAP_PROFILING_PATH + *it);
+                    ::remove(profiling_path.c_str());
+                }
+                oss << ShowResult(profiling_type, prof_file, prof_base); 
+            }
+            else if (data_type == DIFF)
+            {
+                oss << ShowResult(profiling_type, prof_file, prof_base); 
+            }
+            else
+            {
+                Status ret = DoMemoryProfiling(data_type, prof_file);
+                if (ret == DISABLE)
+                {
+                    oss << "<h2>To enable memory profiling, please add compile and link options when compiling binary:</h2>";
+                    oss << "<ol>";
+                    oss << "<li>Install gperftools:</li>";
+                    oss << "<ul>";
+                    oss << "<li>For Ubuntu: sudo apt-get install libgoogle-perftools-dev</li>";
+                    oss << "<li>For CentOS: sudo yum install google-perftools-devel</li>";
+                    oss << "</ul>";
+                    oss << "<li>Add '-DSOFA_PBRPC_HEAP_PROFILING' to CXXFLAGS</li>";
+                    oss << "<li>Add '-ltcmalloc_and_profiler' to LDFLAGS</li>";
+                    oss << "</ol>";
+                }
+                else if (ret == PROFILING)
+                {
+                    oss << "<h2>Profiling is in processing, please wait ...</h2>";
+                    oss << "<script>setTimeout(function(){"
+                           "window.location.href='/profiling?memory=page';}, 1000);</script>";
+                }
+                else if (ret == FINISHED)
+                {
+                    oss << ShowResult(profiling_type, prof_file, prof_base);
+                }
+                else
+                {
+                    oss << "<h2>Profiling is starting, please wait ...</h2>";
+                    oss << "<script>setTimeout(function(){"
+                           "window.location.href='/profiling?memory=page';}, 1000);</script>";
+                }
+            }
             break;
         default:
             oss << "<div>";
@@ -226,30 +363,27 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
     return oss.str();
 }
 
-Profiling::Status Profiling::DoCpuProfiling(DataType data_type)
+Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& prof_file)
 {
     if (ProfilerStart == NULL)
     {
         return DISABLE;
     }
 
-    if (_is_profiling == true)
+    if (_is_cpu_profiling == true)
     {
         return PROFILING;
     }
 
-    if (data_type == NEW_GRAPH)
-    {
-        std::string profiling_path(_dir.path + "/rpc_profiling/tmp.prof");
-        ::remove(profiling_path.c_str());
-    }
+    std::set<std::string> prof_files;
+    ListFile(_dir.path + CPU_PROFILING_PATH, prof_files);
 
-    if (IsFileExist(_dir.path + "/rpc_profiling/tmp.prof"))
+    if (prof_file == "default" && !prof_files.empty() && data_type != NEW_GRAPH)
     {
+        prof_file = *(prof_files.rbegin());
         return FINISHED;
     }
-
-    _is_profiling = true;
+    _is_cpu_profiling = true;
     google::protobuf::Closure* done = 
         sofa::pbrpc::NewClosure(Profiling::Instance(), 
                                 &Profiling::CpuProfilingFunc);
@@ -257,7 +391,8 @@ Profiling::Status Profiling::DoCpuProfiling(DataType data_type)
     return OK;
 }
 
-std::string Profiling::ShowResult()
+std::string Profiling::ShowResult(ProfilingType profiling_type, 
+        const std::string& prof_file, const std::string& prof_base)
 {
     std::ostringstream oss;
     std::string path = _dir.path + "/rpc_profiling/pprof.perl";
@@ -268,20 +403,98 @@ std::string Profiling::ShowResult()
         ofs.close();
     }
 
+    std::string prof_type;
+    std::string prof_path;
+    if (profiling_type == CPU)
+    {
+        prof_type = "cpu";
+        prof_path = _dir.path + CPU_PROFILING_PATH;
+    }
+    else if (profiling_type == MEMORY)
+    {
+        prof_type = "memory";
+        prof_path = _dir.path + HEAP_PROFILING_PATH;
+    }
+    else
+    {
+        prof_type = "";
+    }
+
+    std::set<std::string> prof_files;
+    ListFile(prof_path, prof_files);
+
     oss << "<head>";
     oss << "<script src='http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js'></script>";
     oss << "<script>";
     oss << viz_min_js;
     oss << "</script>";
+    oss << "<script type=\"text/javascript\">\n";
+    oss << "function onProfChanged(obj) {\n";
+    oss << "  window.location.href = "
+        << "'/profiling?' + obj.title + '=page&prof=' + obj.value;\n";
+    oss << "}\n";
+    oss << "function onDiffChanged(obj) {\n";
+    oss << "  var prof_file = document.getElementById('view_" << prof_type << "').value;";
+    oss << "  window.location.href = " 
+        << "'/profiling?' + obj.title + '=diff&prof=' + prof_file + '&base=' + obj.value;\n";
+    oss << "}\n";
+    oss << "</script>";
     oss << "</head>";
 
-    oss << "<div><a href='/profiling?cpu=newgraph'>start new cpu profiling</a></div>";
+    oss << "<div><a href='/profiling?" << prof_type 
+        << "=newgraph'>start new " << prof_type << " profiling</a></div>";
+
+    oss << "<div><a href='/profiling?" << prof_type 
+        << "=cleanup'>remove all " << prof_type << " profiling</a></div>";
+
     oss << "<div>exec path:[" << _dir.path << "]</div>";
     oss << "<div>exec binary:[" << _dir.name << "]</div>";
 
+    oss << "<p></p>";
+    oss << "<pre style='display:inline'>View </pre>";
+    oss << "<select id=view_" << prof_type 
+        << " title=" << prof_type << " onchange='onProfChanged(this)'>";
+    oss << "<option value=''> profiler file</option>";
+    for (std::set<std::string>::iterator it = prof_files.begin(); 
+            it != prof_files.end(); ++it)
+    {
+        oss << "<option value='" << *it << "' "; 
+        if (prof_file == *it)
+        {
+            oss << "selected";
+        }
+        oss << ">" << *it;
+    }
+    oss << "</select>";
+    oss << "<pre style='display:inline'>Diff </pre>";
+    oss << "<select id=diff_" << prof_type 
+        << " title=" << prof_type << " onchange='onDiffChanged(this)'>";
+    oss << "<option value=''> profiler file</option>";
+    for (std::set<std::string>::iterator it = prof_files.begin(); 
+            it != prof_files.end(); ++it)
+    {
+        if (prof_file == *it)
+        {
+            continue;
+        }
+        oss << "<option value='" << *it << "' ";
+        if (prof_base == *it)
+        {
+            oss << "selected";
+        }
+        oss << ">" << *it;
+    }
+    oss << "</select>";
+
     oss << "<div id='result'></div>";
     oss << "<script>";
-    oss << "$.ajax({ type:'GET', url:'/profiling?cpu=graph', success:function(data){";
+    oss << "$.ajax({ type:'GET', url:'/profiling?" << prof_type << "=graph&prof=" << prof_file;
+    if (!prof_base.empty())
+    {
+        oss << "&base=" << prof_base;
+    }
+    oss << "', ";
+    oss << "success:function(data){";
     oss << "$('#result').html(Viz(data, \"svg\"));";
     oss << "}});";
     oss << "</script>";
@@ -289,10 +502,33 @@ std::string Profiling::ShowResult()
     return oss.str();
 }
 
-int Profiling::DoMemoryProfiling()
+Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& prof_file)
 {
     // TODO
-    return 0;
+    if (HeapProfilerStart == NULL)
+    {
+        return DISABLE;
+    }
+
+    if (_is_mem_profiling == true)
+    {
+        return PROFILING;
+    }
+
+    std::set<std::string> prof_files;
+    ListFile(_dir.path + HEAP_PROFILING_PATH, prof_files);
+
+    if (prof_file == "default" && !prof_files.empty() && data_type != NEW_GRAPH)
+    {
+        prof_file = *(prof_files.rbegin());
+        return FINISHED;
+    }
+    _is_mem_profiling = true;
+    google::protobuf::Closure* done = 
+        sofa::pbrpc::NewClosure(Profiling::Instance(), 
+                                &Profiling::MemoryProfilingFunc);
+    _profiling_thread_group->post(done);
+    return OK;
 }
 
 Profiling* Profiling::Instance()
