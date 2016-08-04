@@ -43,12 +43,12 @@ public:
 
     std::string ProfilingPage(ProfilingType profiling_type, 
                               DataType data_type,
-                              std::string& prof_file,
-                              std::string& prof_base);
+                              std::string& profiling_file,
+                              std::string& profiling_base);
 
-    Status DoCpuProfiling(DataType data_type, std::string& prof_file);
+    Status DoCpuProfiling(DataType data_type, std::string& profiling_file);
 
-    Status DoMemoryProfiling(DataType data_type, std::string& prof_file);
+    Status DoMemoryProfiling(DataType data_type, std::string& profiling_file);
 
     static Profiling* Instance();
 
@@ -64,7 +64,7 @@ private:
     void MemoryProfilingFunc();
 
     std::string ShowResult(ProfilingType profiling_type,
-            const std::string& prof_file, const std::string& prof_base);
+            const std::string& profiling_file, const std::string& profiling_base);
 
     static void InitProfiling();
     

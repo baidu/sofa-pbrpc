@@ -376,13 +376,12 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     Profiling::ProfilingType profiling_type = Profiling::DEFAULT;
     Profiling::DataType data_type = Profiling::PAGE;
 
-    std::string prof_file;
-    std::string prof_base;
+    std::string profiling_file;
+    std::string profiling_base;
 
     QueryParams::const_iterator it = query_params->find("cpu");
     if (it != query_params->end())
     {
-        
         profiling_type = Profiling::CPU;
     }
     else
@@ -420,20 +419,21 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     it = query_params->find("prof");
     if (it != query_params->end())
     {
-        prof_file = it->second;
+        profiling_file = it->second;
     }
     else
     {
-        prof_file = "default";
+        profiling_file = "default";
     }
     it = query_params->find("base");
     if (it != query_params->end())
     {
-        prof_base = it->second;
+        profiling_base = it->second;
     }
 
     Profiling* instance = Profiling::Instance();
-    return response.content->Append(instance->ProfilingPage(profiling_type, data_type, prof_file, prof_base));
+    return response.content->Append(instance->ProfilingPage(
+                profiling_type, data_type, profiling_file, profiling_base));
 }
 
 void WebService::PageHeader(std::ostream& out)

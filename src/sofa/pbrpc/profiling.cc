@@ -201,8 +201,8 @@ Profiling::~Profiling()
 
 std::string Profiling::ProfilingPage(ProfilingType profiling_type, 
                                      DataType data_type,
-                                     std::string& prof_file,
-                                     std::string& prof_base)
+                                     std::string& profiling_file,
+                                     std::string& profiling_base)
 {
     std::ostringstream oss;
     oss << "<html><h1>Sofa-pbrpc Profiling</h1>";
@@ -223,12 +223,12 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             {
                 oss.str("");
                 oss.clear();
-                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
-                         + _dir.path + "/" + _dir.name + " " + _dir.path 
-                         + CPU_PROFILING_PATH + prof_file;
-                if (!prof_base.empty())
+                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot "
+                         + _dir.path + "/" + _dir.name + " " + _dir.path
+                         + CPU_PROFILING_PATH + profiling_file;
+                if (!profiling_base.empty())
                 {
-                    cmd.append(" --base " + _dir.path + CPU_PROFILING_PATH + prof_base);
+                    cmd.append(" --base " + _dir.path + CPU_PROFILING_PATH + profiling_base);
                 }
                 std::string dot = exec(cmd);
                 oss << dot;
@@ -236,23 +236,23 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             }
             else if (data_type == CLEANUP)
             {
-                std::set<std::string> prof_files;
-                ListFile(_dir.path + CPU_PROFILING_PATH, prof_files);
-                for (std::set<std::string>::iterator it = prof_files.begin();
-                        it != prof_files.end(); ++it)
+                std::set<std::string> profiling_set;
+                ListFile(_dir.path + CPU_PROFILING_PATH, profiling_set);
+                for (std::set<std::string>::iterator it = profiling_set.begin();
+                        it != profiling_set.end(); ++it)
                 {
                     std::string profiling_path(_dir.path + CPU_PROFILING_PATH + *it);
                     ::remove(profiling_path.c_str());
                 }
-                oss << ShowResult(profiling_type, prof_file, prof_base); 
+                oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
             else if (data_type == DIFF)
             {
-                oss << ShowResult(profiling_type, prof_file, prof_base); 
+                oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
             else
             {
-                Status ret = DoCpuProfiling(data_type, prof_file);
+                Status ret = DoCpuProfiling(data_type, profiling_file);
                 if (ret == DISABLE)
                 {
                     oss << "<h2>To enable profiling, please add compile and link options when compiling binary:</h2>";
@@ -274,7 +274,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 else if (ret == FINISHED)
                 {
-                    oss << ShowResult(profiling_type, prof_file, prof_base);
+                    oss << ShowResult(profiling_type, profiling_file, profiling_base);
                 }
                 else
                 {
@@ -290,12 +290,12 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             {
                 oss.str("");
                 oss.clear();
-                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
-                         + _dir.path + "/" + _dir.name + " " + _dir.path 
-                         + HEAP_PROFILING_PATH + prof_file;
-                if (!prof_base.empty())
+                std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot "
+                         + _dir.path + "/" + _dir.name + " " + _dir.path
+                         + HEAP_PROFILING_PATH + profiling_file;
+                if (!profiling_base.empty())
                 {
-                    cmd.append(" --base " + _dir.path + HEAP_PROFILING_PATH + prof_base);
+                    cmd.append(" --base " + _dir.path + HEAP_PROFILING_PATH + profiling_base);
                 }
                 std::string dot = exec(cmd);
                 oss << dot;
@@ -303,23 +303,23 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             }
             else if (data_type == CLEANUP)
             {
-                std::set<std::string> prof_files;
-                ListFile(_dir.path + HEAP_PROFILING_PATH, prof_files);
-                for (std::set<std::string>::iterator it = prof_files.begin();
-                        it != prof_files.end(); ++it)
+                std::set<std::string> profiling_set;
+                ListFile(_dir.path + HEAP_PROFILING_PATH, profiling_set);
+                for (std::set<std::string>::iterator it = profiling_set.begin();
+                        it != profiling_set.end(); ++it)
                 {
                     std::string profiling_path(_dir.path + HEAP_PROFILING_PATH + *it);
                     ::remove(profiling_path.c_str());
                 }
-                oss << ShowResult(profiling_type, prof_file, prof_base); 
+                oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
             else if (data_type == DIFF)
             {
-                oss << ShowResult(profiling_type, prof_file, prof_base); 
+                oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
             else
             {
-                Status ret = DoMemoryProfiling(data_type, prof_file);
+                Status ret = DoMemoryProfiling(data_type, profiling_file);
                 if (ret == DISABLE)
                 {
                     oss << "<h2>To enable memory profiling, please add compile and link options when compiling binary:</h2>";
@@ -341,7 +341,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 else if (ret == FINISHED)
                 {
-                    oss << ShowResult(profiling_type, prof_file, prof_base);
+                    oss << ShowResult(profiling_type, profiling_file, profiling_base);
                 }
                 else
                 {
@@ -363,7 +363,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
     return oss.str();
 }
 
-Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& prof_file)
+Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& profiling_file)
 {
     if (ProfilerStart == NULL)
     {
@@ -375,12 +375,16 @@ Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& pro
         return PROFILING;
     }
 
-    std::set<std::string> prof_files;
-    ListFile(_dir.path + CPU_PROFILING_PATH, prof_files);
+    std::set<std::string> profiling_set;
+    ListFile(_dir.path + CPU_PROFILING_PATH, profiling_set);
 
-    if (prof_file == "default" && !prof_files.empty() && data_type != NEW_GRAPH)
+    if (profiling_file == "default" && !profiling_set.empty() && data_type != NEW_GRAPH)
     {
-        prof_file = *(prof_files.rbegin());
+        profiling_file = *(profiling_set.rbegin());
+        return FINISHED;
+    }
+    if (IsFileExist(_dir.path + CPU_PROFILING_PATH + profiling_file))
+    {
         return FINISHED;
     }
     _is_cpu_profiling = true;
@@ -391,8 +395,8 @@ Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& pro
     return OK;
 }
 
-std::string Profiling::ShowResult(ProfilingType profiling_type, 
-        const std::string& prof_file, const std::string& prof_base)
+std::string Profiling::ShowResult(ProfilingType profiling_type,
+        const std::string& profiling_file, const std::string& profiling_base)
 {
     std::ostringstream oss;
     std::string path = _dir.path + "/rpc_profiling/pprof.perl";
@@ -403,25 +407,25 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
         ofs.close();
     }
 
-    std::string prof_type;
-    std::string prof_path;
+    std::string profiling_type_str;
+    std::string profiling_path;
     if (profiling_type == CPU)
     {
-        prof_type = "cpu";
-        prof_path = _dir.path + CPU_PROFILING_PATH;
+        profiling_type_str = "cpu";
+        profiling_path = _dir.path + CPU_PROFILING_PATH;
     }
     else if (profiling_type == MEMORY)
     {
-        prof_type = "memory";
-        prof_path = _dir.path + HEAP_PROFILING_PATH;
+        profiling_type_str = "memory";
+        profiling_path = _dir.path + HEAP_PROFILING_PATH;
     }
     else
     {
-        prof_type = "";
+        profiling_type_str = "";
     }
 
-    std::set<std::string> prof_files;
-    ListFile(prof_path, prof_files);
+    std::set<std::string> profiling_set;
+    ListFile(profiling_path, profiling_set);
 
     oss << "<head>";
     oss << "<script src='http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js'></script>";
@@ -429,37 +433,37 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     oss << viz_min_js;
     oss << "</script>";
     oss << "<script type=\"text/javascript\">\n";
-    oss << "function onProfChanged(obj) {\n";
+    oss << "function onViewChanged(obj) {\n";
     oss << "  window.location.href = "
         << "'/profiling?' + obj.title + '=page&prof=' + obj.value;\n";
     oss << "}\n";
     oss << "function onDiffChanged(obj) {\n";
-    oss << "  var prof_file = document.getElementById('view_" << prof_type << "').value;";
-    oss << "  window.location.href = " 
-        << "'/profiling?' + obj.title + '=diff&prof=' + prof_file + '&base=' + obj.value;\n";
+    oss << "  var profiling_file = document.getElementById('view_" << profiling_type_str << "').value;";
+    oss << "  window.location.href = "
+        << "'/profiling?' + obj.title + '=diff&prof=' + profiling_file + '&base=' + obj.value;\n";
     oss << "}\n";
     oss << "</script>";
     oss << "</head>";
 
-    oss << "<div><a href='/profiling?" << prof_type 
-        << "=newgraph'>start new " << prof_type << " profiling</a></div>";
+    oss << "<div><a href='/profiling?" << profiling_type_str
+        << "=newgraph'>start new " << profiling_type_str << " profiling</a></div>";
 
-    oss << "<div><a href='/profiling?" << prof_type 
-        << "=cleanup'>remove all " << prof_type << " profiling</a></div>";
+    oss << "<div><a href='/profiling?" << profiling_type_str
+        << "=cleanup'>remove all " << profiling_type_str << " profiling</a></div>";
 
     oss << "<div>exec path:[" << _dir.path << "]</div>";
     oss << "<div>exec binary:[" << _dir.name << "]</div>";
 
     oss << "<p></p>";
     oss << "<pre style='display:inline'>View </pre>";
-    oss << "<select id=view_" << prof_type 
-        << " title=" << prof_type << " onchange='onProfChanged(this)'>";
+    oss << "<select id=view_" << profiling_type_str
+        << " title=" << profiling_type_str << " onchange='onViewChanged(this)'>";
     oss << "<option value=''> profiler file</option>";
-    for (std::set<std::string>::iterator it = prof_files.begin(); 
-            it != prof_files.end(); ++it)
+    for (std::set<std::string>::iterator it = profiling_set.begin();
+            it != profiling_set.end(); ++it)
     {
-        oss << "<option value='" << *it << "' "; 
-        if (prof_file == *it)
+        oss << "<option value='" << *it << "' ";
+        if (profiling_file == *it)
         {
             oss << "selected";
         }
@@ -467,18 +471,18 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     }
     oss << "</select>";
     oss << "<pre style='display:inline'>Diff </pre>";
-    oss << "<select id=diff_" << prof_type 
-        << " title=" << prof_type << " onchange='onDiffChanged(this)'>";
+    oss << "<select id=diff_" << profiling_type_str
+        << " title=" << profiling_type_str << " onchange='onDiffChanged(this)'>";
     oss << "<option value=''> profiler file</option>";
-    for (std::set<std::string>::iterator it = prof_files.begin(); 
-            it != prof_files.end(); ++it)
+    for (std::set<std::string>::iterator it = profiling_set.begin();
+            it != profiling_set.end(); ++it)
     {
-        if (prof_file == *it)
+        if (profiling_file == *it)
         {
             continue;
         }
         oss << "<option value='" << *it << "' ";
-        if (prof_base == *it)
+        if (profiling_base == *it)
         {
             oss << "selected";
         }
@@ -488,10 +492,10 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
 
     oss << "<div id='result'></div>";
     oss << "<script>";
-    oss << "$.ajax({ type:'GET', url:'/profiling?" << prof_type << "=graph&prof=" << prof_file;
-    if (!prof_base.empty())
+    oss << "$.ajax({ type:'GET', url:'/profiling?" << profiling_type_str << "=graph&prof=" << profiling_file;
+    if (!profiling_base.empty())
     {
-        oss << "&base=" << prof_base;
+        oss << "&base=" << profiling_base;
     }
     oss << "', ";
     oss << "success:function(data){";
@@ -502,7 +506,7 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     return oss.str();
 }
 
-Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& prof_file)
+Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& profiling_file)
 {
     // TODO
     if (HeapProfilerStart == NULL)
@@ -515,12 +519,16 @@ Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& 
         return PROFILING;
     }
 
-    std::set<std::string> prof_files;
-    ListFile(_dir.path + HEAP_PROFILING_PATH, prof_files);
+    std::set<std::string> profiling_set;
+    ListFile(_dir.path + HEAP_PROFILING_PATH, profiling_set);
 
-    if (prof_file == "default" && !prof_files.empty() && data_type != NEW_GRAPH)
+    if (profiling_file == "default" && !profiling_set.empty() && data_type != NEW_GRAPH)
     {
-        prof_file = *(prof_files.rbegin());
+        profiling_file = *(profiling_set.rbegin());
+        return FINISHED;
+    }
+    if (IsFileExist(_dir.path + HEAP_PROFILING_PATH + profiling_file)) 
+    {
         return FINISHED;
     }
     _is_mem_profiling = true;
