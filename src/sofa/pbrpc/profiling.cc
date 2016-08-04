@@ -435,12 +435,12 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     oss << "<script type=\"text/javascript\">\n";
     oss << "function onViewChanged(obj) {\n"
         << "  window.location.href = "
-        << "  '/profiling?' + obj.title + '=page&prof=' + obj.value;\n"
+        << "'/profiling?' + obj.title + '=page&prof=' + obj.value;\n"
         << "}\n";
     oss << "function onDiffChanged(obj) {\n"
         << "  var profiling_file = document.getElementById('view_" << profiling_type_str << "').value;\n"
         << "  window.location.href = "
-        << "  '/profiling?' + obj.title + '=diff&prof=' + profiling_file + '&base=' + obj.value;\n"
+        << "'/profiling?' + obj.title + '=diff&prof=' + profiling_file + '&base=' + obj.value;\n"
         << "}\n";
     oss << "</script>";
     oss << "</head>";
