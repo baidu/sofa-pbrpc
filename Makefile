@@ -22,8 +22,7 @@ OPT ?= -O2        # (A) Production use (optimized mode)
 #   SOFA_PBRPC_ENABLE_DETAILED_LOGGING : print current-time and thread-id in logging header
 #   SOFA_PBRPC_ENABLE_FUNCTION_TRACE : print trace log when enter and leave function
 #   SOFA_PBRPC_USE_SPINLOCK : use SpinLock as FastLock
-#   SOFA_PBRPC_CPU_PROFILING : use cpu profiling
-#   SOFA_PBRPC_HEAP_PROFILING : use heap profiling
+#   SOFA_PBRPC_PROFILING : use profiling
 #
 CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 #-----------------------------------------------

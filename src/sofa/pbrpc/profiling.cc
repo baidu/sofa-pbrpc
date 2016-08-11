@@ -17,18 +17,19 @@
 #include <sofa/pbrpc/string_utils.h>
 
 bool PROFILING_LINKER_FALSE = false;
-static const std::string CPU_PROFILING_PATH = "/rpc_profiling/cpu/";
-static const std::string HEAP_PROFILING_PATH = "/rpc_profiling/heap/";
+
+void __attribute__((weak)) TCMallocGetHeapSample(std::string* writer);
 
 namespace sofa {
 namespace pbrpc {
+
+static const std::string CPU_PROFILING_PATH = "/rpc_profiling/cpu/";
+static const std::string HEAP_PROFILING_PATH = "/rpc_profiling/heap/";
 
 extern "C" 
 {
     int __attribute__((weak)) ProfilerStart(const char* fname);
     void __attribute__((weak)) ProfilerStop();
-    void __attribute__((weak)) HeapProfilerStart(const char* prefix);
-    void __attribute__((weak)) HeapProfilerStop();
 }
 
 pthread_once_t Profiling::_init_once = PTHREAD_ONCE_INIT;
@@ -68,6 +69,22 @@ static void ListFile(const std::string& path, std::set<std::string>& files)
             files.insert(dir_entry->d_name);
         }
     }
+}
+
+static bool WriteFile(const std::string& path, const char* buffer, size_t size)
+{
+    if (buffer == NULL)
+    {
+        return false;
+    }
+    FILE* fp = fopen(path.c_str(), "w");
+    if (fp == NULL)
+    {
+        return false;
+    }
+    fwrite(buffer, size, 1, fp);
+    fclose(fp);
+    return true;
 }
 
 static bool IsFileExist(const std::string& path)
@@ -135,9 +152,25 @@ void Profiling::MemoryProfilingFunc()
         }
     }
     std::string prefix = _dir.path + HEAP_PROFILING_PATH + "tmp";
-    HeapProfilerStart(prefix.c_str());
-    sleep(5);
-    HeapProfilerStop();
+
+    struct timeval tval;
+    gettimeofday(&tval, NULL);
+    std::string path = _dir.path
+        + HEAP_PROFILING_PATH + "tmp."
+        + StringUtils::uint64_to_string(tval.tv_sec)
+        + ".heap";
+
+    std::string writer;
+    TCMallocGetHeapSample(&writer);
+    if (!WriteFile(path, writer.c_str(), writer.size()))
+    {
+#if defined( LOG )
+        LOG(ERROR) << "WriteFile(): write file " << path << "failed";
+#else
+        SLOG(ERROR, "WriteFile(): write file %s failed", path.c_str());
+#endif
+        return;
+    }
     _is_mem_profiling = false;
 }
 
@@ -509,7 +542,7 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
 Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& profiling_file)
 {
     // TODO
-    if (HeapProfilerStart == NULL)
+    if (TCMallocGetHeapSample == NULL)
     {
         return DISABLE;
     }
