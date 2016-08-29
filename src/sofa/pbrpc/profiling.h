@@ -90,4 +90,4 @@ private:
 } // namespace pbrpc
 } // namespace sofa
 
-#endif // _SOFA_PBRPC_WEB_SERVICE_H_
+#endif // _SOFA_PBRPC_PROFILING_H_

@@ -242,56 +242,25 @@ Servlet WebService::FindServlet(const std::string& path)
 {
     // if user register a path "/baidu"
     // then "/baidu/*" matched both
+    std::vector<std::string> path_vec;
     std::string real_path = FormatPath(path);
+    StringUtils::split(real_path, PATH_SPLITTER, &path_vec);
+    std::size_t path_len = real_path.size();
+    ServletMap::iterator map_it;
+    std::vector<std::string>::reverse_iterator vec_it = path_vec.rbegin();
     ServletMapPtr servlets = GetServletPtr();
-
-    if (real_path.empty() || real_path[0] != ROOT_PATH[0])
+    size_t sub_len = 0;
+    for (; vec_it != path_vec.rend(); ++vec_it)
     {
-        return NULL;
+        const std::string& subpath = real_path.substr(0, path_len - sub_len);
+        map_it = servlets->find(subpath);
+        if (map_it != servlets->end())
+        {
+            return map_it->second.first;
+        }
+        sub_len += vec_it->size() + 1;
     }
-
-    if (real_path == ROOT_PATH)
-    {
-        ServletMap::const_iterator find = servlets->find(ROOT_PATH);
-        return find == servlets->end() ? NULL : find->second.first;
-    }
-
-    Servlet ret = NULL;
-    size_t path_size = real_path.size();
-    size_t cur_pos = 0;
-    while (cur_pos < path_size)
-    {
-        cur_pos = real_path.find(PATH_SPLITTER, cur_pos + 1);
-        if (cur_pos == std::string::npos)
-        {
-            ServletMap::const_iterator find = servlets->find(real_path);
-            if (find != servlets->end())
-            {
-                ret = find->second.first;
-            }
-            break;
-        }
-        const std::string& sub_path= real_path.substr(0, cur_pos);
-        ServletMap::const_iterator find = servlets->lower_bound(sub_path);
-        if (find == servlets->end())
-        {
-            break;
-        }
-        const std::string& find_path = find->first;
-        size_t find_path_size = find_path.size();
-        if (find_path_size <= path_size
-            && strncmp(real_path.data(), find_path.data(), find_path_size) == 0
-            && (find_path_size == path_size || real_path[find_path_size] == PATH_SPLITTER[0]))
-        {
-            ret = find->second.first;
-            cur_pos = find_path_size;
-        }
-        else 
-        {
-            break;
-        }
-    }
-    return ret;
+    return map_it == servlets->end() ? NULL : map_it->second.first;
 }
 
 bool WebService::DefaultHome(const HTTPRequest& request,
