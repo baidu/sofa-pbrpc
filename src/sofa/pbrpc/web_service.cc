@@ -240,6 +240,8 @@ bool WebService::RoutePage(
 
 Servlet WebService::FindServlet(const std::string& path)
 {
+    // if user register a path "/baidu"
+    // then "/baidu/*" matched both
     std::vector<std::string> path_vec;
     std::string real_path = FormatPath(path);
     StringUtils::split(real_path, PATH_SPLITTER, &path_vec);
