@@ -11,6 +11,7 @@
 #include <sofa/pbrpc/tran_buf_pool.h>
 #include <sofa/pbrpc/flow_controller.h>
 #include <sofa/pbrpc/compressed_stream.h>
+#include <sofa/pbrpc/murmurhash.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -23,6 +24,7 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
     , _ticks_per_second(time_duration_seconds(1).ticks())
     , _last_maintain_ticks(0)
     , _last_print_connection_ticks(0)
+    , _slot_head(NULL)
 {
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
     _slice_quota_in = _options.max_throughput_in == -1 ?
@@ -33,6 +35,11 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
         std::max(0L, _options.max_pending_buffer_size * 1024L * 1024L);
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
+    _multi_connection_count = std::max(1, _options.multi_connection_count);
+    _connection_type = _multi_connection_count > 1 ?
+        MULTI_CONNECTION : SINGLE_CONNECTION;
+
+    memset(_stream_slots, 0, sizeof(_stream_slots));
 
 #if defined( LOG )
     LOG(INFO) << "RpcClientImpl(): quota_in="
@@ -156,10 +163,21 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
 
     if (_max_pending_buffer_size != old_max_pending_buffer_size)
     {
-        ScopedLocker<FastLock> _(_stream_map_lock);
-        for (StreamMap::iterator it = _stream_map.begin(); it != _stream_map.end(); ++it)
+        StreamHashSlot* slot = _slot_head;
+        while (slot != NULL)
         {
-            it->second->set_max_pending_buffer_size(_max_pending_buffer_size);
+            ScopedLocker<FastLock> _(slot->lock);
+            for (StreamMap::iterator stream_map_it = slot->streams.begin();
+                    stream_map_it != slot->streams.end(); ++stream_map_it)
+            {
+                std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+                for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
+                        stream_it != stream_set.end(); ++stream_it)
+                {
+                    (*stream_it)->set_max_pending_buffer_size(_max_pending_buffer_size);
+                }
+            }
+            slot = slot->Next();
         }
     }
 
@@ -199,8 +217,20 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
 
 int RpcClientImpl::ConnectionCount()
 {
-    ScopedLocker<FastLock> _(_stream_map_lock);
-    return _stream_map.size();
+    int count = 0;
+    StreamHashSlot* slot = _slot_head;
+    while (slot != NULL)
+    {
+        ScopedLocker<FastLock> _(slot->lock);
+        for (StreamMap::iterator stream_map_it = slot->streams.begin();
+                stream_map_it != slot->streams.end(); ++stream_map_it)
+        {
+            std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+            count += stream_set.size();
+        }
+        slot = slot->Next();
+    }
+    return count;
 }
 
 // Rpc call method to remote endpoint.
@@ -367,15 +397,72 @@ bool RpcClientImpl::ResolveAddress(const std::string& address,
 RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_endpoint)
 {
     RpcClientStreamPtr stream;
+    bool is_find = false;
     bool create = false;
+    uint64 slot_index = StreamSlotIndex(remote_endpoint);
+    if (_stream_slots[slot_index] == NULL)
     {
-        ScopedLocker<FastLock> _(_stream_map_lock);
-        StreamMap::iterator find = _stream_map.find(remote_endpoint);
-        if (find != _stream_map.end() && !find->second->is_closed())
+        _stream_slots[slot_index] = new StreamHashSlot(_slot_head);
+        _slot_head = _stream_slots[slot_index];
+    }
+    StreamHashSlot* slot = _stream_slots[slot_index];
+    {
+        ScopedLocker<FastLock> _(slot->lock);
+        std::set<RpcClientStreamPtr>& stream_set = slot->streams[remote_endpoint];
+        switch (_connection_type)
         {
-            stream = find->second;
+            case SINGLE_CONNECTION:
+            {
+                if (!stream_set.empty())
+                {
+                    if (!(*stream_set.begin())->is_closed())
+                    {
+                        stream = *(stream_set.begin());
+                        is_find = true;
+                    }
+                    else
+                    {
+                        stream_set.clear();
+                    }
+                }
+                break;
+            }
+            case MULTI_CONNECTION:
+            {
+                if (stream_set.size() == static_cast<size_t>(_multi_connection_count))
+                {
+                    int64 min_pending_count = kint64max;
+                    std::set<RpcClientStreamPtr>::iterator min_iterator = stream_set.end();
+                    for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin(); 
+                            stream_it != stream_set.end();)
+                    {
+                        if ((*stream_it)->is_closed())
+                        {
+                            stream_set.erase(stream_it++);
+                            continue;
+                        }
+                        if ((*stream_it)->pending_message_count() < min_pending_count)
+                        {
+                            min_pending_count = (*stream_it)->pending_message_count();
+                            min_iterator = stream_it;
+                            is_find = true;
+                        }
+                        ++stream_it;
+                    }
+                    if (is_find)
+                    {
+                        stream = (*min_iterator);
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                SCHECK(false);
+                break;
+            }
         }
-        else
+        if (!is_find)
         {
             stream.reset(new RpcClientStream(_work_thread_group->io_service(), remote_endpoint));
             stream->set_flow_controller(_flow_controller);
@@ -384,8 +471,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
             stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
                     boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
-
-            _stream_map[remote_endpoint] = stream;
+            stream_set.insert(stream);
             create = true;
         }
     }
@@ -401,24 +487,55 @@ void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
     if (!_is_running)
         return;
 
-    ScopedLocker<FastLock> _(_stream_map_lock);
-    _stream_map.erase(stream->remote_endpoint());
+    uint64 slot_index = StreamSlotIndex(stream->remote_endpoint());
+    StreamHashSlot* slot = _stream_slots[slot_index];
+    if (slot != NULL)
+    {
+        ScopedLocker<FastLock> _(slot->lock);
+        StreamMap::iterator find = slot->streams.find(stream->remote_endpoint());
+        if (find != slot->streams.end())
+        {
+            find->second.erase(stream);
+        }
+    }
 }
 
 void RpcClientImpl::StopStreams()
 {
-    ScopedLocker<FastLock> _(_stream_map_lock);
-    for (StreamMap::iterator it = _stream_map.begin();
-            it != _stream_map.end(); ++it)
+    StreamHashSlot* slot = _slot_head;
+    while (slot != NULL)
     {
-        it->second->close("client stopped");
+        ScopedLocker<FastLock> _(slot->lock);
+        for (StreamMap::iterator stream_map_it = slot->streams.begin();
+                stream_map_it != slot->streams.end(); ++stream_map_it)
+        {
+            std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+            for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
+                    stream_it != stream_set.end(); ++stream_it)
+            {
+                (*stream_it)->close("client stopped");
+            }
+        }
+        slot = slot->Next();
     }
 }
 
 void RpcClientImpl::ClearStreams()
 {
-    ScopedLocker<FastLock> _(_stream_map_lock);
-    _stream_map.clear();
+    StreamHashSlot* slot = _slot_head;
+    while (slot != NULL)
+    {
+        ScopedLocker<FastLock> _(slot->lock);
+        for (StreamMap::iterator stream_map_it = slot->streams.begin(); 
+                stream_map_it != slot->streams.end(); ++stream_map_it)
+        {
+            stream_map_it->second.clear();
+        }
+        slot->streams.clear();
+        StreamHashSlot* slot_backup = slot;
+        slot = slot->Next();
+        delete slot_backup;
+    }
 }
 
 void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
@@ -468,33 +585,43 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
     // checks which need iterator streams
     if (_keep_alive_ticks != -1 || _slice_quota_in != -1 || _slice_quota_out != -1)
     {
-        StreamMap streams;
-        {
-            ScopedLocker<FastLock> _(_stream_map_lock);
-            streams = _stream_map;
-        }
-
         // check keep alive time
         if (_keep_alive_ticks != -1)
         {
-            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
+            StreamHashSlot* slot = _slot_head;
+            while (slot != NULL)
             {
-                const RpcClientStreamPtr& stream = it->second;
-                if (stream->is_closed())
+                StreamMap stream_map;
                 {
-                    continue;
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
                 }
-                if (now_ticks - stream->last_rw_ticks() >= _keep_alive_ticks
-                        && stream->pending_process_count() == 0)
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
-                    stream->close("keep alive timeout: "
-                                  + boost::lexical_cast<std::string>(_options.keep_alive_time)
-                                  + " seconds");
+                    std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+                    for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
+                            stream_it != stream_set.end(); ++stream_it)
+                    {
+                        const RpcClientStreamPtr& stream = (*stream_it);
+                        if (stream->is_closed())
+                        {
+                            continue;
+                        }
+                        if (now_ticks - stream->last_rw_ticks() >= _keep_alive_ticks
+                                && stream->pending_process_count() == 0)
+                        {
+                            stream->close("keep alive timeout: "
+                                          + boost::lexical_cast<std::string>(_options.keep_alive_time)
+                                          + " seconds");
+                        }
+                        else
+                        {
+                            stream->reset_ticks(now_ticks, false);
+                        }
+                    }
                 }
-                else
-                {
-                    stream->reset_ticks(now_ticks, false);
-                }
+                slot = slot->Next();
             }
         }
 
@@ -506,20 +633,37 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
-            trigger_list.reserve(streams.size());
-            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
+            trigger_list.reserve(STREAM_HASH_SLOT_COUNT * _multi_connection_count);
+
+            StreamHashSlot* slot = _slot_head;
+            while (slot != NULL)
             {
-                const RpcClientStreamPtr& stream = it->second;
-                if (stream->is_closed())
+                StreamMap stream_map;
                 {
-                    continue;
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
                 }
-                int token = stream->read_quota_token();
-                if (token <= 0)
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
-                    // only need trigger streams whose token <= 0
-                    trigger_list.push_back(FlowControlItem(token, stream.get()));
+                    std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+                    for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
+                            stream_it != stream_set.end(); ++stream_it)
+                    {
+                        const RpcClientStreamPtr& stream = (*stream_it);
+                        if (stream->is_closed())
+                        {
+                            continue;
+                        }
+                        int token = stream->read_quota_token();
+                        if (token <= 0)
+                        {
+                            // only need trigger streams whose token <= 0
+                            trigger_list.push_back(FlowControlItem(token, stream.get()));
+                        }
+                    }
                 }
+                slot = slot->Next();
             }
 
             // sort by token: token closer to zero, earlier to trigger
@@ -541,20 +685,37 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
-            trigger_list.reserve(streams.size());
-            for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
+            trigger_list.reserve(STREAM_HASH_SLOT_COUNT * _multi_connection_count);
+
+            StreamHashSlot* slot = _slot_head;
+            while (slot != NULL)
             {
-                const RpcClientStreamPtr& stream = it->second;
-                if (stream->is_closed())
+                StreamMap stream_map;
                 {
-                    continue;
+                    ScopedLocker<FastLock> _(slot->lock);
+                    stream_map = slot->streams;
                 }
-                int token = stream->write_quota_token();
-                if (token <= 0)
+                for (StreamMap::iterator stream_map_it = stream_map.begin();
+                        stream_map_it != stream_map.end(); ++stream_map_it)
                 {
-                    // only need trigger streams whose token <= 0
-                    trigger_list.push_back(FlowControlItem(token, stream.get()));
+                    std::set<RpcClientStreamPtr>& stream_set = stream_map_it->second;
+                    for (std::set<RpcClientStreamPtr>::iterator stream_it = stream_set.begin();
+                            stream_it != stream_set.end(); ++stream_it)
+                    {
+                        const RpcClientStreamPtr& stream = (*stream_it);
+                        if (stream->is_closed())
+                        {
+                            continue;
+                        }
+                        int token = stream->read_quota_token();
+                        if (token <= 0)
+                        {
+                            // only need trigger streams whose token <= 0
+                            trigger_list.push_back(FlowControlItem(token, stream.get()));
+                        }
+                    }
                 }
+                slot = slot->Next();
             }
 
             // sort by token: token closer to zero, earlier to trigger
@@ -575,6 +736,12 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
 uint64 RpcClientImpl::GenerateSequenceId()
 {
     return static_cast<uint64>(++_next_request_id);
+}
+
+uint64 RpcClientImpl::StreamSlotIndex(const RpcEndpoint& remote_endpoint)
+{
+    std::string endpoint_str = RpcEndpointToString(remote_endpoint);
+    return murmurhash(endpoint_str.c_str(), endpoint_str.size()) % STREAM_HASH_SLOT_COUNT;
 }
 
 } // namespace pbrpc

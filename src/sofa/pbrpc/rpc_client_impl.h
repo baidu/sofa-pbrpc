@@ -8,7 +8,7 @@
 #define _SOFA_PBRPC_RPC_CLIENT_IMPL_H_
 
 #include <list>
-#include <map>
+#include <ext/hash_map>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_client.h>
@@ -25,7 +25,7 @@ class RpcClientImpl: public sofa::pbrpc::enable_shared_from_this<RpcClientImpl>
 {
 public:
     static const int MAINTAIN_INTERVAL_IN_MS = 100;
-
+    static const int STREAM_HASH_SLOT_COUNT = 17;
 public:
     explicit RpcClientImpl(const RpcClientOptions& options);
 
@@ -75,6 +75,8 @@ private:
 
     uint64 GenerateSequenceId();
 
+    uint64 StreamSlotIndex(const RpcEndpoint& remote_endpoint);
+
 private:
     struct FlowControlItem
     {
@@ -86,6 +88,24 @@ private:
         bool operator< (const FlowControlItem& o) const
         {
             return token > o.token;
+        }
+    };
+    
+    typedef std::map<RpcEndpoint, std::set<RpcClientStreamPtr> > StreamMap;
+    struct StreamHashSlot;
+    struct StreamHashSlot
+    {
+        StreamHashSlot* next;
+        StreamMap streams;
+        FastLock lock;
+
+        StreamHashSlot(StreamHashSlot* _next)
+        {
+            next = _next;
+        }
+        StreamHashSlot* Next()
+        {
+            return next;
         }
     };
 
@@ -107,6 +127,7 @@ private:
     int64 _max_pending_buffer_size;
     int64 _keep_alive_ticks;
     int64 _print_connection_interval_ticks;
+    int _multi_connection_count;
 
     FlowControllerPtr _flow_controller;
 
@@ -117,9 +138,15 @@ private:
     TimerWorkerPtr _timer_worker;
     RpcTimeoutManagerPtr _timeout_manager;
 
-    typedef std::map<RpcEndpoint, RpcClientStreamPtr> StreamMap;
-    StreamMap _stream_map;
-    FastLock _stream_map_lock;
+    StreamHashSlot* _stream_slots[STREAM_HASH_SLOT_COUNT];
+    StreamHashSlot* _slot_head;
+
+    enum ConnectionType
+    {
+        SINGLE_CONNECTION = 1,
+        MULTI_CONNECTION = 2,
+    };
+    ConnectionType _connection_type;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcClientImpl);
 }; // class RpcClientImpl

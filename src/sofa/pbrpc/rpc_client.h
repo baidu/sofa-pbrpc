@@ -43,6 +43,12 @@ struct RpcClientOptions {
     // default is -1
     int connect_timeout;
 
+    // Max connection count for one endpoint.
+    // multi_connection_count should >=1.
+    // 1 means single connection for one endpoint.
+    // > 1 means multiple connection for one endpoint.
+    int multi_connection_count;
+
     RpcClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
@@ -51,6 +57,7 @@ struct RpcClientOptions {
         , max_throughput_in(-1)
         , max_throughput_out(-1)
         , connect_timeout(-1)
+        , multi_connection_count(1)
     {}
 };
 
