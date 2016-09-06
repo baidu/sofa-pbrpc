@@ -402,6 +402,12 @@ void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
         return;
 
     ScopedLocker<FastLock> _(_stream_map_lock);
+    // to prevent erasing the new connection
+    StreamMap::iterator find = _stream_map.find(stream->remote_endpoint());
+    if (find != _stream_map.end() && !find->second->is_closed())
+    {
+        return;
+    }
     _stream_map.erase(stream->remote_endpoint());
 }
 
