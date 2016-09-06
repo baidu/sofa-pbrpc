@@ -1,0 +1,36 @@
+This directory contains the php extension for sofa-pbrpc client.
+
+Installation
+============
+
+1) Make sure your PHP version is at least 5.4 and you have installed sofa-pbrpc library in sofa-pbrpc output
+
+2) Because this lib depends on the "allegro/php-protobuf" lib to serialize and unserialize data,
+
+   You should install the allegro/php-protobuf and use this lib in your PHP codes and you can get
+
+   "allegro/php-protobuf" on this page:
+
+    https://github.com/allegro/php-protobuf
+
+3) Change the dependences path:
+
+    Change the dependences path "RPCLIB_DIR" and "PROTOBUFLIB_DIR" in comfig.m4
+
+4) Build the extension
+
+    Run "/usr/local/php/bin/phpize ./config.m4"
+
+        "./configure --with-php-config=/usr/local/php/bin/php-config" to generate Makefile
+
+    Run "make clean && make -j10 && make install" to build the extension
+
+    You can get extension in ./modules
+
+5) Generate PHP interface
+
+    You can generate PHP interface like this:
+
+        "php -c /usr/etc/php.ini protoc-php.php test.proto"
+
+    You can get a simple usage in ./sample
