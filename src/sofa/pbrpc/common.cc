@@ -63,7 +63,7 @@ void default_log_handler(
             t.tm_min,
             t.tm_sec,
             static_cast<int>(now_tv.tv_usec),
-            static_cast<long long unsigned int>(pthread_self()),
+            reinterpret_cast<long long unsigned int>(pthread_self()),
             filename, line, buf);
 #else
     fprintf(stderr, "libsofa_pbrpc %s %s:%d] %s\n",
