@@ -55,9 +55,3 @@ For performace details, please refer to the wiki.
 ### Support
 opensearch@baidu.com
 
-### User List
-If sofa-pbrpc is used in your product, please record your user information in the belowing table with a new line, 
-so that communication between users can be more convenient, and new features will be better notified.
-
-| company | product line | cluster scale | owner | recommendation |
-| -------:| ------------:| -------------:| -----:| --------------:|
