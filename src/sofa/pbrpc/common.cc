@@ -63,13 +63,10 @@ void default_log_handler(
             t.tm_min,
             t.tm_sec,
             static_cast<int>(now_tv.tv_usec),
-#if (defined(__MACH__) && defined(__APPLE__)) \
-    || defined(__FreeBSD__) \
-    || defined(__NetBSD__) \
-    || defined(__OpenBSD__)
-            reinterpret_cast<long long unsigned int>(pthread_self()),
-#else
+#ifdef __linux__
             static_cast<long long unsigned int>(pthread_self()),
+#else
+            reinterpret_cast<long long unsigned int>(pthread_self()),
 #endif
             filename, line, buf);
 #else
