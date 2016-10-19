@@ -52,5 +52,9 @@ For sample code, please refer to './sample' and the wiki.
 ### Performance
 For performace details, please refer to the wiki.
 
+### Implementation
+-----------
+For implementation details, please refer to the wiki and file 'doc/inside-sofa-pbrpc.pptx'.
+
 ### Support
 opensearch@baidu.com
