@@ -16,8 +16,14 @@
 #include <sofa/pbrpc/buffer.cc> // ATTENTION: include source file for different block size
 #include <sofa/pbrpc/tran_buf_pool.h>
 #include <sofa/pbrpc/rpc_message_header.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
-#include "test_data.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_meta.pb.h>
+#include "proto3/test_data.pb.h"
+#else
+#include <sofa/pbrpc/proto2/rpc_meta.pb.h>
+#include "proto2/test_data.pb.h"
+#endif
 
 using namespace sofa::pbrpc;
 

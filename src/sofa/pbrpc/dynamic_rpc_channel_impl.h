@@ -17,7 +17,13 @@
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/timeout_manager.h>
 #include <sofa/pbrpc/counter.h>
-#include <sofa/pbrpc/builtin_service.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/builtin_service.pb.h>
+#else
+#include <sofa/pbrpc/proto2/builtin_service.pb.h>
+#endif
+
 #include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
 
 namespace sofa {

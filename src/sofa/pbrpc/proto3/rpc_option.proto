@@ -1,0 +1,33 @@
+// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
+
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package sofa.pbrpc;
+
+extend google.protobuf.ServiceOptions {
+    // Timeout in milli-seconds at service level.
+    int64 service_timeout = 20000;
+}
+
+enum CompressType {
+    CompressTypeNone = 0;
+    CompressTypeGzip = 1;
+    CompressTypeZlib = 2;
+    CompressTypeSnappy = 3;
+    CompressTypeLZ4 = 4;
+}
+
+extend google.protobuf.MethodOptions {
+    // Timeout in milli-seconds at method level.
+    int64 method_timeout = 20000;
+
+    // Compress type.
+    CompressType request_compress_type = 20001;
+    CompressType response_compress_type = 20002;
+}

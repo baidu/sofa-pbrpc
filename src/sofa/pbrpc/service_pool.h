@@ -15,7 +15,13 @@
 #include <google/protobuf/descriptor.h>
 
 #include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/builtin_service.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/builtin_service.pb.h>
+#else
+#include <sofa/pbrpc/proto2/builtin_service.pb.h>
+#endif
+
 #include <sofa/pbrpc/counter.h>
 #include <sofa/pbrpc/murmurhash.h>
 #include <sofa/pbrpc/ptime.h>

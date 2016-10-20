@@ -8,7 +8,12 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sofa/pbrpc/pbrpc.h>
-#include "echo_service.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include "proto3/echo_service.pb.h"
+#else
+#include "proto2/echo_service.pb.h"
+#endif
 
 class EchoServerImpl : public sofa::pbrpc::test::EchoServer
 {

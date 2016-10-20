@@ -4,8 +4,10 @@
 //
 // Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
+syntax = "proto2"; 
+
 import "google/protobuf/descriptor.proto";
-import "sofa/pbrpc/rpc_option.proto";
+import "sofa/pbrpc/proto2/rpc_option.proto";
 
 package sofa.pbrpc.builtin;
 
@@ -108,8 +110,8 @@ message ServiceStat {
 }
 
 message StatRequest {
-    optional string service_name = 1 [default = "all"];
-    optional int64 period_seconds = 2 [default = 60]; // expect period in seconds
+    optional string service_name = 1;
+    optional int64 period_seconds = 2; // expect period in seconds
 }
 
 message StatResponse {

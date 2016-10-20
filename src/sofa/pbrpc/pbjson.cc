@@ -107,7 +107,7 @@ static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *f
             }
             else
             {
-                json = new rapidjson::Value(ref->GetInt64(*msg, field));
+                json = new rapidjson::Value(static_cast<int64_t>(ref->GetInt64(*msg, field)));
             }
             break;
         case FieldDescriptor::CPPTYPE_UINT64:
@@ -122,7 +122,7 @@ static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *f
             }
             else
             {
-                json = new rapidjson::Value(ref->GetUInt64(*msg, field));
+                json = new rapidjson::Value(static_cast<uint64_t>(ref->GetUInt64(*msg, field)));
             }
             break;
         case FieldDescriptor::CPPTYPE_INT32:

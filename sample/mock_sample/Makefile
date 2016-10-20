@@ -45,7 +45,15 @@ else
     endif
 endif
 
-PROTO_SRC=echo_service.proto
+#-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
+ifeq ($(PROTO_VERSION),proto3)
+    CXXFLAGS += -DSOFA_PBRPC_USE_PROTO3
+endif
+#-----------------------------------------------
+
+PROTO_SRC=$(PROTO_VERSION)/echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=$(SOFA_PBRPC)/include --proto_path=$(PROTOBUF_DIR)/include
 
@@ -66,7 +74,7 @@ check_depends:
 	@if [ ! -f "$(GTEST_DIR)/src/gtest-all.cc" ]; then echo "ERROR: need gtest"; exit 1; fi
 
 clean:
-	@rm -f $(BIN) *.o *.pb.* libgtest.a
+	@rm -f $(BIN) *.o $(PROTO_VERSION)/*.pb.* libgtest.a
 
 rebuild: clean all
 

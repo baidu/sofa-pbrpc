@@ -10,7 +10,11 @@
 
 #include <google/protobuf/io/zero_copy_stream.h>
 
-#include <sofa/pbrpc/rpc_option.pb.h>
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_option.pb.h>
+#else
+#include <sofa/pbrpc/proto2/rpc_option.pb.h>
+#endif
 
 #define HAVE_SNAPPY 1
 

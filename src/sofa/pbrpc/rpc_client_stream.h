@@ -9,7 +9,12 @@
 
 #include <sofa/pbrpc/rpc_message_stream.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_meta.pb.h>
+#else
+#include <sofa/pbrpc/proto2/rpc_meta.pb.h>
+#endif
 
 namespace sofa {
 namespace pbrpc {
@@ -235,6 +240,12 @@ private:
             return;
         }
 
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+        if (meta.failed())
+        {
+            cntl->Done(meta.error_code(), meta.reason());
+        }
+#else
         if (!meta.has_failed())
         {
 #if defined( LOG )
@@ -278,12 +289,17 @@ private:
                 cntl->Done(meta.error_code(), meta.reason());
             }
         }
+#endif
         else // !meta.failed()
         {
             SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
             cntl->SetResponseBuffer(message);
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+            cntl->SetResponseCompressType(meta.compress_type());
+#else
             cntl->SetResponseCompressType(meta.has_compress_type() ?
                     meta.compress_type() : CompressTypeNone);
+#endif
             cntl->Done(RPC_SUCCESS, "succeed");
         }
     }

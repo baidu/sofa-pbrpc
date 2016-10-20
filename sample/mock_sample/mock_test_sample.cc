@@ -8,7 +8,12 @@
 #include <sofa/pbrpc/mock_test_helper.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
-#include "echo_service.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include "proto3/echo_service.pb.h"
+#else
+#include "proto2/echo_service.pb.h"
+#endif
 
 using namespace ::sofa::pbrpc;
 using namespace ::sofa::pbrpc::test;

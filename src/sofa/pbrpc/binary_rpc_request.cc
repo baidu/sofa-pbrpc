@@ -78,8 +78,12 @@ void BinaryRpcRequest::ProcessRequest(
     const google::protobuf::MethodDescriptor* method_desc = method_board->Descriptor();
 
     google::protobuf::Message* request = service->GetRequestPrototype(method_desc).New();
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+    CompressType compress_type = _req_meta.compress_type();
+#else
     CompressType compress_type =
         _req_meta.has_compress_type() ? _req_meta.compress_type(): CompressTypeNone;
+#endif
     bool parse_request_return = false;
     if (compress_type == CompressTypeNone)
     {
@@ -115,13 +119,26 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetLocalEndpoint(_local_endpoint);
     cntl->SetRemoteEndpoint(_remote_endpoint);
     cntl->SetRpcServerStream(stream);
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+    if (_req_meta.server_timeout() > 0)
+    {
+        cntl->SetServerTimeout(_req_meta.server_timeout());
+    }
+#else
     if (_req_meta.has_server_timeout() && _req_meta.server_timeout() > 0)
     {
         cntl->SetServerTimeout(_req_meta.server_timeout());
     }
+#endif
+
     cntl->SetRequestReceivedTime(_received_time);
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+    cntl->SetResponseCompressType(_req_meta.expected_response_compress_type());
+#else
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);
+#endif
 
     CallMethod(method_board, controller, request, response);
 }

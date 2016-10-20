@@ -10,7 +10,12 @@
 #include <google/protobuf/service.h>
 
 #include <sofa/pbrpc/common.h>
-#include <sofa/pbrpc/rpc_option.pb.h>
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include <sofa/pbrpc/proto3/rpc_option.pb.h>
+#else
+#include <sofa/pbrpc/proto2/rpc_option.pb.h>
+#endif
 
 namespace sofa {
 namespace pbrpc {

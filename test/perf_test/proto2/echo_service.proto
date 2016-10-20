@@ -1,4 +1,6 @@
-import "sofa/pbrpc/rpc_option.proto";
+syntax = "proto2";
+
+import "sofa/pbrpc/proto2/rpc_option.proto";
 
 package sofa.pbrpc.test;
 

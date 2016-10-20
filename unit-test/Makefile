@@ -34,7 +34,15 @@ else
     endif
 endif
 
-PROTO_SRC=test_data.proto
+#-----------------------------------------------
+# Customized macro switch:
+#   SOFA_PBRPC_USE_PROTO3 : use proto3 version of the protocol buffers language
+ifeq ($(PROTO_VERSION),proto3)
+    CXXFLAGS += -DSOFA_PBRPC_USE_PROTO3
+endif
+#-----------------------------------------------
+
+PROTO_SRC=$(PROTO_VERSION)/test_data.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=../src --proto_path=$(PROTOBUF_DIR)/include
 
@@ -66,7 +74,7 @@ check_depends:
 	@if [ ! -f "../libsofa-pbrpc.a" ]; then echo "ERROR: should build sofa-pbrpc first"; exit 1; fi
 
 clean:
-	@rm -f $(TESTS) *.o *.pb.* libgtest.a
+	@rm -f $(TESTS) *.o $(PROTO_VERSION)/*.pb.* libgtest.a
 
 rebuild: clean all
 
@@ -82,7 +90,7 @@ test_epoll_support: test_epoll_support.o libgtest.a
 test_tran_buf_pool: test_tran_buf_pool.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-test_buffer: test_data.pb.o test_buffer.o libgtest.a
+test_buffer: $(PROTO_VERSION)/test_data.pb.o test_buffer.o libgtest.a
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 test_closure: test_closure.o libgtest.a

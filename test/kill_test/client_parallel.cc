@@ -9,7 +9,12 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sofa/pbrpc/pbrpc.h>
-#include "echo_service.pb.h"
+
+#if defined ( SOFA_PBRPC_USE_PROTO3 )
+#include "proto3/echo_service.pb.h"
+#else
+#include "proto2/echo_service.pb.h"
+#endif
 
 static volatile bool s_is_running = true;
 static volatile bool s_should_wait = false;
