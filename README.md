@@ -54,7 +54,7 @@ For performace details, please refer to the wiki.
 
 ### Implementation
 -----------
-For implementation details, please refer to the wiki and file ['sofa-pbrpc-document.md'](doc/sofa-pbrpc-document.md).
+For implementation details, please refer to the wiki and file [doc/sofa-pbrpc-document.md](doc/sofa-pbrpc-document.md).
 
 ### Support
 opensearch@baidu.com
