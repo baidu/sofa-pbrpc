@@ -129,7 +129,7 @@ private:
 > **注意：**
 * 服务完成后必须调用done->Run()，通知RPC系统服务完成，触发发送Response；
 * 在调了done->Run()之后，Echo的所有四个参数都不再能访问；
-done-Run()可以分派到其他线程中执行，以实现了真正的异步处理；
+done->Run()可以分派到其他线程中执行，以实现了真正的异步处理；
 
 ### 注册和启动服务
 
@@ -336,11 +336,11 @@ message RpcMeta {
 2. RpcChannel调用CallMethod执行RPC调用。
 3. RpcClient选取RpcClientStream异步发送请求，并添加至超时队列。
 4. server端RpcListener接收到client的连接，创建对应RpcServerStream。
-5. RpcServerStream接收数据，根据meta信息在ServerPool中选取对应Service.Method执行。
+5. RpcServerStream接收数据，根据meta信息在ServicePool中选取对应Service.Method执行。
 6. server通过RpcServerStream发送执行结果，回复过程与请求过程类似。
 <div  align="center">
 <img src="image/network-arch.png" width="80%" height="80%" />
-</div
+</div>
 
 ### 线程模型
 asio异步模型，底层使用epoll。
@@ -359,7 +359,7 @@ sofa-pbrpc将内存划分为固定大小的buffer作为缓冲区，对buffer采�
 <img src="image/writebuf.png" width="80%" height="80%" />
 </div>
 ### 透明压缩
-采用装饰着模式的透明压缩，易于扩展。
+采用装饰者模式的透明压缩，易于扩展。
 <div  align="center">
 <img src="image/rpc-compress.png" width="80%" height="80%" />
 </div>
