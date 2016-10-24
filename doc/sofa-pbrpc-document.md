@@ -37,20 +37,31 @@
 
 ## 主要接口类
 主要用户接口分为四个接口类和三个option。
-
 <div  align="center">
 <img src="image/rpc-interface.png" width="80%" height="80%" />
 </div>
+
 ## 用户配置
 Server端配置：RpcServerOptions
-<div  align="center">
-<img src="image/server-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+|keep_alive_time|空闲连接维持时间 (s) |
 
 Client端配置：RpcClientOptions
-<div  align="center">
-<img src="image/client-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|callback_thread_num|回调线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+
 # 快速使用
 使用sofa-pbrpc只需要三步：
 * 定义通讯协议
@@ -373,9 +384,13 @@ sofa-pbrpc将内存划分为固定大小的buffer作为缓冲区，对buffer采�
 sofa-pbrpc支持用户使用http客户端向server发送json格式的数据请求，并返回json格式的响应。
 ## 提供丰富的工具类
 sofa-pbrpc提供常用工具类给开发者，包括：
-<div  align="center">
-<img src="image/sofa-pbrpc-dev-tools.png" width="80%" height="80%" />
-</div>
+
+| 类别        | 头文件           | 说明  |
+| :-------------: |:-------------:| :-----:|
+| 智能指针 |sofa/pbrpc/smart_ptr/smart_ptr.hpp |包括scoped_ptr,shared_ptr,weak_ptr等 |
+| 原子操作 |sofa/pbrpc/atomic.h                |支持fetch,inc,dec,cas等              |
+| 锁操作   |sofa/pbrpc/locks.h                 |提供了互斥锁,自旋锁,读写锁的封装       |
+| 定时管理 |sofa/pbrpc/timeout_manager.h       |高效的提供了定时器功能                |
 
 # 支持团队
 百度网页搜索部开源团队 [opensearch@baidu.com](opensearch@baidu.com)
