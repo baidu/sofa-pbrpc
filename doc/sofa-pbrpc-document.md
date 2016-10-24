@@ -37,20 +37,31 @@
 
 ## 主要接口类
 主要用户接口分为四个接口类和三个option。
-
 <div  align="center">
 <img src="image/rpc-interface.png" width="80%" height="80%" />
 </div>
+
 ## 用户配置
 Server端配置：RpcServerOptions
-<div  align="center">
-<img src="image/server-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+|keep_alive_time|空闲连接维持时间 (s) |
 
 Client端配置：RpcClientOptions
-<div  align="center">
-<img src="image/client-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|callback_thread_num|回调线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+
 # 快速使用
 使用sofa-pbrpc只需要三步：
 * 定义通讯协议
