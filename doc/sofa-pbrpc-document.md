@@ -68,7 +68,7 @@ Client端配置：RpcClientOptions
 * 实现Server
 * 实现Client
 
-样例代码参见“sample/echo”。
+样例代码参见[sample/echo](https://github.com/baidu/sofa-pbrpc/tree/master/sample/echo)。
 ## 定义通讯协议
 定义协议只需要编写一个proto文件即可。
 范例：echo_service.proto
