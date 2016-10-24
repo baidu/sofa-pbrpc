@@ -375,11 +375,11 @@ sofa-pbrpc支持用户使用http客户端向server发送json格式的数据请�
 sofa-pbrpc提供常用工具类给开发者，包括：
 
 | 类别        | 头文件           | 说明  |
-| ------------- |:-------------:| -----:|
-| 智能指针      |sofa/pbrpc/smart_ptr/smart_ptr.hpp | 包括scoped_ptr,shared_ptr,weak_ptr等 |
-| 原子操作      |sofa/pbrpc/atomic.h      |支持fetch,inc,dec,cas等 |
-| 锁操作 | sofa/pbrpc/locks.h      |  提供了互斥锁，自旋锁，读写锁的封装 |
-| 定时管理 |sofa/pbrpc/timeout_manager.h      |    高效的提供了定时器功能 |
+| :-------------: |:-------------:| :-----:|
+| 智能指针 |sofa/pbrpc/smart_ptr/smart_ptr.hpp |包括scoped_ptr,shared_ptr,weak_ptr等 |
+| 原子操作 |sofa/pbrpc/atomic.h                |支持fetch,inc,dec,cas等              |
+| 锁操作   |sofa/pbrpc/locks.h                 |提供了互斥锁,自旋锁,读写锁的封装       |
+| 定时管理 |sofa/pbrpc/timeout_manager.h       |高效的提供了定时器功能                |
 
 # 支持团队
 百度网页搜索部开源团队 [opensearch@baidu.com](opensearch@baidu.com)
