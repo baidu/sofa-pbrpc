@@ -19,7 +19,7 @@ class HTTPRpcRequestParser;
 class HTTPRpcRequest;
 typedef sofa::pbrpc::shared_ptr<HTTPRpcRequest> HTTPRpcRequestPtr;
 
-class HTTPResponse;
+struct HTTPResponse;
 
 class HTTPRpcRequest : public RpcRequest
 {

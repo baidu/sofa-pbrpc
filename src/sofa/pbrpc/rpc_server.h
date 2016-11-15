@@ -17,8 +17,8 @@ namespace pbrpc {
 
 // Defined in other files.
 class RpcServerImpl;
-class HTTPRequest;
-class HTTPResponse;
+struct HTTPRequest;
+struct HTTPResponse;
 
 struct RpcServerOptions {
     int work_thread_num; // thread count for network handing and service processing, default 8.
