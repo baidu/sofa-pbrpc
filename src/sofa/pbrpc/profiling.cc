@@ -24,7 +24,7 @@ namespace sofa {
 namespace pbrpc {
 
 static const std::string CPU_PROFILING_PATH = "/rpc_profiling/cpu/";
-static const std::string HEAP_PROFILING_PATH = "/rpc_profiling/heap/";
+static const std::string MEMORY_PROFILING_PATH = "/rpc_profiling/memory/";
 
 extern "C" 
 {
@@ -143,20 +143,20 @@ void Profiling::CpuProfilingFunc()
 void Profiling::MemoryProfilingFunc()
 {
     // TODO
-    if (!IsFileExist(_dir.path + HEAP_PROFILING_PATH))
+    if (!IsFileExist(_dir.path + MEMORY_PROFILING_PATH))
     {
-        bool ret = Mkdir(_dir.path + HEAP_PROFILING_PATH);
+        bool ret = Mkdir(_dir.path + MEMORY_PROFILING_PATH);
         if (ret == false)
         {
             return;
         }
     }
-    std::string prefix = _dir.path + HEAP_PROFILING_PATH + "tmp";
+    std::string prefix = _dir.path + MEMORY_PROFILING_PATH + "tmp";
 
     struct timeval tval;
     gettimeofday(&tval, NULL);
     std::string path = _dir.path
-        + HEAP_PROFILING_PATH + "tmp."
+        + MEMORY_PROFILING_PATH + "tmp."
         + StringUtils::uint64_to_string(tval.tv_sec)
         + ".heap";
 
@@ -274,8 +274,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 for (std::set<std::string>::iterator it = profiling_set.begin();
                         it != profiling_set.end(); ++it)
                 {
-                    std::string profiling_path(_dir.path + CPU_PROFILING_PATH + *it);
-                    ::remove(profiling_path.c_str());
+                    ::remove(std::string(_dir.path + CPU_PROFILING_PATH + *it).c_str());
                 }
                 oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
@@ -295,7 +294,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                     oss << "<li>For Ubuntu: sudo apt-get install libgoogle-perftools-dev</li>";
                     oss << "<li>For CentOS: sudo yum install google-perftools-devel</li>";
                     oss << "</ul>";
-                    oss << "<li>Add '-DSOFA_PBRPC_CPU_PROFILING' to CXXFLAGS</li>";
+                    oss << "<li>Add '-DSOFA_PBRPC_PROFILING' to CXXFLAGS</li>";
                     oss << "<li>Add '-lprofiler' to LDFLAGS</li>";
                     oss << "</ol>";
                 }
@@ -325,10 +324,10 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 oss.clear();
                 std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot "
                          + _dir.path + "/" + _dir.name + " " + _dir.path
-                         + HEAP_PROFILING_PATH + profiling_file;
+                         + MEMORY_PROFILING_PATH + profiling_file;
                 if (!profiling_base.empty())
                 {
-                    cmd.append(" --base " + _dir.path + HEAP_PROFILING_PATH + profiling_base);
+                    cmd.append(" --base " + _dir.path + MEMORY_PROFILING_PATH + profiling_base);
                 }
                 std::string dot = exec(cmd);
                 oss << dot;
@@ -337,12 +336,11 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             else if (data_type == CLEANUP)
             {
                 std::set<std::string> profiling_set;
-                ListFile(_dir.path + HEAP_PROFILING_PATH, profiling_set);
+                ListFile(_dir.path + MEMORY_PROFILING_PATH, profiling_set);
                 for (std::set<std::string>::iterator it = profiling_set.begin();
                         it != profiling_set.end(); ++it)
                 {
-                    std::string profiling_path(_dir.path + HEAP_PROFILING_PATH + *it);
-                    ::remove(profiling_path.c_str());
+                    ::remove(std::string(_dir.path + MEMORY_PROFILING_PATH + *it).c_str());
                 }
                 oss << ShowResult(profiling_type, profiling_file, profiling_base);
             }
@@ -362,7 +360,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                     oss << "<li>For Ubuntu: sudo apt-get install libgoogle-perftools-dev</li>";
                     oss << "<li>For CentOS: sudo yum install google-perftools-devel</li>";
                     oss << "</ul>";
-                    oss << "<li>Add '-DSOFA_PBRPC_HEAP_PROFILING' to CXXFLAGS</li>";
+                    oss << "<li>Add '-DSOFA_PBRPC_PROFILING' to CXXFLAGS</li>";
                     oss << "<li>Add '-ltcmalloc_and_profiler' to LDFLAGS</li>";
                     oss << "</ol>";
                 }
@@ -450,7 +448,7 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     else if (profiling_type == MEMORY)
     {
         profiling_type_str = "memory";
-        profiling_path = _dir.path + HEAP_PROFILING_PATH;
+        profiling_path = _dir.path + MEMORY_PROFILING_PATH;
     }
     else
     {
@@ -506,7 +504,7 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     oss << "<pre style='display:inline'>Diff </pre>";
     oss << "<select id=diff_" << profiling_type_str
         << " title=" << profiling_type_str << " onchange='onDiffChanged(this)'>";
-    oss << "<option value=''> profiler file</option>";
+    oss << "<option value=''> base profiler file</option>";
     for (std::set<std::string>::iterator it = profiling_set.begin();
             it != profiling_set.end(); ++it)
     {
@@ -553,14 +551,14 @@ Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& 
     }
 
     std::set<std::string> profiling_set;
-    ListFile(_dir.path + HEAP_PROFILING_PATH, profiling_set);
+    ListFile(_dir.path + MEMORY_PROFILING_PATH, profiling_set);
 
     if (profiling_file == "default" && !profiling_set.empty() && data_type != NEW_GRAPH)
     {
         profiling_file = *(profiling_set.rbegin());
         return FINISHED;
     }
-    if (IsFileExist(_dir.path + HEAP_PROFILING_PATH + profiling_file)) 
+    if (IsFileExist(_dir.path + MEMORY_PROFILING_PATH + profiling_file)) 
     {
         return FINISHED;
     }
