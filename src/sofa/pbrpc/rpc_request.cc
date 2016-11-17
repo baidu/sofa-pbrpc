@@ -1,8 +1,6 @@
 // Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/rpc_request.h>
 #include <sofa/pbrpc/rpc_server_stream.h>
@@ -114,7 +112,7 @@ void RpcRequest::OnCallMethodDone(
                      << " {" << cntl->SequenceId() << "}"
                      << ": call method \"" << cntl->MethodId() << "\" timeout, not response"
                      << ": server_timeout_us=" << (cntl->ServerTimeout() * 1000)
-                     << ", server_used_time_us=" << server_used_time_us;
+                     << ", server_used_time_us=" << server_used_time_us
                      << ", process_time_us=" << process_time_us;
 #else
         SLOG(WARNING, "OnCallMethodDone(): %s {%lu}: call method \"%s\" timeout, not response: "

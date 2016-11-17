@@ -1,8 +1,6 @@
 // Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Author: shichengyi@baidu.com (Shi Chengyi)
 
 #include <gtest/gtest.h>
 #include <sofa/pbrpc/io_service_pool.h>
