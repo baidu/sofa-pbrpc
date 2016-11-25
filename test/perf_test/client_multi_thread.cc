@@ -9,7 +9,6 @@
 #include <sofa/pbrpc/pbrpc.h>
 #include "echo_service.pb.h"
 
-#define N 3
 #define MAX_PENDING_COUNT 1000
 
 static volatile bool s_is_running = true;
@@ -61,7 +60,6 @@ void* StartCall(void* arg)
         ++pending[id];
         stub->Echo(cntl, request, response, done);
     }
-    SLOG(NOTICE, "THREAD JOIN");
     delete request;
     delete stub;
     return NULL;
@@ -84,23 +82,24 @@ int main(int argc, char **argv)
     signal(SIGTERM, &sigcatcher);
     SOFA_PBRPC_SET_LOG_LEVEL(NOTICE);
     
-    pthread_t t[tn];
+    pthread_t threads[tn];
     pending = new sofa::pbrpc::AtomicCounter[tn];
+    int* indexs = new int[tn];;
     for (int i = 0; i < tn; ++i) 
     {
-        if (pthread_create(&t[i], NULL, StartCall, static_cast<void*>(&i))) 
+        indexs[i] = i;
+        if (pthread_create(&threads[i], NULL, StartCall, &indexs[i]))
         {
             SLOG(ERROR, "start thread failed");
             return EXIT_FAILURE;
         }
     }
-    while(s_is_running)
-        sleep(1);
     for (int i = 0; i < tn; ++i) 
     {
-        pthread_join(t[i], NULL);
+        pthread_join(threads[i], NULL);
     }
     delete []pending;
+    delete []indexs;
     return EXIT_SUCCESS;
 }
 
