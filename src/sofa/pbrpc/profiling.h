@@ -1,8 +1,6 @@
 // Copyright (c) 2016 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Author: shichengyi@baidu.com (Shi Chengyi)
 
 #ifndef _SOFA_PBRPC_PROFILING_H_
 #define _SOFA_PBRPC_PROFILING_H_
@@ -90,4 +88,4 @@ private:
 } // namespace pbrpc
 } // namespace sofa
 
-#endif // _SOFA_PBRPC_WEB_SERVICE_H_
+#endif // _SOFA_PBRPC_PROFILING_H_
