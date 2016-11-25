@@ -1,8 +1,6 @@
 // Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Author: qinzuoyan01@baidu.com (Qin Zuoyan)
 
 #include <sofa/pbrpc/timeout_manager.h>
 #include <sofa/pbrpc/timeout_manager_impl.h>

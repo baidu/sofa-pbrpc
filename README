@@ -25,14 +25,14 @@ Dependings
 ----------
 The lib depends on boost-1.53.0 (only need header), protobuf-2.4.1, snappy and zlib:
   boost - http://www.boost.org/
-  protobuf - http://code.google.com/p/protobuf/
-  snappy - http://code.google.com/p/snappy/
+  protobuf - https://github.com/google/protobuf
+  snappy - https://github.com/google/snappy
   zlib - http://zlib.net/
 
 ATTENTION: boost header is only needed when compiling the lib, but no need for user code.
 
 Extrally, './unit-test' and './sample/mock_sample' also depends on gtest:
-  gtest - http://code.google.com/p/googletest/
+  gtest - https://github.com/google/googletest
 
 Build
 -----
@@ -54,6 +54,10 @@ For sample codes, please refer to './sample' and the wiki.
 Performance
 -----------
 For performace details, please refer to the wiki.
+
+Implementation
+-----------
+For implementation details, please refer to the wiki and file 'doc/sofa-pbrpc-document.md'.
 
 Support
 -------
