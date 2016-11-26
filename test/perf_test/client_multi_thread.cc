@@ -84,11 +84,11 @@ int main(int argc, char **argv)
     
     pthread_t threads[tn];
     pending = new sofa::pbrpc::AtomicCounter[tn];
-    int* indexs = new int[tn];;
+    int ids[tn];
     for (int i = 0; i < tn; ++i) 
     {
-        indexs[i] = i;
-        if (pthread_create(&threads[i], NULL, StartCall, &indexs[i]))
+        ids[i] = i;
+        if (pthread_create(&threads[i], NULL, StartCall, &ids[i]))
         {
             SLOG(ERROR, "start thread failed");
             return EXIT_FAILURE;
@@ -99,7 +99,6 @@ int main(int argc, char **argv)
         pthread_join(threads[i], NULL);
     }
     delete []pending;
-    delete []indexs;
     return EXIT_SUCCESS;
 }
 
