@@ -77,10 +77,10 @@ client_serial: $(PROTO_OBJ) client_serial.o
 client_parallel: $(PROTO_OBJ) client_parallel.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_multi_thread: $(PROTO_OBJ) client_multi_thread.o
+client_multi_server: $(PROTO_OBJ) client_multi_server.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
-client_multi_server: $(PROTO_OBJ) client_multi_server.o
+client_multi_thread: $(PROTO_OBJ) client_multi_thread.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
