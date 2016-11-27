@@ -48,7 +48,7 @@ PROTO_SRC=echo_service.proto
 PROTO_OBJ=$(patsubst %.proto,%.pb.o,$(PROTO_SRC))
 PROTO_OPTIONS=--proto_path=. --proto_path=$(SOFA_PBRPC)/include --proto_path=$(PROTOBUF_DIR)/include
 
-BIN=echo_server client_serial client_parallel client_multi_server
+BIN=echo_server client_serial client_parallel client_multi_server client_multi_thread
 
 all: check_depends $(BIN)
 
@@ -78,6 +78,9 @@ client_parallel: $(PROTO_OBJ) client_parallel.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 client_multi_server: $(PROTO_OBJ) client_multi_server.o
+	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
+
+client_multi_thread: $(PROTO_OBJ) client_multi_thread.o
 	$(CXX) $^ -o $@ $(LIBRARY) $(LDFLAGS)
 
 %.pb.o: %.pb.cc
