@@ -26,7 +26,9 @@ public:
     {
         PAGE = 1,
         GRAPH = 2,
-        NEW_GRAPH = 3
+        NEW_GRAPH = 3,
+        DIFF = 4,
+        CLEANUP = 5
     };
 
     enum Status
@@ -38,11 +40,13 @@ public:
     };
 
     std::string ProfilingPage(ProfilingType profiling_type, 
-                              DataType data_type);
+                              DataType data_type,
+                              std::string& profiling_file,
+                              std::string& profiling_base);
 
-    Status DoCpuProfiling(DataType data_type);
+    Status DoCpuProfiling(DataType data_type, std::string& profiling_file);
 
-    int DoMemoryProfiling();
+    Status DoMemoryProfiling(DataType data_type, std::string& profiling_file);
 
     static Profiling* Instance();
 
@@ -57,7 +61,8 @@ private:
 
     void MemoryProfilingFunc();
 
-    std::string ShowResult();
+    std::string ShowResult(ProfilingType profiling_type,
+            const std::string& profiling_file, const std::string& profiling_base);
 
     static void InitProfiling();
     
@@ -70,7 +75,9 @@ private:
     };
 
 private:
-    volatile bool _is_profiling;
+    volatile bool _is_cpu_profiling;
+
+    volatile bool _is_mem_profiling;
 
     volatile bool _is_initialized;
 
