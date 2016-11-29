@@ -57,7 +57,7 @@ static bool IsFileExist(const std::string& path)
     }
 }
 
-static std::string exec(const std::string& cmd)
+static std::string Exec(const std::string& cmd)
 {
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) return "ERROR";
@@ -72,9 +72,21 @@ static std::string exec(const std::string& cmd)
     return result;
 }
 
+static std::string Readlink(const char* symbol_link)
+{
+    char buf[PATH_MAX + 1];
+    ssize_t len = ::readlink(symbol_link, buf, PATH_MAX);
+    if (len <= 0)
+    {
+        return std::string();
+    }
+
+    buf[len] = '\0';
+    return std::string(buf);
+}
+
 void Profiling::CpuProfilingFunc()
 {
-    // TODO
     bool ret = Mkdir(_dir.path + "/rpc_profiling");
     if (ret == false)
     {
@@ -113,17 +125,7 @@ int Profiling::Init()
         return -1;
     }
 
-    char buf[PATH_MAX];
-    memset(buf, 0, PATH_MAX);
-    const char* link = "/proc/self/exe";
-    ssize_t r = readlink(link, buf, PATH_MAX);
-    if (r == -1)
-    {
-        return -1;
-    }
-
-    // TODO
-    std::string path(buf);
+    std::string path = Readlink("/proc/self/exe");
     int pos = path.rfind("/");
     if (pos < 0)
     {
@@ -168,7 +170,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 oss.str("");
                 oss.clear();
                 std::string dot = 
-                    exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
+                    Exec("perl " + _dir.path + "/rpc_profiling/pprof.perl --dot " 
                          + _dir.path + "/"+ _dir.name + " " + _dir.path 
                          + "/rpc_profiling/tmp.prof");
                 oss << dot;
