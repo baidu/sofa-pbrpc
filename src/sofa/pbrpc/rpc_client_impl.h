@@ -104,7 +104,6 @@ private:
     int64 _slice_quota_out;
     int64 _max_pending_buffer_size;
     int64 _keep_alive_ticks;
-    int64 _print_connection_interval_ticks;
 
     FlowControllerPtr _flow_controller;
 
