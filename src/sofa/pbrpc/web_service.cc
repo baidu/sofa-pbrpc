@@ -192,6 +192,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
 #endif
         return NULL;
     }
+    Servlet s = it->second.first;
     _servlet_map->erase(it);
 #if defined( LOG )
     LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
@@ -200,7 +201,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
     SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} success", 
          path.c_str(), real_path.c_str());
 #endif
-    return it->second.first;
+    return s;
 }
 
 bool WebService::RoutePage(
