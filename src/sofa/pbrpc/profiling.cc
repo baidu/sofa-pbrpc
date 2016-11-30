@@ -118,7 +118,7 @@ static bool IsFileExist(const std::string& path)
     }
 }
 
-static std::string exec(const std::string& cmd)
+static std::string Exec(const std::string& cmd)
 {
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) return "ERROR";
@@ -131,6 +131,19 @@ static std::string exec(const std::string& cmd)
     }
     pclose(pipe);
     return result;
+}
+
+static std::string Readlink(const char* symbol_link)
+{
+    char buf[PATH_MAX + 1];
+    ssize_t len = ::readlink(symbol_link, buf, PATH_MAX);
+    if (len <= 0)
+    {
+        return std::string();
+    }
+
+    buf[len] = '\0';
+    return std::string(buf);
 }
 
 void Profiling::CpuProfilingFunc()
@@ -213,21 +226,7 @@ int Profiling::Init()
         return -1;
     }
 
-    char buf[PATH_MAX];
-    memset(buf, 0, PATH_MAX);
-    const char* link = "/proc/self/exe";
-    ssize_t r = readlink(link, buf, PATH_MAX);
-    if (r == -1)
-    {
-#if defined( LOG )
-        LOG(ERROR) << "Init(): read executed file path failed";
-#else
-        SLOG(ERROR, "Init(): read executed file path failed");
-#endif
-        return -1;
-    }
-
-    std::string path(buf);
+    std::string path = Readlink("/proc/self/exe");
     int pos = path.rfind("/");
     if (pos < 0)
     {
@@ -289,7 +288,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 {
                     cmd.append(" --base " + _dir.path + CPU_PROFILING_PATH + base_prof);
                 }
-                std::string dot = exec(cmd);
+                std::string dot = Exec(cmd);
                 oss << dot;
                 return oss.str();
             }
@@ -354,7 +353,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 {
                     cmd.append(" --base " + _dir.path + MEMORY_PROFILING_PATH + base_prof);
                 }
-                std::string dot = exec(cmd);
+                std::string dot = Exec(cmd);
                 oss << dot;
                 return oss.str();
             }
