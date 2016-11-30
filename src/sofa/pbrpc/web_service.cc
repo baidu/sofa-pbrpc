@@ -192,6 +192,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
 #endif
         return NULL;
     }
+    Servlet s = it->second.first;
     _servlet_map->erase(it);
 #if defined( LOG )
     LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
@@ -200,7 +201,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
     SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} success", 
          path.c_str(), real_path.c_str());
 #endif
-    return it->second.first;
+    return s;
 }
 
 bool WebService::RoutePage(
@@ -244,9 +245,9 @@ Servlet WebService::FindServlet(const std::string& path)
     std::string real_path = FormatPath(path);
     StringUtils::split(real_path, PATH_SPLITTER, &path_vec);
     std::size_t path_len = real_path.size();
-    ServletMap::iterator map_it;
     std::vector<std::string>::reverse_iterator vec_it = path_vec.rbegin();
     ServletMapPtr servlets = GetServletPtr();
+    ServletMap::iterator map_it = servlets->end();
     size_t sub_len = 0;
     for (; vec_it != path_vec.rend(); ++vec_it)
     {
