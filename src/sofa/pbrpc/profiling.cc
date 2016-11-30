@@ -7,7 +7,9 @@
 #include <unistd.h>
 #include <fstream>
 #include <dirent.h>
+
 #include <set>
+
 #include <sofa/pbrpc/profiling.h>
 #include <sofa/pbrpc/pprof_perl.h>
 #include <sofa/pbrpc/viz_min_js.h>
@@ -244,6 +246,7 @@ int Profiling::Init()
     {
         return -1;
     }
+    InitParamMap();
     _is_initialized = true;
     return 0;
 }
@@ -254,6 +257,27 @@ Profiling::~Profiling()
     {
         _profiling_thread_group->stop();
         _profiling_thread_group.reset();
+    }
+}
+
+void Profiling::InitParamMap()
+{
+    _param_map["graph"] = GRAPH;
+    _param_map["newgraph"] = NEW_GRAPH;
+    _param_map["diff"] = DIFF;
+    _param_map["cleanup"] = CLEANUP;
+}
+
+Profiling::DataType Profiling::FindDataType(const std::string& data_type)
+{
+    ParamMap::iterator it = _param_map.find(data_type);
+    if (it != _param_map.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return Profiling::PAGE;
     }
 }
 

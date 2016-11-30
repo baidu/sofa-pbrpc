@@ -6,6 +6,8 @@
 #define _SOFA_PBRPC_PROFILING_H_
 
 #include <string>
+#include <map>
+
 #include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/thread_group_impl.h>
 
@@ -31,6 +33,8 @@ public:
         CLEANUP = 5
     };
 
+    typedef std::map<std::string, DataType> ParamMap;
+
     enum Status
     {
         OK = 1,
@@ -52,17 +56,22 @@ public:
 
     int Init();
 
+    DataType FindDataType(const std::string& data_type);
+
 private:
     Profiling();
 
     ~Profiling();
+
+    void InitParamMap();
 
     void CpuProfilingFunc();
 
     void MemoryProfilingFunc();
 
     std::string ShowResult(ProfilingType profiling_type,
-            const std::string& profiling_file, const std::string& profiling_base);
+                           const std::string& profiling_file,
+                           const std::string& profiling_base);
 
     static void InitProfiling();
     
@@ -88,6 +97,8 @@ private:
     static pthread_once_t _init_once;
 
     static Profiling* _instance;
+
+    ParamMap _param_map;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Profiling);
 };
