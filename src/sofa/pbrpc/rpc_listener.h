@@ -14,13 +14,13 @@
 namespace sofa {
 namespace pbrpc {
 
-using boost::asio::ip::tcp;
+using sofa::pbrpc::boost::asio::ip::tcp;
 
-class RpcListener : public sofa::pbrpc::enable_shared_from_this<RpcListener>
+class RpcListener : public sofa::pbrpc::boost::enable_shared_from_this<RpcListener>
 {
     // Callback function when created or accepted a new connection.
-    typedef boost::function<void(const RpcServerStreamPtr& /* stream */)> Callback;
-    typedef boost::function<void(RpcErrorCode /* error_code */,
+    typedef sofa::pbrpc::boost::function<void(const RpcServerStreamPtr& /* stream */)> Callback;
+    typedef sofa::pbrpc::boost::function<void(RpcErrorCode /* error_code */,
             const std::string& /* error_text */)> FailCallback;
 
 public:
@@ -50,7 +50,7 @@ public:
         if (_is_closed) return;
         _is_closed = true;
 
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
         _acceptor.cancel(ec);
         _acceptor.close(ec);
 
@@ -91,7 +91,7 @@ public:
     // Start listen.  Return false if failed.
     bool start_listen()
     {
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
 
         _acceptor.open(_endpoint.protocol(), ec);
         if (ec)
@@ -146,7 +146,7 @@ public:
             return false;
         }
 
-        //_acceptor.listen(boost::asio::socket_base::max_connections, ec);
+        //_acceptor.listen(sofa::pbrpc::boost::asio::socket_base::max_connections, ec);
         _acceptor.listen(LISTEN_MAX_CONNECTIONS, ec);
         if (ec)
         {
@@ -180,12 +180,12 @@ private:
         if (_create_callback)
             _create_callback(stream);
 
-        _acceptor.async_accept(stream->socket(), boost::bind(
+        _acceptor.async_accept(stream->socket(), sofa::pbrpc::boost::bind(
                     &RpcListener::on_accept, shared_from_this(), stream, _1));
     }
 
     void on_accept(const RpcServerStreamPtr& stream,
-            const boost::system::error_code& ec)
+            const sofa::pbrpc::boost::system::error_code& ec)
     {
         if (_is_closed)
             return;
@@ -204,7 +204,7 @@ private:
 
             if (_accept_fail_callback)
             {
-                RpcErrorCode error_code = ec == boost::asio::error::no_descriptors ?
+                RpcErrorCode error_code = ec == sofa::pbrpc::boost::asio::error::no_descriptors ?
                     RPC_ERROR_TOO_MANY_OPEN_FILES : RPC_ERROR_UNKNOWN;
                 _accept_fail_callback(error_code, ec.message());
             }

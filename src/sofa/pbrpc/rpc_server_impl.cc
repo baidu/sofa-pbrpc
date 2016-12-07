@@ -128,11 +128,11 @@ bool RpcServerImpl::Start(const std::string& server_address)
     }
 
     _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
-    _listener->set_create_callback(boost::bind(
+    _listener->set_create_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnCreated, shared_from_this(), _1));
-    _listener->set_accept_callback(boost::bind(
+    _listener->set_accept_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnAccepted, shared_from_this(), _1));
-    _listener->set_accept_fail_callback(boost::bind(
+    _listener->set_accept_fail_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnAcceptFailed, shared_from_this(), _1, _2));
     if (!_listener->start_listen())
     {
@@ -157,7 +157,7 @@ bool RpcServerImpl::Start(const std::string& server_address)
 
     _timer_worker.reset(new TimerWorker(_maintain_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(MAINTAIN_INTERVAL_IN_MS));
-    _timer_worker->set_work_routine(boost::bind(
+    _timer_worker->set_work_routine(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::TimerMaintain, shared_from_this(), _1));
     _timer_worker->start();
 
@@ -354,11 +354,11 @@ bool RpcServerImpl::RestartListen()
 
     // reset and restart listener
     _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
-    _listener->set_create_callback(boost::bind(
+    _listener->set_create_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnCreated, shared_from_this(), _1));
-    _listener->set_accept_callback(boost::bind(
+    _listener->set_accept_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnAccepted, shared_from_this(), _1));
-    _listener->set_accept_fail_callback(boost::bind(
+    _listener->set_accept_fail_callback(sofa::pbrpc::boost::bind(
                 &RpcServerImpl::OnAcceptFailed, shared_from_this(), _1, _2));
     if (!_listener->start_listen())
     {
@@ -382,9 +382,9 @@ void RpcServerImpl::OnCreated(const RpcServerStreamPtr& stream)
 {
     stream->set_flow_controller(_flow_controller);
     stream->set_received_request_callback(
-            boost::bind(&RpcServerImpl::OnReceived, shared_from_this(), _1, _2));
+            sofa::pbrpc::boost::bind(&RpcServerImpl::OnReceived, shared_from_this(), _1, _2));
     stream->set_closed_stream_callback(
-            boost::bind(&RpcServerImpl::OnClosed, shared_from_this(), _1));
+            sofa::pbrpc::boost::bind(&RpcServerImpl::OnClosed, shared_from_this(), _1));
 }
 
 void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
@@ -398,7 +398,7 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
     if (_options.max_connection_count != -1 && ConnectionCount() >= _options.max_connection_count)
     {
         stream->close("exceed max connection count "
-                      + boost::lexical_cast<std::string>(_options.max_connection_count));
+                      + sofa::pbrpc::boost::lexical_cast<std::string>(_options.max_connection_count));
         return;
     }
 
@@ -500,7 +500,7 @@ void RpcServerImpl::TimerMaintain(const PTime& now)
                         && stream->pending_process_count() == 0)
                 {
                     stream->close("keep alive timeout: "
-                                  + boost::lexical_cast<std::string>(_options.keep_alive_time)
+                                  + sofa::pbrpc::boost::lexical_cast<std::string>(_options.keep_alive_time)
                                   + " seconds");
                 }
                 else

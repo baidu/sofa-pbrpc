@@ -83,7 +83,7 @@ void SimpleRpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor
     RpcController* sofa_controller = dynamic_cast<RpcController*>(controller);
     SCHECK(sofa_controller != NULL); // should be sofa::pbrpc::RpcController
     RpcControllerImplPtr cntl = sofa_controller->impl();
-    cntl->PushDoneCallback(boost::bind(&SimpleRpcChannelImpl::DoneCallback,
+    cntl->PushDoneCallback(sofa::pbrpc::boost::bind(&SimpleRpcChannelImpl::DoneCallback,
                 shared_from_this(), done, _1));
     cntl->FillFromMethodDescriptor(method);
     if (done == NULL)

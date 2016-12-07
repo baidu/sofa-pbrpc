@@ -1,0 +1,10 @@
+> lexical_cast.hpp:#ifndef BOOST_NO_CXX11_CHAR16_T
+> lexical_cast.hpp:#ifndef BOOST_NO_CXX11_CHAR32_T
+> static_assert.hpp:#ifndef BOOST_NO_CXX11_STATIC_ASSERT
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS
+> static_assert.hpp:#ifndef BOOST_NO_CXX11_STATIC_ASSERT
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS
+> static_assert.hpp:#  ifndef BOOST_NO_CXX11_VARIADIC_MACROS

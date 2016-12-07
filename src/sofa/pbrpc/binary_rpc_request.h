@@ -15,7 +15,7 @@ namespace pbrpc {
 class BinaryRpcRequestParser;
 
 class BinaryRpcRequest;
-typedef sofa::pbrpc::shared_ptr<BinaryRpcRequest> BinaryRpcRequestPtr;
+typedef sofa::pbrpc::boost::shared_ptr<BinaryRpcRequest> BinaryRpcRequestPtr;
 
 class BinaryRpcRequest : public RpcRequest
 {

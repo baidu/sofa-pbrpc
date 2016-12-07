@@ -85,7 +85,7 @@ void BinaryRpcRequest::ProcessRequest(
     }
     else
     {
-        sofa::pbrpc::scoped_ptr<AbstractCompressedInputStream> is(
+        sofa::pbrpc::boost::scoped_ptr<AbstractCompressedInputStream> is(
                 get_compressed_input_stream(_req_body.get(), compress_type));
         parse_request_return = request->ParseFromZeroCopyStream(is.get());
     }
@@ -157,7 +157,7 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
     }
     else
     {
-        sofa::pbrpc::scoped_ptr<AbstractCompressedOutputStream> os(
+        sofa::pbrpc::boost::scoped_ptr<AbstractCompressedOutputStream> os(
                 get_compressed_output_stream(&write_buffer, meta.compress_type()));
         ser_ret = response->SerializeToZeroCopyStream(os.get());
         os->Flush();

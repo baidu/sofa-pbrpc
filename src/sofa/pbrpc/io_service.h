@@ -29,29 +29,33 @@
 #endif // defined(__linux__)
 
 **************************************************************************/
+//#ifndef BOOST_ASIO_STANDALONE
+//#define BOOST_ASIO_STANDALONE 1
+//#endif
+
 #if __APPLE__
 #undef BOOST_ASIO_HAS_EPOLL
 #else
 #define BOOST_ASIO_HAS_EPOLL 1
 #endif
 
-#include <boost/asio.hpp>
+#include <sofa/pbrpc/boost/asio.hpp>
 #include <sofa/pbrpc/common.h>
 
 namespace sofa {
 namespace pbrpc {
 
-typedef boost::asio::io_service IOService;
-typedef sofa::pbrpc::shared_ptr<IOService> IOServicePtr;
+typedef sofa::pbrpc::boost::asio::io_service IOService;
+typedef sofa::pbrpc::boost::shared_ptr<IOService> IOServicePtr;
 
-typedef boost::asio::io_service::work IOServiceWork;
-typedef sofa::pbrpc::shared_ptr<IOServiceWork> IOServiceWorkPtr;
+typedef sofa::pbrpc::boost::asio::io_service::work IOServiceWork;
+typedef sofa::pbrpc::boost::shared_ptr<IOServiceWork> IOServiceWorkPtr;
 
-typedef boost::asio::io_service::strand IOServiceStrand;
-typedef sofa::pbrpc::shared_ptr<IOServiceStrand> IOServiceStrandPtr;
+typedef sofa::pbrpc::boost::asio::io_service::strand IOServiceStrand;
+typedef sofa::pbrpc::boost::shared_ptr<IOServiceStrand> IOServiceStrandPtr;
 
-typedef boost::asio::deadline_timer IOServiceTimer;
-typedef sofa::pbrpc::shared_ptr<IOServiceTimer> IOServiceTimerPtr;
+typedef sofa::pbrpc::boost::asio::deadline_timer IOServiceTimer;
+typedef sofa::pbrpc::boost::shared_ptr<IOServiceTimer> IOServiceTimerPtr;
 
 } // namespace pbrpc
 } // namespace sofa

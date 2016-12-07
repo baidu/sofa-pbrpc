@@ -7,10 +7,10 @@
 
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/indexed_by.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/member.hpp>
+#include <sofa/pbrpc/boost/multi_index_container.hpp>
+#include <sofa/pbrpc/boost/multi_index/indexed_by.hpp>
+#include <sofa/pbrpc/boost/multi_index/ordered_index.hpp>
+#include <sofa/pbrpc/boost/multi_index/member.hpp>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/timeout_manager.h>
@@ -22,9 +22,9 @@ namespace pbrpc {
 
 // Defined in this file.
 class TimeoutManagerImpl;
-typedef sofa::pbrpc::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
+typedef sofa::pbrpc::boost::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
 
-class TimeoutManagerImpl : public sofa::pbrpc::enable_shared_from_this<TimeoutManagerImpl>
+class TimeoutManagerImpl : public sofa::pbrpc::boost::enable_shared_from_this<TimeoutManagerImpl>
 {
 public:
     // Thread number for timer and callbacks.
@@ -72,13 +72,13 @@ private:
             : id(i), expiration(e), repeat_interval(r), callback(c) {}
     };
 
-    typedef boost::multi_index_container<
+    typedef sofa::pbrpc::boost::multi_index_container<
         Event,
-        boost::multi_index::indexed_by<
-            boost::multi_index::ordered_unique<boost::multi_index::member<
+        sofa::pbrpc::boost::multi_index::indexed_by<
+            sofa::pbrpc::boost::multi_index::ordered_unique<sofa::pbrpc::boost::multi_index::member<
             Event, Id, &Event::id
             > >,
-        boost::multi_index::ordered_non_unique<boost::multi_index::member<
+        sofa::pbrpc::boost::multi_index::ordered_non_unique<sofa::pbrpc::boost::multi_index::member<
             Event, int64, &Event::expiration
             > >
         >

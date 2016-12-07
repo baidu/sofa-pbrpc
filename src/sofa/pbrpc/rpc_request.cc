@@ -200,7 +200,7 @@ void RpcRequest::SendSucceedResponse(
     }
 
     real_stream->send_response(buffer,
-            boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
+            sofa::pbrpc::boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
 }
 
 void RpcRequest::SendFailedResponse(
@@ -239,7 +239,7 @@ void RpcRequest::SendFailedResponse(
     }
 
     real_stream->send_response(read_buffer,
-            boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
+            sofa::pbrpc::boost::bind(&RpcRequest::OnSendResponseDone, shared_from_this(), _1));
 }
 
 void RpcRequest::OnSendResponseDone(

@@ -13,7 +13,7 @@ namespace sofa {
 namespace pbrpc {
 
 class RpcRequestParser;
-typedef sofa::pbrpc::shared_ptr<RpcRequestParser> RpcRequestParserPtr;
+typedef sofa::pbrpc::boost::shared_ptr<RpcRequestParser> RpcRequestParserPtr;
 
 class RpcRequestParser
 {

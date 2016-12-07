@@ -7,15 +7,15 @@
 
 #include <cstdio> // for snprintf()
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/local_time_adjustor.hpp>
-#include <boost/date_time/c_local_time_adjustor.hpp>
+#include <sofa/pbrpc/boost/date_time/posix_time/posix_time.hpp>
+#include <sofa/pbrpc/boost/date_time/local_time_adjustor.hpp>
+#include <sofa/pbrpc/boost/date_time/c_local_time_adjustor.hpp>
 
 namespace sofa {
 namespace pbrpc {
 
-typedef boost::posix_time::ptime PTime;
-typedef boost::posix_time::time_duration TimeDuration;
+typedef sofa::pbrpc::boost::posix_time::ptime PTime;
+typedef sofa::pbrpc::boost::posix_time::time_duration TimeDuration;
 
 inline TimeDuration time_duration_microseconds(int64_t);
 inline PTime ptime_now()
@@ -30,20 +30,20 @@ inline PTime ptime_now()
     time_t microsec = tv.tv_sec * 1000000 + tv.tv_usec;
 #endif
     TimeDuration td = time_duration_microseconds(microsec);
-    PTime pt(boost::gregorian::date(1970, 1, 1));
+    PTime pt(sofa::pbrpc::boost::gregorian::date(1970, 1, 1));
     pt += td;
     return pt;
 }
 
 inline PTime ptime_infin()
 {
-    return boost::posix_time::ptime(boost::posix_time::pos_infin);
+    return sofa::pbrpc::boost::posix_time::ptime(sofa::pbrpc::boost::posix_time::pos_infin);
 }
 
 inline std::string ptime_to_string(const PTime& t)
 {
     // see <http://www.boost.org/doc/libs/1_40_0/doc/html/date_time/examples.html>
-    typedef boost::date_time::c_local_adjustor<PTime> local_adj;
+    typedef sofa::pbrpc::boost::date_time::c_local_adjustor<PTime> local_adj;
     PTime lt = local_adj::utc_to_local(t);
     PTime::date_type date = lt.date();
     TimeDuration tod = lt.time_of_day();
@@ -61,27 +61,27 @@ inline std::string ptime_to_string(const PTime& t)
 
 inline TimeDuration time_duration_hours(int64_t n)
 {
-    return boost::posix_time::hours(static_cast<long>(n));
+    return sofa::pbrpc::boost::posix_time::hours(static_cast<long>(n));
 }
 
 inline TimeDuration time_duration_minutes(int64_t n)
 {
-    return boost::posix_time::minutes(static_cast<long>(n));
+    return sofa::pbrpc::boost::posix_time::minutes(static_cast<long>(n));
 }
 
 inline TimeDuration time_duration_seconds(int64_t n)
 {
-    return boost::posix_time::seconds(static_cast<long>(n));
+    return sofa::pbrpc::boost::posix_time::seconds(static_cast<long>(n));
 }
 
 inline TimeDuration time_duration_milliseconds(int64_t n)
 {
-    return boost::posix_time::milliseconds(static_cast<long>(n));
+    return sofa::pbrpc::boost::posix_time::milliseconds(static_cast<long>(n));
 }
 
 inline TimeDuration time_duration_microseconds(int64_t n)
 {
-    return boost::posix_time::microseconds(static_cast<long>(n));
+    return sofa::pbrpc::boost::posix_time::microseconds(static_cast<long>(n));
 }
 
 } // namespace pbrpc

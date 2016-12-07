@@ -10,10 +10,10 @@
 namespace sofa {
 namespace pbrpc {
 
-class TimerWorker : public sofa::pbrpc::enable_shared_from_this<TimerWorker>
+class TimerWorker : public sofa::pbrpc::boost::enable_shared_from_this<TimerWorker>
 {
 public:
-    typedef boost::function<void(const PTime& /* now */)> WorkRoutine;
+    typedef sofa::pbrpc::boost::function<void(const PTime& /* now */)> WorkRoutine;
 
 public:
     TimerWorker(IOService& io_service)
@@ -53,7 +53,7 @@ public:
 
         ScopedLocker<MutexLock> _(_timer_lock);
         _timer.expires_from_now(_time_duration);
-        _timer.async_wait(_strand.wrap(boost::bind(
+        _timer.async_wait(_strand.wrap(sofa::pbrpc::boost::bind(
                 &TimerWorker::on_timeout, shared_from_this(), _1)));
     }
 
@@ -67,20 +67,20 @@ public:
     }
 
 private:
-    void on_timeout(const boost::system::error_code& ec)
+    void on_timeout(const sofa::pbrpc::boost::system::error_code& ec)
     {
         if (_is_running)
         {
             PTime now = ptime_now();
 
-            if (ec != boost::asio::error::operation_aborted && _work_routine)
+            if (ec != sofa::pbrpc::boost::asio::error::operation_aborted && _work_routine)
             {
                 _work_routine(now);
             }
 
             ScopedLocker<MutexLock> _(_timer_lock);
             _timer.expires_at(now + _time_duration);
-            _timer.async_wait(_strand.wrap(boost::bind(
+            _timer.async_wait(_strand.wrap(sofa::pbrpc::boost::bind(
                             &TimerWorker::on_timeout, shared_from_this(), _1)));
         }
     }

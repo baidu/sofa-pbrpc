@@ -9,7 +9,7 @@
 namespace sofa {
 namespace pbrpc {
 
-using boost::asio::ip::tcp;
+using sofa::pbrpc::boost::asio::ip::tcp;
 
 std::string RpcEndpointToString(const RpcEndpoint& endpoint)
 {
@@ -33,7 +33,7 @@ bool ResolveAddress(IOService& io_service,
         RpcEndpoint* endpoint)
 {
     tcp::resolver resolver(io_service);
-    boost::system::error_code ec;
+    sofa::pbrpc::boost::system::error_code ec;
     tcp::resolver::iterator it = resolver.resolve(tcp::resolver::query(host, svc), ec), end;
     if (it != end)
     {

@@ -8,10 +8,10 @@
 #include <queue>
 #include <set>
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/indexed_by.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/member.hpp>
+#include <sofa/pbrpc/boost/multi_index_container.hpp>
+#include <sofa/pbrpc/boost/multi_index/indexed_by.hpp>
+#include <sofa/pbrpc/boost/multi_index/ordered_index.hpp>
+#include <sofa/pbrpc/boost/multi_index/member.hpp>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
@@ -21,7 +21,7 @@
 namespace sofa {
 namespace pbrpc {
 
-class RpcTimeoutManager : public sofa::pbrpc::enable_shared_from_this<RpcTimeoutManager>
+class RpcTimeoutManager : public sofa::pbrpc::boost::enable_shared_from_this<RpcTimeoutManager>
 {
 public:
     RpcTimeoutManager(IOService& io_service)
@@ -51,7 +51,7 @@ public:
 
         _timer_worker.reset(new TimerWorker(_io_service));
         _timer_worker->set_time_duration(time_duration_milliseconds(100));
-        _timer_worker->set_work_routine(boost::bind(
+        _timer_worker->set_work_routine(sofa::pbrpc::boost::bind(
                     &RpcTimeoutManager::timer_run, shared_from_this(), _1));
         _timer_worker->start();
     }
@@ -243,13 +243,13 @@ private:
         }
     };
 
-    typedef boost::multi_index_container<
+    typedef sofa::pbrpc::boost::multi_index_container<
         Event,
-        boost::multi_index::indexed_by<
-            boost::multi_index::ordered_unique< boost::multi_index::member<
+        sofa::pbrpc::boost::multi_index::indexed_by<
+            sofa::pbrpc::boost::multi_index::ordered_unique< sofa::pbrpc::boost::multi_index::member<
             Event, uint64, &Event::id
             > >,
-        boost::multi_index::ordered_non_unique< boost::multi_index::member<
+        sofa::pbrpc::boost::multi_index::ordered_non_unique< sofa::pbrpc::boost::multi_index::member<
             Event, int64, &Event::expiration
             > >
         >

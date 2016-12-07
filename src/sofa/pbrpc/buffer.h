@@ -18,9 +18,9 @@ namespace pbrpc {
 
 // Defined in this file.
 class ReadBuffer;
-typedef sofa::pbrpc::shared_ptr<ReadBuffer> ReadBufferPtr;
+typedef sofa::pbrpc::boost::shared_ptr<ReadBuffer> ReadBufferPtr;
 class WriteBuffer;
-typedef sofa::pbrpc::shared_ptr<WriteBuffer> WriteBufferPtr;
+typedef sofa::pbrpc::boost::shared_ptr<WriteBuffer> WriteBufferPtr;
 
 typedef std::deque<BufHandle> BufHandleList;
 typedef std::deque<BufHandle>::iterator BufHandleListIterator;

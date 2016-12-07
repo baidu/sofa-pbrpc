@@ -5,7 +5,7 @@
 #ifndef _SOFA_PBRPC_FUNC_TRACER_H_
 #define _SOFA_PBRPC_FUNC_TRACER_H_
 
-#include <boost/current_function.hpp>
+#include <sofa/pbrpc/boost/current_function.hpp>
 
 #include <sofa/pbrpc/common_internal.h>
 

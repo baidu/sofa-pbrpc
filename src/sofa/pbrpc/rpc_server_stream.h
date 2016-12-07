@@ -13,18 +13,18 @@ namespace sofa {
 namespace pbrpc {
 
 // Callback function when received request message.
-typedef boost::function<void(
+typedef sofa::pbrpc::boost::function<void(
         const RpcServerStreamWPtr& /* stream */,
         const RpcRequestPtr& /* request */)> ReceivedRequestCallback;
 
 // Callback function when closed server stream.
-typedef boost::function<void(
+typedef sofa::pbrpc::boost::function<void(
         const RpcServerStreamPtr& /* stream */)> ClosedServerStreamCallback;
 
 // Callback function when send response message done.
 //  * if "status" == RPC_SUCCESS, means send response succeed;
 //  * else, means send failed.
-typedef boost::function<void(
+typedef sofa::pbrpc::boost::function<void(
         RpcErrorCode /* status */)> SendResponseCallback;
 
 class RpcServerStream : public RpcServerMessageStream<SendResponseCallback>
@@ -105,7 +105,7 @@ private:
         if (_closed_stream_callback)
         {
             _closed_stream_callback(
-                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
+                    sofa::pbrpc::boost::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
         }
     }
 
@@ -145,7 +145,7 @@ private:
         if (_received_request_callback)
         {
             _received_request_callback(
-                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()),
+                    sofa::pbrpc::boost::dynamic_pointer_cast<RpcServerStream>(shared_from_this()),
                     request);
         }
     }

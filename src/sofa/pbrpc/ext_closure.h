@@ -14,7 +14,7 @@
 // 2, Support pass argument by reference, though bind
 //    always by value.
 // 3, When bind class method, support use
-//    "sofa::pbrpc::shared_ptr" as this pointer of class.
+//    "sofa::pbrpc::boost::shared_ptr" as this pointer of class.
 // 4, Support create temporary and permanent closure:
 //    Temporary closure (self destoryed after call):
 //        NewExtClosure();
@@ -50,7 +50,7 @@
 //    ExtClosure<int(double)>* c4 = NewPermanentExtClosure(&obj, &C1::m1, 1);
 //    c4->Run(2.0);
 //    
-//    class C2 : public sofa::pbrpc::enable_shared_from_this<C2>
+//    class C2 : public sofa::pbrpc::boost::enable_shared_from_this<C2>
 //    {
 //        public:
 //            int m1(int pre_arg, double post_arg);

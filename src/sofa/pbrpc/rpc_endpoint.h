@@ -11,7 +11,7 @@ namespace sofa {
 namespace pbrpc {
 
 // RpcEndpoint is a tuple <host:port>.
-typedef boost::asio::ip::tcp::endpoint RpcEndpoint;
+typedef sofa::pbrpc::boost::asio::ip::tcp::endpoint RpcEndpoint;
 
 // Convert RpcEndpoint to string.
 std::string RpcEndpointToString(const RpcEndpoint& endpoint);

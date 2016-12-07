@@ -20,7 +20,7 @@ include depends.mk
 
 #-----------------------------------------------
 CXX=g++
-INCPATH=-I. -I../src -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include \
+INCPATH=-I. -I../src -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -fno-access-control $(INCPATH)
 

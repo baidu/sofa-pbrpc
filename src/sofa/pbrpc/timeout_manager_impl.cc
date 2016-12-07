@@ -38,7 +38,7 @@ void TimeoutManagerImpl::start()
 
     _timer_worker.reset(new TimerWorker(_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(kTimerGranularity));
-    _timer_worker->set_work_routine(boost::bind(
+    _timer_worker->set_work_routine(sofa::pbrpc::boost::bind(
                 &TimeoutManagerImpl::timer_run, shared_from_this(), _1));
     _timer_worker->start();
 }

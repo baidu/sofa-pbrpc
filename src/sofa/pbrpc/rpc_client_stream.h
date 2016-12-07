@@ -13,7 +13,7 @@ namespace sofa {
 namespace pbrpc {
 
 // Callback function when closed client stream.
-typedef boost::function<void(
+typedef sofa::pbrpc::boost::function<void(
         const RpcClientStreamPtr& /* stream */)> ClosedClientStreamCallback;
 
 class RpcClientStream : public RpcMessageStream<RpcControllerImplPtr>
@@ -108,7 +108,7 @@ private:
         if (_closed_stream_callback)
         {
             _closed_stream_callback(
-                    sofa::pbrpc::dynamic_pointer_cast<RpcClientStream>(shared_from_this()));
+                    sofa::pbrpc::boost::dynamic_pointer_cast<RpcClientStream>(shared_from_this()));
         }
     }
 

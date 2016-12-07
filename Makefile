@@ -76,7 +76,7 @@ endif
 #-----------------------------------------------
 
 CXX=g++
-INCPATH=-Isrc -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
+INCPATH=-Isrc -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
 LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lprotobuf -lsnappy -lpthread -lz
@@ -86,7 +86,6 @@ LDFLAGS += -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lproto
 all: build
 
 check_depends:
-	@if [ ! -f "$(BOOST_HEADER_DIR)/boost/smart_ptr.hpp" ]; then echo "ERROR: need boost header"; exit 1; fi
 	@if [ ! -f "$(PROTOBUF_DIR)/include/google/protobuf/message.h" ]; then echo "ERROR: need protobuf header"; exit 1; fi
 	@if [ ! -f "$(PROTOBUF_DIR)/lib/libprotobuf.a" ]; then echo "ERROR: need protobuf lib"; exit 1; fi
 	@if [ ! -f "$(SNAPPY_DIR)/include/snappy.h" ]; then echo "ERROR: need snappy header"; exit 1; fi
@@ -120,10 +119,11 @@ build: $(LIB) $(BIN)
 install: $(LIB) $(BIN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
 	cp -r $(PUB_INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
-	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
-	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
-	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
-	cp src/sofa/pbrpc/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr
+	cp src/sofa/pbrpc/boost/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr/detail
+	cp src/sofa/pbrpc/boost/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr/detail
+	cp src/sofa/pbrpc/boost/smart_ptr.hpp $(PREFIX)/include/sofa/pbrpc/boost
 	mkdir -p $(PREFIX)/lib
 	cp $(LIB) $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/bin

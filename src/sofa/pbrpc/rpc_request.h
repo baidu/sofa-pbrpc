@@ -11,16 +11,17 @@
 #include <sofa/pbrpc/service_pool.h>
 #include <sofa/pbrpc/buffer.h>
 #include <sofa/pbrpc/ptime.h>
-#include <sofa/pbrpc/smart_ptr/shared_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
+#include <sofa/pbrpc/boost/shared_ptr.hpp>
+#include <sofa/pbrpc/boost/enable_shared_from_this.hpp>
+
 
 namespace sofa {
 namespace pbrpc {
 
 class RpcRequest;
-typedef sofa::pbrpc::shared_ptr<RpcRequest> RpcRequestPtr;
+typedef sofa::pbrpc::boost::shared_ptr<RpcRequest> RpcRequestPtr;
 
-class RpcRequest : public sofa::pbrpc::enable_shared_from_this<RpcRequest>
+class RpcRequest : public sofa::pbrpc::boost::enable_shared_from_this<RpcRequest>
 {
 public:
     enum RpcRequestType

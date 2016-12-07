@@ -54,7 +54,7 @@ public:
                     ::google::protobuf::Closure* done);
 
 private:
-    static void CallMethodDone(const sofa::pbrpc::shared_ptr<RpcControllerImpl>& cntl,
+    static void CallMethodDone(const sofa::pbrpc::boost::shared_ptr<RpcControllerImpl>& cntl,
                                std::string* response,
                                ::google::protobuf::Message* request_message,
                                ::google::protobuf::Message* response_message,

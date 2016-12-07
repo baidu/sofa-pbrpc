@@ -8,9 +8,9 @@
 #include <cstdio> // for snprintf()
 #include <cstring> // for memset()
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <sofa/pbrpc/boost/asio.hpp>
+#include <sofa/pbrpc/boost/bind.hpp>
+#include <sofa/pbrpc/boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
@@ -32,10 +32,10 @@
 namespace sofa {
 namespace pbrpc {
 
-using boost::asio::ip::tcp;
-using namespace boost::asio;
+using sofa::pbrpc::boost::asio::ip::tcp;
+using namespace sofa::pbrpc::boost::asio;
 
-class RpcByteStream : public sofa::pbrpc::enable_shared_from_this<RpcByteStream>
+class RpcByteStream : public sofa::pbrpc::boost::enable_shared_from_this<RpcByteStream>
 {
 public:
     RpcByteStream(IOService& io_service, const RpcEndpoint& endpoint)
@@ -55,7 +55,7 @@ public:
     virtual ~RpcByteStream()
     {
         SOFA_PBRPC_FUNCTION_TRACE;
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
         _socket.close(ec);
         SOFA_PBRPC_DEC_RESOURCE_COUNTER(RpcByteStream);
     }
@@ -67,7 +67,7 @@ public:
         if (atomic_swap(&_status, (int)STATUS_CLOSED) != STATUS_CLOSED)
         {
             snprintf(_error_message, sizeof(_error_message), "%s", reason.c_str());
-            boost::system::error_code ec;
+            sofa::pbrpc::boost::system::error_code ec;
             _socket.shutdown(tcp::socket::shutdown_both, ec);
             on_closed();
             if (_remote_endpoint != RpcEndpoint())
@@ -84,13 +84,13 @@ public:
         }
     }
 
-    void on_connect_timeout(const boost::system::error_code& error) 
+    void on_connect_timeout(const sofa::pbrpc::boost::system::error_code& error) 
     {
         if (_status != STATUS_CONNECTING) 
         {
             return;
         }
-        if (error == boost::asio::error::operation_aborted) 
+        if (error == sofa::pbrpc::boost::asio::error::operation_aborted) 
         {
             return;
         }
@@ -106,11 +106,11 @@ public:
 
         _status = STATUS_CONNECTING;
         _socket.async_connect(_remote_endpoint,
-                boost::bind(&RpcByteStream::on_connect, shared_from_this(), _1));
+                sofa::pbrpc::boost::bind(&RpcByteStream::on_connect, shared_from_this(), _1));
         if (_connect_timeout > 0) 
         {
-            _timer.expires_from_now(boost::posix_time::milliseconds(_connect_timeout));
-            _timer.async_wait(boost::bind(&RpcByteStream::on_connect_timeout, shared_from_this(), _1));
+            _timer.expires_from_now(sofa::pbrpc::boost::posix_time::milliseconds(_connect_timeout));
+            _timer.async_wait(sofa::pbrpc::boost::bind(&RpcByteStream::on_connect_timeout, shared_from_this(), _1));
         }
     }
 
@@ -122,7 +122,7 @@ public:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
         _remote_endpoint = _socket.remote_endpoint(ec);
         if (ec)
         {
@@ -147,7 +147,7 @@ public:
 
         _last_rw_ticks = _ticks;
 
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
         _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
         if (ec)
         {
@@ -268,8 +268,8 @@ protected:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        _socket.async_read_some(boost::asio::buffer(data, size),
-                boost::bind(&RpcByteStream::on_read_some, 
+        _socket.async_read_some(sofa::pbrpc::boost::asio::buffer(data, size),
+                sofa::pbrpc::boost::bind(&RpcByteStream::on_read_some, 
                     shared_from_this(), _1, _2));
     }
 
@@ -278,8 +278,8 @@ protected:
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
-        _socket.async_write_some(boost::asio::buffer(data, size),
-                boost::bind(&RpcByteStream::on_write_some, 
+        _socket.async_write_some(sofa::pbrpc::boost::asio::buffer(data, size),
+                sofa::pbrpc::boost::bind(&RpcByteStream::on_write_some, 
                     shared_from_this(), _1, _2));
     }
 
@@ -292,17 +292,17 @@ protected:
 
     // Callback of "async_read_some()".
     virtual void on_read_some(
-            const boost::system::error_code& error,
+            const sofa::pbrpc::boost::system::error_code& error,
             std::size_t bytes_transferred) = 0;
 
     // Callback of "async_write_some()".
     virtual void on_write_some(
-            const boost::system::error_code& error,
+            const sofa::pbrpc::boost::system::error_code& error,
             std::size_t bytes_transferred) = 0;
 
 private:
     // Callback of "async_connect()".
-    void on_connect(const boost::system::error_code& error)
+    void on_connect(const sofa::pbrpc::boost::system::error_code& error)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
@@ -328,7 +328,7 @@ private:
             return;
         }
 
-        boost::system::error_code ec;
+        sofa::pbrpc::boost::system::error_code ec;
         _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
         if (ec)
         {

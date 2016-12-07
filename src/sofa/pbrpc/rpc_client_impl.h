@@ -19,7 +19,7 @@
 namespace sofa {
 namespace pbrpc {
 
-class RpcClientImpl: public sofa::pbrpc::enable_shared_from_this<RpcClientImpl>
+class RpcClientImpl: public sofa::pbrpc::boost::enable_shared_from_this<RpcClientImpl>
 {
 public:
     static const int MAINTAIN_INTERVAL_IN_MS = 100;
@@ -104,6 +104,7 @@ private:
     int64 _slice_quota_out;
     int64 _max_pending_buffer_size;
     int64 _keep_alive_ticks;
+    int64 _print_connection_interval_ticks;
 
     FlowControllerPtr _flow_controller;
 

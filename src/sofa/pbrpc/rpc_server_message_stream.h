@@ -216,7 +216,7 @@ private:
 
     // Callback of "async_read_some()".
     virtual void on_read_some(
-            const boost::system::error_code& error,
+            const sofa::pbrpc::boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
@@ -225,7 +225,7 @@ private:
 
         if (error)
         {
-            if (error != boost::asio::error::eof)
+            if (error != sofa::pbrpc::boost::asio::error::eof)
             {
 #if defined( LOG )
                 LOG(ERROR) <<  "on_read_some(): " << RpcEndpointToString(_remote_endpoint)
@@ -279,7 +279,7 @@ private:
 
     // Callback of "async_write_some()".
     virtual void on_write_some(
-            const boost::system::error_code& error,
+            const sofa::pbrpc::boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
         SOFA_PBRPC_FUNCTION_TRACE;

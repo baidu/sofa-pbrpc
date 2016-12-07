@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <cstdio>
 
-#include <boost/bind.hpp>
+#include <sofa/pbrpc/boost/bind.hpp>
 
 #include <sofa/pbrpc/io_service.h>
 #include <sofa/pbrpc/ext_closure.h>
@@ -19,7 +19,7 @@ namespace pbrpc {
 
 // Defined in this file.
 class ThreadGroupImpl;
-typedef sofa::pbrpc::shared_ptr<ThreadGroupImpl> ThreadGroupImplPtr;
+typedef sofa::pbrpc::boost::shared_ptr<ThreadGroupImpl> ThreadGroupImplPtr;
 
 // Thread init and destroy function.  Should be permanent closure.
 typedef ExtClosure<bool()>* ThreadInitFunc;
@@ -222,22 +222,22 @@ public:
 
     void dispatch(google::protobuf::Closure* handle)
     {
-        dispatch(boost::bind(&ThreadGroupImpl::closure_run_helper, handle));
+        dispatch(sofa::pbrpc::boost::bind(&ThreadGroupImpl::closure_run_helper, handle));
     }
 
     void post(google::protobuf::Closure* handle)
     {
-        post(boost::bind(&closure_run_helper, handle));
+        post(sofa::pbrpc::boost::bind(&closure_run_helper, handle));
     }
 
     void dispatch(ExtClosure<void()>* handle)
     {
-        dispatch(boost::bind(&ThreadGroupImpl::ext_closure_run_helper, handle));
+        dispatch(sofa::pbrpc::boost::bind(&ThreadGroupImpl::ext_closure_run_helper, handle));
     }
 
     void post(ExtClosure<void()>* handle)
     {
-        post(boost::bind(&ext_closure_run_helper, handle));
+        post(sofa::pbrpc::boost::bind(&ext_closure_run_helper, handle));
     }
 
 private:

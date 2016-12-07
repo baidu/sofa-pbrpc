@@ -81,7 +81,7 @@ void RpcClientImpl::Start()
 
     _timer_worker.reset(new TimerWorker(_maintain_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(MAINTAIN_INTERVAL_IN_MS)); 
-    _timer_worker->set_work_routine(boost::bind(
+    _timer_worker->set_work_routine(sofa::pbrpc::boost::bind(
                 &RpcClientImpl::TimerMaintain, shared_from_this(), _1));
     _timer_worker->start();
 
@@ -302,7 +302,7 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     }
     else
     {
-        ::sofa::pbrpc::scoped_ptr<AbstractCompressedOutputStream> os(
+        ::sofa::pbrpc::boost::scoped_ptr<AbstractCompressedOutputStream> os(
                 get_compressed_output_stream(&write_buffer, meta.compress_type()));
         serialize_request_return = request->SerializeToZeroCopyStream(os.get());
         os->Flush();
@@ -328,7 +328,7 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     cntl->SetRequestBuffer(read_buffer);
 
     // push callback
-    cntl->PushDoneCallback(boost::bind(&RpcClientImpl::DoneCallback, shared_from_this(), response, _1));
+    cntl->PushDoneCallback(sofa::pbrpc::boost::bind(&RpcClientImpl::DoneCallback, shared_from_this(), response, _1));
 
     // add to timeout manager if need
     if (timeout > 0)
@@ -381,7 +381,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
             stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
             stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
-                    boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
+                    sofa::pbrpc::boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
 
             _stream_map[remote_endpoint] = stream;
             create = true;
@@ -445,7 +445,7 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
         }
         else
         {
-            ::sofa::pbrpc::scoped_ptr<AbstractCompressedInputStream> is(
+            ::sofa::pbrpc::boost::scoped_ptr<AbstractCompressedInputStream> is(
                     get_compressed_input_stream(buffer.get(), compress_type));
             parse_response_return = response->ParseFromZeroCopyStream(is.get());
         }
@@ -492,7 +492,7 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
                         && stream->pending_process_count() == 0)
                 {
                     stream->close("keep alive timeout: "
-                                  + boost::lexical_cast<std::string>(_options.keep_alive_time)
+                                  + sofa::pbrpc::boost::lexical_cast<std::string>(_options.keep_alive_time)
                                   + " seconds");
                 }
                 else

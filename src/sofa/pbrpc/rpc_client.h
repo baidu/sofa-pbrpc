@@ -84,13 +84,13 @@ public:
     void Shutdown();
 
 public:
-    const sofa::pbrpc::shared_ptr<RpcClientImpl>& impl() const
+    const sofa::pbrpc::boost::shared_ptr<RpcClientImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::shared_ptr<RpcClientImpl> _impl;
+    sofa::pbrpc::boost::shared_ptr<RpcClientImpl> _impl;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcClient);
 }; // class RpcClient
