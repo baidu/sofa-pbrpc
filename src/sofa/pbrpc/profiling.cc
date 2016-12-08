@@ -148,68 +148,6 @@ static std::string Readlink(const char* symbol_link)
     return std::string(buf);
 }
 
-void Profiling::CpuProfilingFunc()
-{
-    if (!IsFileExist(_dir.path + CPU_PROFILING_PATH))
-    {
-        bool ret = Mkdir(_dir.path + CPU_PROFILING_PATH);
-        if (ret == false)
-        {
-            return;
-        }
-    }
-    struct timeval tval;
-    gettimeofday(&tval, NULL);
-    std::string path = _dir.path
-        + CPU_PROFILING_PATH + "tmp."
-        + StringUtils::uint64_to_string(tval.tv_sec)
-        + ".prof";
-    ProfilerStart(path.c_str());
-    sleep(SOFA_PBRPC_PROFILING_SAMPLE_TIME);
-    ProfilerStop();
-    _is_cpu_profiling = false;
-}
-
-void Profiling::MemoryProfilingFunc()
-{
-    if (!IsFileExist(_dir.path + MEMORY_PROFILING_PATH))
-    {
-        bool ret = Mkdir(_dir.path + MEMORY_PROFILING_PATH);
-        if (ret == false)
-        {
-            return;
-        }
-    }
-    struct timeval tval;
-    gettimeofday(&tval, NULL);
-    std::string path = _dir.path
-        + MEMORY_PROFILING_PATH + "tmp."
-        + StringUtils::uint64_to_string(tval.tv_sec)
-        + ".heap";
-
-    std::string writer;
-    TCMallocGetHeapSample(&writer);
-    if (!WriteFile(path, writer.c_str(), writer.size()))
-    {
-#if defined( LOG )
-        LOG(ERROR) << "WriteFile(): write file {" << path << "} failed";
-#else
-        SLOG(ERROR, "WriteFile(): write file {%s} failed", path.c_str());
-#endif
-        return;
-    }
-    _is_mem_profiling = false;
-}
-
-Profiling::Profiling() 
-: _is_cpu_profiling(false)
-    , _is_mem_profiling(false)
-    , _is_initialized(false)
-{
-    _profiling_thread_group.reset(new ThreadGroupImpl(
-            1, "sofa_pbrpc_profiling_thread_group"));
-}
-
 int Profiling::Init()
 {
     if (_is_initialized)
@@ -246,32 +184,21 @@ int Profiling::Init()
     {
         return -1;
     }
-    InitParamMap();
+    InitOperationMap();
     _is_initialized = true;
     return 0;
 }
 
-Profiling::~Profiling()
+Profiling* Profiling::Instance()
 {
-    if (_is_initialized)
-    {
-        _profiling_thread_group->stop();
-        _profiling_thread_group.reset();
-    }
+    pthread_once(&_init_once, &Profiling::InitProfiling);
+    return _instance;
 }
 
-void Profiling::InitParamMap()
+Profiling::OperationType Profiling::FindOperationType(const std::string& operation_type)
 {
-    _param_map["graph"] = GRAPH;
-    _param_map["newgraph"] = NEW_GRAPH;
-    _param_map["diff"] = DIFF;
-    _param_map["cleanup"] = CLEANUP;
-}
-
-Profiling::DataType Profiling::FindDataType(const std::string& data_type)
-{
-    ParamMap::iterator it = _param_map.find(data_type);
-    if (it != _param_map.end())
+    OperationMap::iterator it = _operation_map.find(operation_type);
+    if (it != _operation_map.end())
     {
         return it->second;
     }
@@ -282,7 +209,7 @@ Profiling::DataType Profiling::FindDataType(const std::string& data_type)
 }
 
 std::string Profiling::ProfilingPage(ProfilingType profiling_type, 
-                                     DataType data_type,
+                                     OperationType operation_type,
                                      std::string& view_prof,
                                      std::string& base_prof)
 {
@@ -301,13 +228,13 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
     switch (profiling_type)
     {
         case CPU:
-            if (data_type == GRAPH)
+            if (operation_type == GRAPH)
             {
                 oss.str("");
                 oss.clear();
                 std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot "
-                         + _dir.path + "/" + _dir.name + " " + _dir.path
-                         + CPU_PROFILING_PATH + view_prof;
+                    + _dir.path + "/" + _dir.name + " " + _dir.path
+                    + CPU_PROFILING_PATH + view_prof;
                 if (!base_prof.empty())
                 {
                     cmd.append(" --base " + _dir.path + CPU_PROFILING_PATH + base_prof);
@@ -316,7 +243,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 oss << dot;
                 return oss.str();
             }
-            else if (data_type == CLEANUP)
+            else if (operation_type == CLEANUP)
             {
                 std::set<std::string> profiling_set;
                 ListFile(_dir.path + CPU_PROFILING_PATH, profiling_set);
@@ -327,13 +254,13 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 oss << ShowResult(profiling_type, view_prof, base_prof);
             }
-            else if (data_type == DIFF)
+            else if (operation_type == DIFF)
             {
                 oss << ShowResult(profiling_type, view_prof, base_prof);
             }
             else
             {
-                Status ret = DoCpuProfiling(data_type, view_prof);
+                Status ret = DoCpuProfiling(operation_type, view_prof);
                 if (ret == DISABLE)
                 {
                     oss << "<h2>To enable profiling, please add compile and link options when compiling binary:</h2>";
@@ -366,13 +293,13 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
             }
             break;
         case MEMORY:
-            if (data_type == GRAPH)
+            if (operation_type == GRAPH)
             {
                 oss.str("");
                 oss.clear();
                 std::string cmd = "perl " + _dir.path + "/rpc_profiling/pprof.perl --dot "
-                         + _dir.path + "/" + _dir.name + " " + _dir.path
-                         + MEMORY_PROFILING_PATH + view_prof;
+                    + _dir.path + "/" + _dir.name + " " + _dir.path
+                    + MEMORY_PROFILING_PATH + view_prof;
                 if (!base_prof.empty())
                 {
                     cmd.append(" --base " + _dir.path + MEMORY_PROFILING_PATH + base_prof);
@@ -381,7 +308,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 oss << dot;
                 return oss.str();
             }
-            else if (data_type == CLEANUP)
+            else if (operation_type == CLEANUP)
             {
                 std::set<std::string> profiling_set;
                 ListFile(_dir.path + MEMORY_PROFILING_PATH, profiling_set);
@@ -392,13 +319,13 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
                 }
                 oss << ShowResult(profiling_type, view_prof, base_prof);
             }
-            else if (data_type == DIFF)
+            else if (operation_type == DIFF)
             {
                 oss << ShowResult(profiling_type, view_prof, base_prof);
             }
             else
             {
-                Status ret = DoMemoryProfiling(data_type, view_prof);
+                Status ret = DoMemoryProfiling(operation_type, view_prof);
                 if (ret == DISABLE)
                 {
                     oss << "<h2>To enable memory profiling, please add compile and link options when compiling binary:</h2>";
@@ -442,7 +369,8 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
     return oss.str();
 }
 
-Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& profiling_file)
+Profiling::Status Profiling::DoCpuProfiling(OperationType operation_type,
+                                            std::string& profiling_file)
 {
     if (ProfilerStart == NULL)
     {
@@ -457,7 +385,7 @@ Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& pro
     std::set<std::string> profiling_set;
     ListFile(_dir.path + CPU_PROFILING_PATH, profiling_set);
 
-    if (profiling_file == "default" && !profiling_set.empty() && data_type != NEW_GRAPH)
+    if (profiling_file == "default" && !profiling_set.empty() && operation_type != NEW_GRAPH)
     {
         profiling_file = *(profiling_set.rbegin());
         return FINISHED;
@@ -472,6 +400,127 @@ Profiling::Status Profiling::DoCpuProfiling(DataType data_type, std::string& pro
                                 &Profiling::CpuProfilingFunc);
     _profiling_thread_group->post(done);
     return OK;
+}
+
+Profiling::Status Profiling::DoMemoryProfiling(OperationType operation_type,
+                                               std::string& profiling_file)
+{
+    if (TCMallocGetHeapSample == NULL)
+    {
+        return DISABLE;
+    }
+
+    if (_is_mem_profiling == true)
+    {
+        return PROFILING;
+    }
+
+    std::set<std::string> profiling_set;
+    ListFile(_dir.path + MEMORY_PROFILING_PATH, profiling_set);
+
+    if (profiling_file == "default" && !profiling_set.empty() && operation_type != NEW_GRAPH)
+    {
+        profiling_file = *(profiling_set.rbegin());
+        return FINISHED;
+    }
+    if (IsFileExist(_dir.path + MEMORY_PROFILING_PATH + profiling_file))
+    {
+        return FINISHED;
+    }
+    _is_mem_profiling = true;
+    google::protobuf::Closure* done =
+        sofa::pbrpc::NewClosure(Profiling::Instance(),
+                                &Profiling::MemoryProfilingFunc);
+    _profiling_thread_group->post(done);
+    return OK;
+}
+
+Profiling::Profiling()
+    : _is_cpu_profiling(false)
+    , _is_mem_profiling(false)
+    , _is_initialized(false)
+{
+    _profiling_thread_group.reset(new ThreadGroupImpl(
+            1, "sofa_pbrpc_profiling_thread_group"));
+}
+
+Profiling::~Profiling()
+{
+    if (_is_initialized)
+    {
+        _profiling_thread_group->stop();
+        _profiling_thread_group.reset();
+    }
+}
+
+void Profiling::InitProfiling()
+{
+    _instance = new Profiling();
+    ::atexit(DestroyProfiling);
+}
+
+void Profiling::DestroyProfiling()
+{
+    delete _instance;
+    _instance = NULL;
+}
+
+void Profiling::InitOperationMap()
+{
+    _operation_map["graph"] = GRAPH;
+    _operation_map["newgraph"] = NEW_GRAPH;
+    _operation_map["diff"] = DIFF;
+    _operation_map["cleanup"] = CLEANUP;
+}
+
+void Profiling::CpuProfilingFunc()
+{
+    if (!IsFileExist(_dir.path + CPU_PROFILING_PATH))
+    {
+        if (!Mkdir(_dir.path + CPU_PROFILING_PATH))
+        {
+            return;
+        }
+    }
+    struct timeval tval;
+    gettimeofday(&tval, NULL);
+    std::string path = _dir.path
+        + CPU_PROFILING_PATH + "tmp."
+        + StringUtils::uint64_to_string(tval.tv_sec)
+        + ".prof";
+    ProfilerStart(path.c_str());
+    sleep(SOFA_PBRPC_PROFILING_SAMPLE_TIME);
+    ProfilerStop();
+    _is_cpu_profiling = false;
+}
+
+void Profiling::MemoryProfilingFunc()
+{
+    if (!IsFileExist(_dir.path + MEMORY_PROFILING_PATH))
+    {
+        if (!Mkdir(_dir.path + MEMORY_PROFILING_PATH))
+        {
+            return;
+        }
+    }
+    struct timeval tval;
+    gettimeofday(&tval, NULL);
+    std::string path = _dir.path
+        + MEMORY_PROFILING_PATH + "tmp."
+        + StringUtils::uint64_to_string(tval.tv_sec)
+        + ".heap";
+    std::string writer;
+    TCMallocGetHeapSample(&writer);
+    if (!WriteFile(path, writer.c_str(), writer.size()))
+    {
+#if defined( LOG )
+        LOG(ERROR) << "WriteFile(): write file {" << path << "} failed";
+#else
+        SLOG(ERROR, "WriteFile(): write file {%s} failed", path.c_str());
+#endif
+        return;
+    }
+    _is_mem_profiling = false;
 }
 
 std::string Profiling::ShowResult(ProfilingType profiling_type,
@@ -584,56 +633,6 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     oss << "</script>";
 
     return oss.str();
-}
-
-Profiling::Status Profiling::DoMemoryProfiling(DataType data_type, std::string& profiling_file)
-{
-    if (TCMallocGetHeapSample == NULL)
-    {
-        return DISABLE;
-    }
-
-    if (_is_mem_profiling == true)
-    {
-        return PROFILING;
-    }
-
-    std::set<std::string> profiling_set;
-    ListFile(_dir.path + MEMORY_PROFILING_PATH, profiling_set);
-
-    if (profiling_file == "default" && !profiling_set.empty() && data_type != NEW_GRAPH)
-    {
-        profiling_file = *(profiling_set.rbegin());
-        return FINISHED;
-    }
-    if (IsFileExist(_dir.path + MEMORY_PROFILING_PATH + profiling_file)) 
-    {
-        return FINISHED;
-    }
-    _is_mem_profiling = true;
-    google::protobuf::Closure* done = 
-        sofa::pbrpc::NewClosure(Profiling::Instance(), 
-                                &Profiling::MemoryProfilingFunc);
-    _profiling_thread_group->post(done);
-    return OK;
-}
-
-Profiling* Profiling::Instance()
-{
-    pthread_once(&_init_once, &Profiling::InitProfiling);
-    return _instance;
-}
-
-void Profiling::InitProfiling()
-{
-    _instance = new Profiling();
-    ::atexit(DestroyProfiling);
-}
-
-void Profiling::DestroyProfiling()
-{
-    delete _instance;
-    _instance = NULL;
 }
 
 } // namespace pbrpc

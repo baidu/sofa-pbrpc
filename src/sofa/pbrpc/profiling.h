@@ -24,7 +24,7 @@ public:
         MEMORY = 4,
     };
 
-    enum DataType
+    enum OperationType
     {
         PAGE = 1,
         GRAPH = 2,
@@ -33,7 +33,7 @@ public:
         CLEANUP = 5
     };
 
-    typedef std::map<std::string, DataType> ParamMap;
+    typedef std::map<std::string, OperationType> OperationMap;
 
     enum Status
     {
@@ -43,27 +43,33 @@ public:
         FINISHED = 4
     };
 
-    std::string ProfilingPage(ProfilingType profiling_type, 
-                              DataType data_type,
-                              std::string& profiling_file,
-                              std::string& profiling_base);
-
-    Status DoCpuProfiling(DataType data_type, std::string& profiling_file);
-
-    Status DoMemoryProfiling(DataType data_type, std::string& profiling_file);
+    int Init();
 
     static Profiling* Instance();
 
-    int Init();
+    OperationType FindOperationType(const std::string& operation_type);
 
-    DataType FindDataType(const std::string& data_type);
+    std::string ProfilingPage(ProfilingType profiling_type, 
+                              OperationType operation_type,
+                              std::string& profiling_file,
+                              std::string& profiling_base);
+
+    Status DoCpuProfiling(OperationType operation_type,
+                          std::string& profiling_file);
+
+    Status DoMemoryProfiling(OperationType operation_type,
+                             std::string& profiling_file);
 
 private:
     Profiling();
 
     ~Profiling();
 
-    void InitParamMap();
+    static void InitProfiling();
+
+    static void DestroyProfiling();
+
+    void InitOperationMap();
 
     void CpuProfilingFunc();
 
@@ -72,10 +78,6 @@ private:
     std::string ShowResult(ProfilingType profiling_type,
                            const std::string& profiling_file,
                            const std::string& profiling_base);
-
-    static void InitProfiling();
-    
-    static void DestroyProfiling();
 
     struct EXEDir
     {
@@ -98,7 +100,7 @@ private:
 
     static Profiling* _instance;
 
-    ParamMap _param_map;
+    OperationMap _operation_map;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Profiling);
 };

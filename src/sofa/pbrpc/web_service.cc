@@ -342,7 +342,7 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     QueryParams* query_params = request.query_params;
 
     Profiling::ProfilingType profiling_type = Profiling::DEFAULT;
-    Profiling::DataType data_type = Profiling::PAGE;
+    Profiling::OperationType operation_type = Profiling::PAGE;
     Profiling* instance = Profiling::Instance();
 
     std::string view_prof;
@@ -363,7 +363,7 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     }
     if (it != query_params->end())
     {
-        data_type = instance->FindDataType(it->second);
+        operation_type = instance->FindOperationType(it->second);
     }
 
     it = query_params->find("prof");
@@ -382,7 +382,7 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     }
 
     return response.content->Append(instance->ProfilingPage(
-                profiling_type, data_type, view_prof, base_prof));
+                profiling_type, operation_type, view_prof, base_prof));
 }
 
 void WebService::PageHeader(std::ostream& out)
