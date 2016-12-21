@@ -6,6 +6,8 @@
 #define _SOFA_PBRPC_PROFILING_H_
 
 #include <string>
+#include <map>
+
 #include <sofa/pbrpc/http.h>
 #include <sofa/pbrpc/thread_group_impl.h>
 
@@ -22,12 +24,16 @@ public:
         MEMORY = 4,
     };
 
-    enum DataType
+    enum OperationType
     {
         PAGE = 1,
         GRAPH = 2,
-        NEW_GRAPH = 3
+        NEW_GRAPH = 3,
+        DIFF = 4,
+        CLEANUP = 5
     };
+
+    typedef std::map<std::string, OperationType> OperationMap;
 
     enum Status
     {
@@ -37,31 +43,41 @@ public:
         FINISHED = 4
     };
 
-    std::string ProfilingPage(ProfilingType profiling_type, 
-                              DataType data_type);
-
-    Status DoCpuProfiling(DataType data_type);
-
-    int DoMemoryProfiling();
+    int Init();
 
     static Profiling* Instance();
 
-    int Init();
+    OperationType FindOperationType(const std::string& operation_type);
+
+    std::string ProfilingPage(ProfilingType profiling_type, 
+                              OperationType operation_type,
+                              std::string& profiling_file,
+                              std::string& profiling_base);
+
+    Status DoCpuProfiling(OperationType operation_type,
+                          std::string& profiling_file);
+
+    Status DoMemoryProfiling(OperationType operation_type,
+                             std::string& profiling_file);
 
 private:
     Profiling();
 
     ~Profiling();
 
+    static void InitProfiling();
+
+    static void DestroyProfiling();
+
+    void InitOperationMap();
+
     void CpuProfilingFunc();
 
     void MemoryProfilingFunc();
 
-    std::string ShowResult();
-
-    static void InitProfiling();
-    
-    static void DestroyProfiling();
+    std::string ShowResult(ProfilingType profiling_type,
+                           const std::string& profiling_file,
+                           const std::string& profiling_base);
 
     struct EXEDir
     {
@@ -70,7 +86,9 @@ private:
     };
 
 private:
-    volatile bool _is_profiling;
+    volatile bool _is_cpu_profiling;
+
+    volatile bool _is_mem_profiling;
 
     volatile bool _is_initialized;
 
@@ -81,6 +99,8 @@ private:
     static pthread_once_t _init_once;
 
     static Profiling* _instance;
+
+    OperationMap _operation_map;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Profiling);
 };
