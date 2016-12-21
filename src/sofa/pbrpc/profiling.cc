@@ -80,6 +80,7 @@ static void ListFile(const std::string& path, std::set<std::string>& files)
             files.insert(dir_entry->d_name);
         }
     }
+    closedir(dir);
 }
 
 static bool WriteFile(const std::string& path, const char* buffer, size_t size)
