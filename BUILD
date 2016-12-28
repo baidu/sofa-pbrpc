@@ -47,10 +47,10 @@ cc_library(
     "@snappy//:snappy",
     "@zlib//:zlib",
     "@gtest//:gtest",
+    "@boost//:boost"
   ],
   copts = [
     "-Iexternal/googletest/include",
-    "-Iexternal/boost/boost"
   ],
   visibility = ["//visibility:public"],
 )

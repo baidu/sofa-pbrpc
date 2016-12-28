@@ -1,5 +1,13 @@
 load("@protobuf//:protobuf.bzl", "cc_proto_library")
 
+config_setting(
+  name = "darwin",
+  values = {
+    "cpu": "darwin",
+  },
+  visibility = ["//visibility:public"],
+)
+
 cc_proto_library(
   name = "echo_proto",
   srcs = [
@@ -23,6 +31,10 @@ cc_binary(
     "@protobuf//:protobuf",
     "@protobuf//:protoc_lib",
   ],
+  linkopts = select({
+    ":darwin": [],
+    "//conditions:default": ["-static"]
+  }),
   visibility = ["//main:__pkg__"],
 )
 
@@ -36,5 +48,9 @@ cc_binary(
     "@protobuf//:protobuf",
     "@protobuf//:protoc_lib",
   ],
+  linkopts = select({
+    ":darwin": [],
+    "//conditions:default": ["-static"]
+  }),
   visibility = ["//main:__pkg__"],
 )

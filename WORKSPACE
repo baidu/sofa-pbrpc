@@ -23,6 +23,7 @@ new_http_archive(
   url = "https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2/download",
   type = "tar.bz2",
   strip_prefix = "boost_1_61_0/",
+  build_file = "bazel/boost.BUILD",
   sha256 = "a547bd06c2fd9a71ba1d169d9cf0339da7ebf4753849a8f7d6fdb8feee99b640",
 )
 
