@@ -86,7 +86,7 @@ int BinaryRpcRequestParser::Parse(const char* buf,
             }
         case PS_MSG_BODY:
             bytes_remain = _req->_req_header.message_size - _bytes_recved;
-            if (bytes_remain >= MAX_MESSAGE_SIZE)
+            if (bytes_remain > MAX_MESSAGE_SIZE)
             {
                 // rpc message size is too large
 #if defined( LOG )
