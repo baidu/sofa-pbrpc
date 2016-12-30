@@ -86,15 +86,15 @@ int BinaryRpcRequestParser::Parse(const char* buf,
             }
         case PS_MSG_BODY:
             bytes_remain = _req->_req_header.message_size - _bytes_recved;
-            if (bytes_remain > MAX_MESSAGE_SIZE)
+            if (bytes_remain > MAX_MESSAGE_SIZE || bytes_remain <= 0)
             {
-                // rpc message size is too large
+                // compute bytes_remain error
 #if defined( LOG )
                 LOG(ERROR) << "Parse(): " << RpcEndpointToString(_req->_remote_endpoint)
-                           << ": message size[" << bytes_remain 
-                           << "] exceed the limit[" << MAX_MESSAGE_SIZE << "]";
+                           << ": compute bytes_remain[" << bytes_remain
+                           << "] error, message size limit[" << MAX_MESSAGE_SIZE << "]";
 #else
-                SLOG(ERROR, "Parse(): %s: message size[%lld] exceed the limit[%lld]",
+                SLOG(ERROR, "Parse(): %s: compute bytes_remain[%lld] error, message size limit[%lld]",
                      RpcEndpointToString(_req->_remote_endpoint).c_str(), 
                      bytes_remain, MAX_MESSAGE_SIZE);
 #endif
