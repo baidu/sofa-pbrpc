@@ -37,6 +37,8 @@ private:
     ParseState _state; // current parsing state
     int _bytes_recved; // bytes received in current state
     BinaryRpcRequestPtr _req;
+
+    static const int64 MAX_MESSAGE_SIZE;
 }; // class BinaryRpcRequestParser
 
 } // namespace pbrpc
