@@ -75,3 +75,5 @@ cc_binary(
   ],
   visibility = ["//main:__pkg__"],
 )
+
+exports_files(["src/sofa/pbrpc/buffer.cc"], ["//unit-test:__pkg__"])
