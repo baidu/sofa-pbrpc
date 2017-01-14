@@ -73,9 +73,12 @@ else
     endif
 endif
 
+ifndef CXX
+    CXX=g++
+endif
+
 #-----------------------------------------------
 
-CXX=g++
 INCPATH=-Isrc -I$(PROTOBUF_DIR)/include -I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DHAVE_SNAPPY $(INCPATH)
 
