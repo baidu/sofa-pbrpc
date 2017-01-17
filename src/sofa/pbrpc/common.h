@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <google/protobuf/stubs/common.h>
 
-#include <sofa/pbrpc/boost/smart_ptr.hpp>
+#include <sofa/pbrpc/smart_ptr/smart_ptr.hpp>
 
 namespace std {}
 

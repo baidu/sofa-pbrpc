@@ -21,7 +21,7 @@
 namespace sofa {
 namespace pbrpc {
 
-class RpcTimeoutManager : public sofa::pbrpc::boost::enable_shared_from_this<RpcTimeoutManager>
+class RpcTimeoutManager : public sofa::pbrpc::enable_shared_from_this<RpcTimeoutManager>
 {
 public:
     RpcTimeoutManager(IOService& io_service)

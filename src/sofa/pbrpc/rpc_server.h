@@ -186,13 +186,13 @@ public:
     Servlet UnregisterWebServlet(const std::string& path);
 
 public:
-    const sofa::pbrpc::boost::shared_ptr<RpcServerImpl>& impl() const
+    const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::boost::shared_ptr<RpcServerImpl> _impl;
+    sofa::pbrpc::shared_ptr<RpcServerImpl> _impl;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcServer);
 }; // class RpcServer

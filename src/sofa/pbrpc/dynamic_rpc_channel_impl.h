@@ -16,13 +16,13 @@
 #include <sofa/pbrpc/timeout_manager.h>
 #include <sofa/pbrpc/counter.h>
 #include <sofa/pbrpc/builtin_service.pb.h>
-#include <sofa/pbrpc/boost/enable_shared_from_this.hpp>
+#include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
 
 namespace sofa {
 namespace pbrpc {
 
 class DynamicRpcChannelImpl : public RpcChannelImpl,
-    public ::sofa::pbrpc::boost::enable_shared_from_this<DynamicRpcChannelImpl>
+    public ::sofa::pbrpc::enable_shared_from_this<DynamicRpcChannelImpl>
 {
 public:
     // Detect timeout, 3 second.
@@ -46,10 +46,10 @@ private:
         volatile bool is_removed; // if this address is already removed.
         volatile bool is_channel_inited; // if the channel is already inited.
         LockType channel_init_lock;
-        ::sofa::pbrpc::boost::shared_ptr<SimpleRpcChannelImpl> channel;
+        ::sofa::pbrpc::shared_ptr<SimpleRpcChannelImpl> channel;
         volatile bool is_builtin_service_inited; // if the builtin service is already inited.
         LockType builtin_service_init_lock;
-        ::sofa::pbrpc::boost::scoped_ptr<builtin::BuiltinService_Stub> builtin_service;
+        ::sofa::pbrpc::scoped_ptr<builtin::BuiltinService_Stub> builtin_service;
         uint64 last_request_seq; // the last request sequence number sent by this channel.
 
         ServerContext(const std::string& server_address_);
@@ -57,7 +57,7 @@ private:
         bool InitChannel(const RpcClientImplPtr& client_impl, const RpcChannelOptions& options);
         bool InitBuiltinService(const RpcChannelOptions& options);
     };
-    typedef ::sofa::pbrpc::boost::shared_ptr<ServerContext> ServerContextPtr;
+    typedef ::sofa::pbrpc::shared_ptr<ServerContext> ServerContextPtr;
     typedef std::map<std::string, ServerContextPtr> ServerContextMap;
 
     struct AddResult {

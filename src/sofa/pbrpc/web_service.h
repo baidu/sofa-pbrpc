@@ -17,7 +17,7 @@ struct HTTPResponse;
 typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 
 typedef std::map<const std::string, std::pair<Servlet, bool> > ServletMap;
-typedef sofa::pbrpc::boost::shared_ptr<ServletMap> ServletMapPtr;
+typedef sofa::pbrpc::shared_ptr<ServletMap> ServletMapPtr;
 
 class WebService
 {

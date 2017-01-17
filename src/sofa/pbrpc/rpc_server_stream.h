@@ -105,7 +105,7 @@ private:
         if (_closed_stream_callback)
         {
             _closed_stream_callback(
-                    sofa::pbrpc::boost::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
+                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
         }
     }
 
@@ -145,7 +145,7 @@ private:
         if (_received_request_callback)
         {
             _received_request_callback(
-                    sofa::pbrpc::boost::dynamic_pointer_cast<RpcServerStream>(shared_from_this()),
+                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()),
                     request);
         }
     }

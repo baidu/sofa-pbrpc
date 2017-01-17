@@ -16,7 +16,7 @@ namespace pbrpc {
 
 using sofa::pbrpc::boost::asio::ip::tcp;
 
-class RpcListener : public sofa::pbrpc::boost::enable_shared_from_this<RpcListener>
+class RpcListener : public sofa::pbrpc::enable_shared_from_this<RpcListener>
 {
     // Callback function when created or accepted a new connection.
     typedef sofa::pbrpc::boost::function<void(const RpcServerStreamPtr& /* stream */)> Callback;

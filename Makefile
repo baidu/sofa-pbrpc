@@ -122,11 +122,10 @@ build: $(LIB) $(BIN)
 install: $(LIB) $(BIN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
 	cp -r $(PUB_INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
-	mkdir -p $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr
-	cp src/sofa/pbrpc/boost/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr
-	mkdir -p $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr/detail
-	cp src/sofa/pbrpc/boost/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/boost/smart_ptr/detail
-	cp src/sofa/pbrpc/boost/smart_ptr.hpp $(PREFIX)/include/sofa/pbrpc/boost
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
+	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
+	cp src/sofa/pbrpc/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
 	mkdir -p $(PREFIX)/lib
 	cp $(LIB) $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/bin

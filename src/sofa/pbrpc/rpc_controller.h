@@ -163,13 +163,13 @@ public:
     virtual void NotifyOnCancel(google::protobuf::Closure* callback);
 
 public:
-    const sofa::pbrpc::boost::shared_ptr<RpcControllerImpl>& impl() const
+    const sofa::pbrpc::shared_ptr<RpcControllerImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::boost::shared_ptr<RpcControllerImpl> _impl;
+    sofa::pbrpc::shared_ptr<RpcControllerImpl> _impl;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcController);
 }; // class RpcController

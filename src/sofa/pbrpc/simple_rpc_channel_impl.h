@@ -11,13 +11,13 @@
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
 #include <sofa/pbrpc/counter.h>
-#include <sofa/pbrpc/boost/enable_shared_from_this.hpp>
+#include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
 
 namespace sofa {
 namespace pbrpc {
 
 class SimpleRpcChannelImpl : public RpcChannelImpl,
-    public ::sofa::pbrpc::boost::enable_shared_from_this<SimpleRpcChannelImpl>
+    public ::sofa::pbrpc::enable_shared_from_this<SimpleRpcChannelImpl>
 {
 public:
     SimpleRpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,
