@@ -342,12 +342,15 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     QueryParams* query_params = request.query_params;
 
     Profiling::ProfilingType profiling_type = Profiling::DEFAULT;
-    Profiling::DataType data_type = Profiling::PAGE;
+    Profiling::OperationType operation_type = Profiling::PAGE;
+    Profiling* instance = Profiling::Instance();
+
+    std::string view_prof;
+    std::string base_prof;
 
     QueryParams::const_iterator it = query_params->find("cpu");
     if (it != query_params->end())
     {
-        
         profiling_type = Profiling::CPU;
     }
     else
@@ -360,22 +363,26 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     }
     if (it != query_params->end())
     {
-        if (it->second == "graph")
-        {
-            data_type = Profiling::GRAPH;
-        }
-        else if (it->second == "newgraph")
-        {
-            data_type = Profiling::NEW_GRAPH;
-        }
-        else
-        {
-            data_type = Profiling::PAGE;
-        }
+        operation_type = instance->FindOperationType(it->second);
     }
 
-    Profiling* instance = Profiling::Instance();
-    return response.content->Append(instance->ProfilingPage(profiling_type, data_type));
+    it = query_params->find("prof");
+    if (it != query_params->end())
+    {
+        view_prof = it->second;
+    }
+    else
+    {
+        view_prof = "default";
+    }
+    it = query_params->find("base");
+    if (it != query_params->end())
+    {
+        base_prof = it->second;
+    }
+
+    return response.content->Append(instance->ProfilingPage(
+                profiling_type, operation_type, view_prof, base_prof));
 }
 
 void WebService::PageHeader(std::ostream& out)
