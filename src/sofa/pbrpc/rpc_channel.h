@@ -32,9 +32,14 @@ struct RpcChannelOptions {
     // Value 0 means no limit, default value is 0.
     uint32 server_load_capacity;
 
+    // If initialize the RpcChannel in construct function, default is true.
+    // If create_with_init is false, RpcChannel should be initialized by calling Init().
+    bool create_with_init;
+
     RpcChannelOptions()
         : connect_timeout(10)
         , server_load_capacity(0)
+        , create_with_init(true)
     {}
 };
 
@@ -92,6 +97,10 @@ public:
     RpcChannel(RpcClient* rpc_client,
                AddressProvider* address_provider,
                const RpcChannelOptions& options = RpcChannelOptions());
+
+    // Initialize RpcChannel
+    // If RpcChannel is initialized succeed return true, otherwise return false
+    bool Init();
 
     // Destructor.
     virtual ~RpcChannel();

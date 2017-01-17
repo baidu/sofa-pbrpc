@@ -16,7 +16,10 @@ RpcChannel::RpcChannel(RpcClient* rpc_client,
         const RpcChannelOptions& options)
     : _impl(new SimpleRpcChannelImpl(rpc_client->impl(), server_address, options))
 {
-    _impl->Init();
+    if (options.create_with_init)
+    {
+        _impl->Init();
+    }
 }
 
 RpcChannel::RpcChannel(RpcClient* rpc_client,
@@ -27,7 +30,10 @@ RpcChannel::RpcChannel(RpcClient* rpc_client,
     std::ostringstream os;
     os << server_ip << ":" << server_port;
     _impl.reset(new SimpleRpcChannelImpl(rpc_client->impl(), os.str(), options));
-    _impl->Init();
+    if (options.create_with_init)
+    {
+        _impl->Init();
+    }
 }
 
 RpcChannel::RpcChannel(RpcClient* rpc_client,
@@ -35,7 +41,10 @@ RpcChannel::RpcChannel(RpcClient* rpc_client,
         const RpcChannelOptions& options)
     : _impl(new DynamicRpcChannelImpl(rpc_client->impl(), address_list, options))
 {
-    _impl->Init();
+    if (options.create_with_init)
+    {
+        _impl->Init();
+    }
 }
 
 RpcChannel::RpcChannel(RpcClient* rpc_client,
@@ -43,7 +52,15 @@ RpcChannel::RpcChannel(RpcClient* rpc_client,
         const RpcChannelOptions& options)
     : _impl(new DynamicRpcChannelImpl(rpc_client->impl(), address_provider, options))
 {
-    _impl->Init();
+    if (options.create_with_init)
+    {
+        _impl->Init();
+    }
+}
+
+bool RpcChannel::Init()
+{
+    return _impl->Init();
 }
 
 RpcChannel::~RpcChannel()
