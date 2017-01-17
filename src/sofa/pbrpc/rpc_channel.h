@@ -98,8 +98,9 @@ public:
                AddressProvider* address_provider,
                const RpcChannelOptions& options = RpcChannelOptions());
 
-    // Initialize RpcChannel
-    // If RpcChannel is initialized succeed return true, otherwise return false
+    // Initialize RpcChannel.
+    // It will resolve server address in this function.
+    // If resolve server address succeed return true, otherwise return false.
     bool Init();
 
     // Destructor.
