@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 using namespace sofa;
-	
+
 class CommonTest : public ::testing::Test
 {
 protected:
@@ -19,7 +19,7 @@ protected:
         //Called after every TEST_F(CommonTest, *)
     };
 };
- 
+
 TEST_F(CommonTest, test_log)
 {
     sofa::pbrpc::internal::set_log_level(sofa::pbrpc::LOG_LEVEL_NOTICE);
@@ -61,7 +61,11 @@ TEST_F(CommonTest, test_set_log_handler)
     ASSERT_NE(old, (void*)NULL);
 
     SLOG(ERROR, "found error %s", "boom!");
+#ifdef BAZEL_BUILD
+    ASSERT_STREQ(s_test_log_buf.c_str(), "level=1 filename=unit-test/test_common.cc found error boom!");
+#else
     ASSERT_STREQ(s_test_log_buf.c_str(), "level=1 filename=test_common.cc found error boom!");
+#endif
 }
 
 int main(int argc, char **argv)

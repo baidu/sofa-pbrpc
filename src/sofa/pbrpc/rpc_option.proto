@@ -1,6 +1,7 @@
 // Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 
@@ -20,7 +21,7 @@ enum CompressType {
 }
 
 extend google.protobuf.MethodOptions {
-    // Timeout in milli-seconds at method level. There is no default value because 
+    // Timeout in milli-seconds at method level. There is no default value because
     // method without method_timeout set will use service_timeout.
     optional int64 method_timeout = 20000;
 

@@ -1,3 +1,5 @@
+syntax = "proto2";
+
 package sofa.pbrpc.test;
 
 option cc_generic_services = true;
