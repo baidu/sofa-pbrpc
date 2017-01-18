@@ -23,3 +23,10 @@ depends.mk
 src/sofa/pbrpc/*.pb.h
 src/sofa/pbrpc/*.pb.cc
 
+# bazel
+bazel-app
+bazel-bin
+bazel-genfiles
+bazel-out
+bazel-sofa-pbrpc
+bazel-testlogs
