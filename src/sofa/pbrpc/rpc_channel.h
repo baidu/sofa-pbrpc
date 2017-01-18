@@ -99,8 +99,10 @@ public:
                const RpcChannelOptions& options = RpcChannelOptions());
 
     // Initialize RpcChannel.
-    // It will resolve server address in this function.
-    // If resolve server address succeed return true, otherwise return false.
+    // For single server point, it will resolve server address in this function,
+    // and if resolve server address succeed return true, otherwise return false.
+    // For multiple server points, it will update internal server list and
+    // register detect task.
     bool Init();
 
     // Destructor.
