@@ -13,7 +13,7 @@ namespace pbrpc {
 
 // Defined in this file.
 class ThreadGroup;
-typedef sofa::pbrpc::boost::shared_ptr<ThreadGroup> ThreadGroupPtr;
+typedef sofa::pbrpc::shared_ptr<ThreadGroup> ThreadGroupPtr;
 
 // Defined in other files.
 class ThreadGroupImpl;
@@ -57,7 +57,7 @@ public:
     void post(ExtClosure<void()>* handler);
 
 private:
-    sofa::pbrpc::boost::shared_ptr<ThreadGroupImpl> _imp;
+    sofa::pbrpc::shared_ptr<ThreadGroupImpl> _imp;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
 };

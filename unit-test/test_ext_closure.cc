@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <sofa/pbrpc/ext_closure.h>
-#include <sofa/pbrpc/boost/smart_ptr.hpp>
+#include <sofa/pbrpc/smart_ptr/smart_ptr.hpp>
 #include <gtest/gtest.h>
 
 using namespace ::sofa::pbrpc;
@@ -573,7 +573,7 @@ TEST(ExtClosure, ClassSharedPtrClosure)
 {
     printf("\r\n==============test NewExtClosure(ClassPtr)===============\r\n");
 
-    ::sofa::pbrpc::boost::shared_ptr<CTest> obj(new CTest());
+    ::sofa::pbrpc::shared_ptr<CTest> obj(new CTest());
 
     // Closure0
     ExtClosure<void()>* pcb = NewExtClosure(obj, &CTest::test0);
@@ -582,7 +582,7 @@ TEST(ExtClosure, ClassSharedPtrClosure)
     pcb = NewExtClosure(obj, &CTest::test1, 'a');
     pcb->Run();
 
-    const ::sofa::pbrpc::boost::shared_ptr<CTest>& obj_const_ref = obj;
+    const ::sofa::pbrpc::shared_ptr<CTest>& obj_const_ref = obj;
     pcb = NewExtClosure(obj_const_ref, &CTest::test1, 'a');
     pcb->Run();
 
@@ -691,7 +691,7 @@ public:
         return i - 1;
     }
 };
-int PtrFunction(const ::sofa::pbrpc::boost::shared_ptr<PTest1>& p1, const ::sofa::pbrpc::boost::shared_ptr<PTest2>& p2, int i)
+int PtrFunction(const ::sofa::pbrpc::shared_ptr<PTest1>& p1, const ::sofa::pbrpc::shared_ptr<PTest2>& p2, int i)
 {
     i = p1->Add(i);
     i = p2->Sub(i);
@@ -744,8 +744,8 @@ TEST_F(Performance, Bind_add)
 
 TEST_F(Performance, Closure_add_with_pointer)
 {
-    ::sofa::pbrpc::boost::shared_ptr<PTest1> p1(new PTest1());
-    ::sofa::pbrpc::boost::shared_ptr<PTest2> p2(new PTest2());
+    ::sofa::pbrpc::shared_ptr<PTest1> p1(new PTest1());
+    ::sofa::pbrpc::shared_ptr<PTest2> p2(new PTest2());
     for (int i = 0; i < kLoopCount;)
     {
         ExtClosure<int(int)>* closure = NewExtClosure(PtrFunction, p1, p2);
@@ -755,8 +755,8 @@ TEST_F(Performance, Closure_add_with_pointer)
 
 TEST_F(Performance, Bind_add_with_pointer)
 {
-    ::sofa::pbrpc::boost::shared_ptr<PTest1> p1(new PTest1());
-    ::sofa::pbrpc::boost::shared_ptr<PTest2> p2(new PTest2());
+    ::sofa::pbrpc::shared_ptr<PTest1> p1(new PTest1());
+    ::sofa::pbrpc::shared_ptr<PTest2> p2(new PTest2());
     for (int i = 0; i < kLoopCount;)
     {
         boost::function<int(int)> func = boost::bind(PtrFunction, p1, p2, _1);

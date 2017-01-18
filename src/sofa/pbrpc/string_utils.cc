@@ -9,7 +9,7 @@
 
 #include <sofa/pbrpc/string_utils.h>
 #include <sofa/pbrpc/ascii.h>
-#include <sofa/pbrpc/boost/scoped_array.hpp>
+#include <sofa/pbrpc/smart_ptr/scoped_array.hpp>
 
 namespace sofa {
 namespace pbrpc {
@@ -201,7 +201,7 @@ static int c_escape_string_internal(const char* src, int src_len, char* dest, in
 std::string StringUtils::c_escape_string(const char* src, int src_len)
 {
     int dest_length = src_len * 4 + 1; // Maximum space needed
-    sofa::pbrpc::boost::scoped_array<char> dest(new char[dest_length]);
+    sofa::pbrpc::scoped_array<char> dest(new char[dest_length]);
     int len = c_escape_string_internal(src, src_len, dest.get(), dest_length);
     assert(len >= 0);
     return std::string(dest.get(), len);
@@ -297,7 +297,7 @@ static int unescape_c_escape_sequences(const char* source, char* dest)
 
 std::string StringUtils::unescape_c_escape_string(const std::string& src)
 {
-    sofa::pbrpc::boost::scoped_array<char> unescaped(new char[src.size() + 1]);
+    sofa::pbrpc::scoped_array<char> unescaped(new char[src.size() + 1]);
     int len = unescape_c_escape_sequences(src.c_str(), unescaped.get());
     return std::string(unescaped.get(), len);
 }

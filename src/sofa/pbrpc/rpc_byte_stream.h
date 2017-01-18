@@ -35,7 +35,7 @@ namespace pbrpc {
 using sofa::pbrpc::boost::asio::ip::tcp;
 using namespace sofa::pbrpc::boost::asio;
 
-class RpcByteStream : public sofa::pbrpc::boost::enable_shared_from_this<RpcByteStream>
+class RpcByteStream : public sofa::pbrpc::enable_shared_from_this<RpcByteStream>
 {
 public:
     RpcByteStream(IOService& io_service, const RpcEndpoint& endpoint)

@@ -11,24 +11,24 @@ namespace pbrpc {
 class EventHandlerImp : public RpcChannel::EventHandler
 {
 public:
-    EventHandlerImp(::sofa::pbrpc::boost::weak_ptr<DynamicRpcChannelImpl> channel) : _channel(channel) {}
+    EventHandlerImp(::sofa::pbrpc::weak_ptr<DynamicRpcChannelImpl> channel) : _channel(channel) {}
     virtual ~EventHandlerImp() {}
     virtual void OnAddressAdded(const std::vector<std::string>& address_list)
     {
-        ::sofa::pbrpc::boost::shared_ptr<DynamicRpcChannelImpl> channel = _channel.lock();
+        ::sofa::pbrpc::shared_ptr<DynamicRpcChannelImpl> channel = _channel.lock();
         if (channel) {
             channel->OnAddressAdded(address_list);
         }
     }
     virtual void OnAddressRemoved(const std::vector<std::string>& address_list)
     {
-        ::sofa::pbrpc::boost::shared_ptr<DynamicRpcChannelImpl> channel = _channel.lock();
+        ::sofa::pbrpc::shared_ptr<DynamicRpcChannelImpl> channel = _channel.lock();
         if (channel) {
             channel->OnAddressRemoved(address_list);
         }
     }
 private:
-    ::sofa::pbrpc::boost::weak_ptr<DynamicRpcChannelImpl> _channel;
+    ::sofa::pbrpc::weak_ptr<DynamicRpcChannelImpl> _channel;
 };
 
 DynamicRpcChannelImpl::DynamicRpcChannelImpl(

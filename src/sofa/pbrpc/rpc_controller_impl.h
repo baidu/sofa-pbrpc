@@ -23,7 +23,7 @@ namespace pbrpc {
 
 #define CompressTypeAuto ((CompressType)-1)
 
-class RpcControllerImpl : public sofa::pbrpc::boost::enable_shared_from_this<RpcControllerImpl>
+class RpcControllerImpl : public sofa::pbrpc::enable_shared_from_this<RpcControllerImpl>
 {
 public:
     typedef sofa::pbrpc::boost::function<void(const RpcControllerImplPtr&)> InternalDoneCallback;

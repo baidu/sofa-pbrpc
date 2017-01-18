@@ -26,7 +26,7 @@ sub PrintHead()
     print "// 2, Support pass argument by reference, though bind\n";
     print "//    always by value.\n";
     print "// 3, When bind class method, support use\n";
-    print "//    \"sofa::pbrpc::boost::shared_ptr\" as this pointer of class.\n";
+    print "//    \"sofa::pbrpc::shared_ptr\" as this pointer of class.\n";
     print "// 4, Support create temporary and permanent closure:\n";
     print "//    Temporary closure (self destoryed after call):\n";
     print "//        NewExtClosure();\n";
@@ -62,7 +62,7 @@ sub PrintHead()
     print "//    ExtClosure<int(double)>* c4 = NewPermanentExtClosure(&obj, &C1::m1, 1);\n";
     print "//    c4->Run(2.0);\n";
     print "//    \n";
-    print "//    class C2 : public sofa::pbrpc::boost::enable_shared_from_this<C2>\n";
+    print "//    class C2 : public sofa::pbrpc::enable_shared_from_this<C2>\n";
     print "//    {\n";
     print "//        public:\n";
     print "//            int m1(int pre_arg, double post_arg);\n";

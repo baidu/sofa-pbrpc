@@ -13,7 +13,7 @@ namespace pbrpc {
 
 // Defined in this file.
 class TimeoutManager;
-typedef sofa::pbrpc::boost::shared_ptr<TimeoutManager> TimeoutManagerPtr;
+typedef sofa::pbrpc::shared_ptr<TimeoutManager> TimeoutManagerPtr;
 
 // Defined in other files.
 class TimeoutManagerImpl;
@@ -88,7 +88,7 @@ public:
     bool erase(Id id);
 
 private:
-    sofa::pbrpc::boost::shared_ptr<TimeoutManagerImpl> _imp;
+    sofa::pbrpc::shared_ptr<TimeoutManagerImpl> _imp;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(TimeoutManager);
 };

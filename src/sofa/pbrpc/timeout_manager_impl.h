@@ -22,9 +22,9 @@ namespace pbrpc {
 
 // Defined in this file.
 class TimeoutManagerImpl;
-typedef sofa::pbrpc::boost::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
+typedef sofa::pbrpc::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
 
-class TimeoutManagerImpl : public sofa::pbrpc::boost::enable_shared_from_this<TimeoutManagerImpl>
+class TimeoutManagerImpl : public sofa::pbrpc::enable_shared_from_this<TimeoutManagerImpl>
 {
 public:
     // Thread number for timer and callbacks.

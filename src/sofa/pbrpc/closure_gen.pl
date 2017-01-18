@@ -31,7 +31,7 @@ sub PrintHead()
     print "// 3, Support pass argument by reference, though bind\n";
     print "//    always by value.\n";
     print "// 4, When bind class method, support use\n";
-    print "//    \"sofa::pbrpc::boost::shared_ptr\" as this pointer of class.\n";
+    print "//    \"sofa::pbrpc::shared_ptr\" as this pointer of class.\n";
     print "// 5, Support create temporary and permanent closure:\n";
     print "//    Temporary closure (self destoryed after call):\n";
     print "//        NewClosure();\n";
@@ -58,7 +58,7 @@ sub PrintHead()
     print "//    Closure* c3 = NewClosure(&obj, &ClassA::m1, 1, 2.0);\n";
     print "//    c3->Run();\n";
     print "//    \n";
-    print "//    class ClassB : public sofa::pbrpc::boost::enable_shared_from_this<ClassB>\n";
+    print "//    class ClassB : public sofa::pbrpc::enable_shared_from_this<ClassB>\n";
     print "//    {\n";
     print "//        public:\n";
     print "//            int m1(int pre_arg, double post_arg);\n";
@@ -69,7 +69,7 @@ sub PrintHead()
     print "//                c4->Run(2.0);\n";
     print "//            }\n";
     print "//    };\n";
-    print "//    sofa::pbrpc::boost::shared_ptr<ClassB> ptr(new ClassB);\n";
+    print "//    sofa::pbrpc::shared_ptr<ClassB> ptr(new ClassB);\n";
     print "//    Closure* c5 = NewClosure(ptr, &ClassB::m1, 1, 2.0);\n";
     print "//    c5->Run();\n";
     print "//    \n";

@@ -10,7 +10,7 @@
 namespace sofa {
 namespace pbrpc {
 
-class TimerWorker : public sofa::pbrpc::boost::enable_shared_from_this<TimerWorker>
+class TimerWorker : public sofa::pbrpc::enable_shared_from_this<TimerWorker>
 {
 public:
     typedef sofa::pbrpc::boost::function<void(const PTime& /* now */)> WorkRoutine;

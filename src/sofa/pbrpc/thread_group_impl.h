@@ -19,7 +19,7 @@ namespace pbrpc {
 
 // Defined in this file.
 class ThreadGroupImpl;
-typedef sofa::pbrpc::boost::shared_ptr<ThreadGroupImpl> ThreadGroupImplPtr;
+typedef sofa::pbrpc::shared_ptr<ThreadGroupImpl> ThreadGroupImplPtr;
 
 // Thread init and destroy function.  Should be permanent closure.
 typedef ExtClosure<bool()>* ThreadInitFunc;
