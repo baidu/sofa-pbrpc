@@ -102,7 +102,8 @@ public:
     // For single server point, it will resolve server address in this function,
     // and if resolve server address succeed return true, otherwise return false.
     // For multiple server points, it will update internal server list and
-    // register detect task. After all of these are completed, return true.
+    // register detect task. After all of these are completed return true, and
+    // never return false.
     bool Init();
 
     // Destructor.
