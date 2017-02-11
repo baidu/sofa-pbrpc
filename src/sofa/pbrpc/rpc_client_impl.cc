@@ -148,7 +148,7 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)
     _slice_quota_out = _options.max_throughput_out == -1 ?
         -1 : std::max(0L, _options.max_throughput_out * 1024L * 1024L) / _slice_count;
     _max_pending_buffer_size =
-        std::max(0L, options.max_pending_buffer_size * 1024L * 1024L);
+        std::max(0L, _options.max_pending_buffer_size * 1024L * 1024L);
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
 
