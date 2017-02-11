@@ -40,6 +40,5 @@ Currently, sofa-pbrpc only support x86_64 platform, Linux OS, and GCC.
     The default install directory is './output'.
     To change it, modify the 'PREFIX' variable in file './Makefile'.
 
-For any build problem, please contact <qinzuoyan01@baidu.com> or
-<qinzuoyan@gmail.com>.
+For any build problem, please contact <opensearch@baidu.com>.
 

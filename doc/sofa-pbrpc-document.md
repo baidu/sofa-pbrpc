@@ -37,27 +37,38 @@
 
 ## 主要接口类
 主要用户接口分为四个接口类和三个option。
-
 <div  align="center">
 <img src="image/rpc-interface.png" width="80%" height="80%" />
 </div>
+
 ## 用户配置
 Server端配置：RpcServerOptions
-<div  align="center">
-<img src="image/server-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+|keep_alive_time|空闲连接维持时间 (s) |
 
 Client端配置：RpcClientOptions
-<div  align="center">
-<img src="image/client-option.png" width="80%" height="80%" />
-</div>
+
+| 参数名        | 参数说明         |
+| :-------------: |:-------------:|
+|work_thread_num|工作线程数 |
+|callback_thread_num|回调线程数 |
+|max_pending_buffer_size|pengding buffer 大小 (MB) |
+|max_throughput_in|最大入带宽限制 (MB/s) |
+|max_throughput_out|最大出带宽限制 (MB/s)|
+
 # 快速使用
 使用sofa-pbrpc只需要三步：
 * 定义通讯协议
 * 实现Server
 * 实现Client
 
-样例代码参见“sample/echo”。
+样例代码参见[sample/echo](https://github.com/baidu/sofa-pbrpc/tree/master/sample/echo)。
 ## 定义通讯协议
 定义协议只需要编写一个proto文件即可。
 范例：echo_service.proto
@@ -118,7 +129,7 @@ private:
 > **注意：**
 * 服务完成后必须调用done->Run()，通知RPC系统服务完成，触发发送Response；
 * 在调了done->Run()之后，Echo的所有四个参数都不再能访问；
-done-Run()可以分派到其他线程中执行，以实现了真正的异步处理；
+done->Run()可以分派到其他线程中执行，以实现了真正的异步处理；
 
 ### 注册和启动服务
 
@@ -325,11 +336,11 @@ message RpcMeta {
 2. RpcChannel调用CallMethod执行RPC调用。
 3. RpcClient选取RpcClientStream异步发送请求，并添加至超时队列。
 4. server端RpcListener接收到client的连接，创建对应RpcServerStream。
-5. RpcServerStream接收数据，根据meta信息在ServerPool中选取对应Service.Method执行。
+5. RpcServerStream接收数据，根据meta信息在ServicePool中选取对应Service.Method执行。
 6. server通过RpcServerStream发送执行结果，回复过程与请求过程类似。
 <div  align="center">
 <img src="image/network-arch.png" width="80%" height="80%" />
-</div
+</div>
 
 ### 线程模型
 asio异步模型，底层使用epoll。
@@ -348,7 +359,7 @@ sofa-pbrpc将内存划分为固定大小的buffer作为缓冲区，对buffer采�
 <img src="image/writebuf.png" width="80%" height="80%" />
 </div>
 ### 透明压缩
-采用装饰着模式的透明压缩，易于扩展。
+采用装饰者模式的透明压缩，易于扩展。
 <div  align="center">
 <img src="image/rpc-compress.png" width="80%" height="80%" />
 </div>
@@ -373,9 +384,13 @@ sofa-pbrpc将内存划分为固定大小的buffer作为缓冲区，对buffer采�
 sofa-pbrpc支持用户使用http客户端向server发送json格式的数据请求，并返回json格式的响应。
 ## 提供丰富的工具类
 sofa-pbrpc提供常用工具类给开发者，包括：
-<div  align="center">
-<img src="image/sofa-pbrpc-dev-tools.png" width="80%" height="80%" />
-</div>
+
+| 类别        | 头文件           | 说明  |
+| :-------------: |:-------------:| :-----:|
+| 智能指针 |sofa/pbrpc/smart_ptr/smart_ptr.hpp |包括scoped_ptr,shared_ptr,weak_ptr等 |
+| 原子操作 |sofa/pbrpc/atomic.h                |支持fetch,inc,dec,cas等              |
+| 锁操作   |sofa/pbrpc/locks.h                 |提供了互斥锁,自旋锁,读写锁的封装       |
+| 定时管理 |sofa/pbrpc/timeout_manager.h       |高效的提供了定时器功能                |
 
 # 支持团队
 百度网页搜索部开源团队 [opensearch@baidu.com](opensearch@baidu.com)

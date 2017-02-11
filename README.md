@@ -1,6 +1,8 @@
 sofa-pbrpc
 ==========
 [![Build Status](https://travis-ci.org/baidu/sofa-pbrpc.svg)](https://travis-ci.org/baidu/sofa-pbrpc)
+[![Join the chat at https://gitter.im/sofa-pbrpc/rpc](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sofa-pbrpc/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/10957/badge.svg)](https://scan.coverity.com/projects/baidu-sofa-pbrpc)
 
 A light-weight RPC implementation of Google's protobuf RPC framework.
 
@@ -44,13 +46,16 @@ Extrally, './unit-test' and './sample/mock_sample' also depends on gtest:
   The default install directory is './output'.<br>
   To change it, modify the 'PREFIX' variable in file './Makefile'.
 
-For more details, please refer to the wiki.
+For more details, please refer to the wiki [Build Guide](https://github.com/baidu/sofa-pbrpc/wiki/%E6%9E%84%E5%BB%BA%E6%8C%87%E5%BC%95).
 
 ### Sample
-For sample code, please refer to './sample' and the wiki.
+For sample code, please refer to ['./sample'](https://github.com/baidu/sofa-pbrpc/tree/master/sample) and the wiki [Quick Start](https://github.com/baidu/sofa-pbrpc/wiki/%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8).
+
+### Profiling
+For Profiling feature, please refer to the wiki [Profiling](https://github.com/baidu/sofa-pbrpc/wiki/Profiling%E5%8A%9F%E8%83%BD).
 
 ### Performance
-For performace details, please refer to the wiki.
+For performace details, please refer to the wiki [Performance](https://github.com/baidu/sofa-pbrpc/wiki/%E6%80%A7%E8%83%BD).
 
 ### Implementation
 For implementation details, please refer to the wiki and file [doc/sofa-pbrpc-document.md](doc/sofa-pbrpc-document.md).

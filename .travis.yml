@@ -1,7 +1,12 @@
 language: cpp
 compiler: gcc
 env:
-    - PROTOBUF_VERSION=2.6.0
+    global:
+        - secure: "dRimnJVfqg6IPK758/R+CDeArbtV4yT387ZgJvJLCnKPKC7CZmtVz4xNH+ZQqFzRCDJBBCkpp/0p7Cq5u4f22d4TaAaGf3gK/2okvyNPCg0DUPvVP2LWzfP5pZSwX4/os5axWUGW6//8HDFWK37lQbuLNx+95m93CJP+3StNKzY="
+    matrix:
+        - PROTOBUF_VERSION=2.6.0
+before_install:
+      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 install:
     - echo | sudo apt-add-repository ppa:boost-latest/ppa
     - sudo apt-get update
@@ -16,3 +21,12 @@ install:
 script:
     - make -j4 && make install
     - make -C unit-test -j4 && cd unit-test && ./run_test.sh
+addons:
+  coverity_scan:
+    project:
+      name: "baidu/sofa-pbrpc"
+      description: "Build submitted via Travis CI"
+    notification_email: shichengyi@baidu.com
+    build_command_prepend: "make clean"
+    build_command:   "make -j 4"
+    branch_pattern: master

@@ -192,6 +192,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
 #endif
         return NULL;
     }
+    Servlet s = it->second.first;
     _servlet_map->erase(it);
 #if defined( LOG )
     LOG(INFO) << "UnregisterServlet(): unregister webserver path {" 
@@ -200,7 +201,7 @@ Servlet WebService::UnregisterServlet(const std::string& path)
     SLOG(INFO, "UnregisterServlet(): unregister webserver path {%s} format to {%s} success", 
          path.c_str(), real_path.c_str());
 #endif
-    return it->second.first;
+    return s;
 }
 
 bool WebService::RoutePage(
@@ -244,9 +245,9 @@ Servlet WebService::FindServlet(const std::string& path)
     std::string real_path = FormatPath(path);
     StringUtils::split(real_path, PATH_SPLITTER, &path_vec);
     std::size_t path_len = real_path.size();
-    ServletMap::iterator map_it;
     std::vector<std::string>::reverse_iterator vec_it = path_vec.rbegin();
     ServletMapPtr servlets = GetServletPtr();
+    ServletMap::iterator map_it = servlets->end();
     size_t sub_len = 0;
     for (; vec_it != path_vec.rend(); ++vec_it)
     {
@@ -341,12 +342,15 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     QueryParams* query_params = request.query_params;
 
     Profiling::ProfilingType profiling_type = Profiling::DEFAULT;
-    Profiling::DataType data_type = Profiling::PAGE;
+    Profiling::OperationType operation_type = Profiling::PAGE;
+    Profiling* instance = Profiling::Instance();
+
+    std::string view_prof;
+    std::string base_prof;
 
     QueryParams::const_iterator it = query_params->find("cpu");
     if (it != query_params->end())
     {
-        
         profiling_type = Profiling::CPU;
     }
     else
@@ -359,22 +363,26 @@ bool WebService::DefaultProfiling(const HTTPRequest& request,
     }
     if (it != query_params->end())
     {
-        if (it->second == "graph")
-        {
-            data_type = Profiling::GRAPH;
-        }
-        else if (it->second == "newgraph")
-        {
-            data_type = Profiling::NEW_GRAPH;
-        }
-        else
-        {
-            data_type = Profiling::PAGE;
-        }
+        operation_type = instance->FindOperationType(it->second);
     }
 
-    Profiling* instance = Profiling::Instance();
-    return response.content->Append(instance->ProfilingPage(profiling_type, data_type));
+    it = query_params->find("prof");
+    if (it != query_params->end())
+    {
+        view_prof = it->second;
+    }
+    else
+    {
+        view_prof = "default";
+    }
+    it = query_params->find("base");
+    if (it != query_params->end())
+    {
+        base_prof = it->second;
+    }
+
+    return response.content->Append(instance->ProfilingPage(
+                profiling_type, operation_type, view_prof, base_prof));
 }
 
 void WebService::PageHeader(std::ostream& out)

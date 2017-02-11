@@ -12,8 +12,8 @@
 namespace sofa {
 namespace pbrpc {
 
-class HTTPRequest;
-class HTTPResponse;
+struct HTTPRequest;
+struct HTTPResponse;
 typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
 
 typedef std::map<const std::string, std::pair<Servlet, bool> > ServletMap;
