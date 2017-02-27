@@ -187,12 +187,12 @@ void RpcServerImpl::Stop()
 
     _timer_worker.reset();
     _listener.reset();
-    ClearStreams();
     _io_service_pool->Stop();
     _maintain_thread_group->stop();
 
     _io_service_pool.reset();
     _maintain_thread_group.reset();
+    ClearStreams();
     _flow_controller.reset();
 
 #if defined( LOG )
