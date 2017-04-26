@@ -15,7 +15,7 @@ install:
     - tar xf protobuf-$PROTOBUF_VERSION.tar.gz
     - ( cd protobuf-$PROTOBUF_VERSION && ./configure && make -j4 && sudo make install && sudo ldconfig )
     - git clone https://github.com/google/snappy
-    - ( cd snappy && sh ./autogen.sh && ./configure && make -j4 && sudo make install && sudo ldconfig )
+    - ( cd snappy && git checkout 1.1.4 && sh ./autogen.sh && ./configure && make -j4 && sudo make install && sudo ldconfig )
     - sudo apt-get install zlib1g-dev
     - git clone https://github.com/google/googletest.git
 script:
