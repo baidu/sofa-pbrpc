@@ -22,7 +22,7 @@ inline PTime ptime_now()
 {
 #ifdef __linux__
     struct timespec ts = { 0, 0 };
-    clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     time_t microsec = ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 #else
     struct timeval tv = { 0, 0 };
