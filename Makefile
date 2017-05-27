@@ -44,6 +44,10 @@ BIN=sofa-pbrpc-client
 BIN_SRC=$(wildcard src/sofa/pbrpc/http-agent/*.cc)
 BIN_OBJ=$(patsubst %.cc,%.o,$(BIN_SRC))
 
+CODE_GEN=code_gen
+CODE_GEN_SRC=$(wildcard src/sofa/pbrpc/code-gen/*.cc)
+CODE_GEN_OBJ=$(patsubst %.cc,%.o,$(CODE_GEN_SRC))
+
 PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/closure.h \
 	src/sofa/pbrpc/ext_closure.h src/sofa/pbrpc/common.h src/sofa/pbrpc/rpc_channel.h \
 	src/sofa/pbrpc/rpc_server.h src/sofa/pbrpc/rpc_client.h \
@@ -96,7 +100,7 @@ check_depends:
 	@if [ ! -f "$(SNAPPY_DIR)/lib/libsnappy.a" ]; then echo "ERROR: need snappy lib"; exit 1; fi
 
 clean:
-	rm -f $(LIB) $(BIN) $(LIB_OBJ) $(PROTO_OBJ) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
+	rm -f $(LIB) $(BIN) $(LIB_OBJ) $(PROTO_OBJ) $(BIN_OBJ) $(CODE_GEN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
 rebuild: clean all
 
@@ -110,17 +114,20 @@ $(LIB): $(LIB_OBJ) $(PROTO_OBJ)
 $(BIN): $(LIB) $(BIN_OBJ)
 	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
+$(CODE_GEN): $(LIB) $(CODE_GEN_OBJ)
+	$(CXX) $(CODE_GEN_OBJ) -o $@ $(LIB) $(LDFLAGS)
+
 %.pb.cc %.pb.h: %.proto
 	${PROTOBUF_DIR}/bin/protoc --proto_path=./src --proto_path=${PROTOBUF_DIR}/include --cpp_out=./src $<
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-build: $(LIB) $(BIN)
+build: $(LIB) $(BIN) $(CODE_GEN)
 	@echo
 	@echo 'Build succeed, run "make install" to install sofa-pbrpc to "'$(PREFIX)'".'
 
-install: $(LIB) $(BIN)
+install: $(LIB) $(BIN) $(CODE_GEN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
 	cp -r $(PUB_INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
@@ -131,6 +138,7 @@ install: $(LIB) $(BIN)
 	cp $(LIB) $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/bin
 	cp $(BIN) $(PREFIX)/bin/
+	cp $(CODE_GEN) $(PREFIX)/bin/
 	@echo
 	@echo 'Install succeed, target directory is "'$(PREFIX)'".'
 
