@@ -110,13 +110,13 @@ void RpcClientImpl::Stop()
 
     _timeout_manager.reset();
     _timer_worker.reset();
-    ClearStreams();
     _callback_thread_group->stop();
     _maintain_thread_group->stop();
 
     _work_thread_group.reset();
     _callback_thread_group.reset();
     _maintain_thread_group.reset();
+    ClearStreams();
     _flow_controller.reset();
 
 #if defined( LOG )
