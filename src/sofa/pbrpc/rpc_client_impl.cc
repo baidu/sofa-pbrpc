@@ -333,7 +333,8 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     // add to timeout manager if need
     if (timeout > 0)
     {
-        if (!_timeout_manager->add(cntl))
+        RpcTimeoutManagerPtr timeout_manager(_timeout_manager);
+        if (timeout_manager && !timeout_manager->add(cntl))
         {
 #if defined( LOG )
             LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
@@ -428,8 +429,12 @@ void RpcClientImpl::ClearStreams()
 void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
         const RpcControllerImplPtr& cntl)
 {
-    // erase from RpcTimeoutManager
-    _timeout_manager->erase(cntl->TimeoutId());
+    RpcTimeoutManagerPtr timeout_manager(_timeout_manager);
+    if (timeout_manager)
+    {
+        // erase from RpcTimeoutManager
+        timeout_manager->erase(cntl->TimeoutId());
+    }
 
     // deserialize response
     if (!cntl->Failed())
