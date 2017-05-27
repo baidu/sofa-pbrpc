@@ -237,6 +237,10 @@ static rapidjson::Value* field2json(const Message *msg, const FieldDescriptor *f
 
 static rapidjson::Value* parse_msg(const Message *msg, rapidjson::Value::AllocatorType& allocator)
 {
+    if (msg == NULL)
+    {
+        return NULL;
+    }
     const Descriptor *d = msg->GetDescriptor();
     if (!d)
         return NULL;
@@ -521,6 +525,10 @@ void pb2json(const Message* msg, std::string& str)
 {
     rapidjson::Value::AllocatorType allocator;
     rapidjson::Value* json = parse_msg(msg, allocator);
+    if (json == NULL)
+    {
+        return;
+    }
     json2string(json, str);
     delete json;
 }
