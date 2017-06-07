@@ -71,7 +71,7 @@ private:
     {
         if (_is_running)
         {
-            PTime now = ptime_now();
+            PTime now = ptime_now(false);
 
             if (ec != boost::asio::error::operation_aborted && _work_routine)
             {

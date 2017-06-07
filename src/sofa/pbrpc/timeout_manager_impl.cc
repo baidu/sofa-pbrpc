@@ -9,7 +9,7 @@ namespace pbrpc {
 
 TimeoutManagerImpl::TimeoutManagerImpl()
     : _is_running(false)
-    , _epoch_time(ptime_now())
+    , _epoch_time(ptime_now(false))
     , _last_ticks(0)
     , _rectify_ticks(time_duration_milliseconds(kTimerGranularity).ticks())
     , _next_id(1)
