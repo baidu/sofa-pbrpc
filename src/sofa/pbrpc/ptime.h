@@ -18,11 +18,18 @@ typedef boost::posix_time::ptime PTime;
 typedef boost::posix_time::time_duration TimeDuration;
 
 inline TimeDuration time_duration_microseconds(int64_t);
-inline PTime ptime_now()
+inline PTime ptime_now(bool use_real_time)
 {
 #ifdef __linux__
     struct timespec ts = { 0, 0 };
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (use_real_time)
+    {
+        clock_gettime(CLOCK_REALTIME, &ts);
+    }
+    else
+    {
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+    }
     time_t microsec = ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 #else
     struct timeval tv = { 0, 0 };

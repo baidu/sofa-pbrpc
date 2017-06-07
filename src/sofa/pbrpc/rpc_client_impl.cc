@@ -17,7 +17,7 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)
     : _options(options)
     , _is_running(false)
     , _next_request_id(0)
-    , _epoch_time(ptime_now())
+    , _epoch_time(ptime_now(false))
     , _ticks_per_second(time_duration_seconds(1).ticks())
     , _last_maintain_ticks(0)
     , _last_print_connection_ticks(0)
@@ -378,7 +378,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
             stream.reset(new RpcClientStream(_work_thread_group->io_service(), remote_endpoint));
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
-            stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
+            stream->reset_ticks((ptime_now(false) - _epoch_time).ticks(), true);
             stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
                     boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));

@@ -290,7 +290,7 @@ public:
     {
         int64 timeout = Timeout();
         _expiration = timeout <= 0 ? ptime_infin()
-            : ptime_now() + time_duration_milliseconds(timeout);
+            : ptime_now(false) + time_duration_milliseconds(timeout);
     }
 
     const PTime& Expiration() const
@@ -333,7 +333,7 @@ public:
         _is_request_sent = true;
         _local_endpoint = local_endpoint;
         _sent_bytes = sent_bytes;
-        _request_sent_time = ptime_now();
+        _request_sent_time = ptime_now(false);
     }
 
 

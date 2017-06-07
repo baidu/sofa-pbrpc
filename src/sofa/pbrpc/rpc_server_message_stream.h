@@ -637,7 +637,7 @@ private:
             RpcRequestPtr request = _current_rpc_request_parser->GetRequest();
             request->SetLocalEndpoint(_local_endpoint);
             request->SetRemoteEndpoint(_remote_endpoint);
-            request->SetReceivedTime(ptime_now());
+            request->SetReceivedTime(ptime_now(false));
             received_messages->push_back(request);
             reset_receiving_env();
         }

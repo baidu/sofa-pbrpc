@@ -100,6 +100,7 @@ private:
     MutexLock _start_stop_lock;
 
     PTime _start_time;
+    PTime _real_start_time;
     int64 _ticks_per_second;
     int64 _last_maintain_ticks;
     int64 _last_restart_listen_ticks;

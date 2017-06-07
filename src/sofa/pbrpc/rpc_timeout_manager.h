@@ -27,7 +27,7 @@ public:
     RpcTimeoutManager(IOService& io_service)
         : _io_service(io_service)
         , _is_running(false)
-        , _epoch_time(ptime_now())
+        , _epoch_time(ptime_now(false))
         , _next_id(1u)
     {}
 

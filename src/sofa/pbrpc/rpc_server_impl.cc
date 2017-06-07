@@ -21,7 +21,8 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,
     : _options(options)
     , _event_handler(handler)
     , _is_running(false)
-    , _start_time(ptime_now())
+    , _start_time(ptime_now(false))
+    , _real_start_time(ptime_now(true))
     , _ticks_per_second(time_duration_seconds(1).ticks())
     , _last_maintain_ticks(0)
     , _last_restart_listen_ticks(0)
@@ -204,7 +205,7 @@ void RpcServerImpl::Stop()
 
 PTime RpcServerImpl::GetStartTime()
 {
-    return _start_time;
+    return _real_start_time;
 }
 
 RpcServerOptions RpcServerImpl::GetOptions()
@@ -403,7 +404,7 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
     }
 
     stream->set_max_pending_buffer_size(_max_pending_buffer_size);
-    stream->reset_ticks((ptime_now() - _start_time).ticks(), true);
+    stream->reset_ticks((ptime_now(false) - _start_time).ticks(), true);
 
     ScopedLocker<FastLock> _(_stream_set_lock);
     _stream_set.insert(stream);

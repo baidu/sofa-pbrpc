@@ -15,7 +15,7 @@ void RpcRequest::CallMethod(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
-    PTime time_now = ptime_now();
+    PTime time_now = ptime_now(false);
     const RpcControllerImplPtr& cntl = controller->impl();
 
     RpcServerStreamPtr stream = cntl->RpcServerStream().lock();
@@ -76,7 +76,7 @@ void RpcRequest::OnCallMethodDone(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
-    PTime time_now = ptime_now();
+    PTime time_now = ptime_now(false);
     const RpcControllerImplPtr& cntl = controller->impl();
     cntl->SetFinishProcessTime(time_now);
     int64 process_time_us =
