@@ -13,6 +13,7 @@
 
 #include <sofa/pbrpc/io_service.h>
 #include <sofa/pbrpc/ext_closure.h>
+#include <sofa/pbrpc/counter.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -34,11 +35,10 @@ public:
         IOService* io_service;
         ThreadInitFunc init_func;
         ThreadDestFunc dest_func;
-        bool init_done;
-        bool init_fail;
+        AtomicCounter init_done;
+        AtomicCounter init_fail;
 
-        ThreadParam() : id(0), io_service(NULL), init_func(NULL), dest_func(NULL),
-            init_done(false), init_fail(false) {}
+        ThreadParam() : id(0), io_service(NULL), init_func(NULL), dest_func(NULL) {}
         ~ThreadParam() {}
     };
 public:
@@ -130,9 +130,9 @@ public:
             int done_num = 0;
             for (int i = 0; i < _thread_num; ++i)
             {
-                if (_thread_params[i].init_done)
+                if (_thread_params[i].init_done == 1)
                 {
-                    if (_thread_params[i].init_fail)
+                    if (_thread_params[i].init_fail == 1)
                     {
                         init_fail = true;
                         break;
@@ -252,11 +252,11 @@ private:
 #else
             SLOG(ERROR, "thread_run(): init thread [%d] failed", thread_param->id);
 #endif
-            thread_param->init_fail = true;
+            ++thread_param->init_fail;
         }
-        thread_param->init_done = true;
+        ++thread_param->init_done;
         // run asio
-        if (!thread_param->init_fail)
+        if (thread_param->init_fail == 0)
         {
             thread_param->io_service->run();
         }
