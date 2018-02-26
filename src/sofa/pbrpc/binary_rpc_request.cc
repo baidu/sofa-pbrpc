@@ -138,6 +138,8 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
     RpcMessageHeader header;
     int header_size = static_cast<int>(sizeof(header));
     WriteBuffer write_buffer;
+    write_buffer.set_base_block_factor(_write_buffer_base_block_factor);
+
     int64 header_pos = write_buffer.Reserve(header_size);
     if (header_pos < 0)
     {
@@ -192,6 +194,7 @@ ReadBufferPtr BinaryRpcRequest::AssembleFailedResponse(
     RpcMessageHeader header;
     int header_size = static_cast<int>(sizeof(header));
     WriteBuffer write_buffer;
+
     int64 header_pos = write_buffer.Reserve(header_size);
     if (header_pos < 0)
     {

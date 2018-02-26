@@ -61,6 +61,11 @@
 # endif
 #endif
 
+#if defined(SOFA_PBRPC_PROFILING)
+#include <gperftools/malloc_extension.h>
+#endif // SOFA_PBRPC_PROFILING
+
+/*
 static const int kMallocHistogramSize = 64;
 
 typedef std::string MallocExtensionWriter;
@@ -315,7 +320,10 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   virtual void** ReadHeapGrowthStackTraces();
 };
 
+*/
+
+#if defined(SOFA_PBRPC_PROFILING)
 void TCMallocGetHeapSample(std::string* writer) {
     MallocExtension::instance()->GetHeapSample(writer);
 }
-
+#endif // SOFA_PBRPC_PROFILING

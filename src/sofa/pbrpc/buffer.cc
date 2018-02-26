@@ -146,6 +146,7 @@ WriteBuffer::WriteBuffer()
     , _total_capacity(0)
     , _last_bytes(0)
     , _write_bytes(0)
+    , _base_block_factor(4)
 {}
 
 WriteBuffer::~WriteBuffer()
@@ -300,7 +301,7 @@ bool WriteBuffer::Extend()
     // incrementally extend block
     char* block = static_cast<char*>(TranBufPool::malloc(std::min(
                     SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR,
-                    (int)_buf_list.size())));
+                    static_cast<unsigned int>(_buf_list.size()) << _base_block_factor)));
     if (block == NULL) return false;
     _buf_list.push_back(BufHandle(block, TranBufPool::capacity(block)));
     _total_block_size += TranBufPool::block_size(block);

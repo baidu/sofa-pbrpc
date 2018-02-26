@@ -61,6 +61,19 @@ struct RpcServerOptions {
 
     size_t io_service_pool_size;
 
+    //This controls the base memory block factor in malloc for writing. A base block is 64Bytes.
+    //default:4, it means we will use  64 << 4 = 1024B as a block size.
+    size_t write_buffer_base_block_factor;    
+
+    //This controls the base memory block factor in malloc for reading. A base block is 64Bytes.
+    //default:9, it means we will use  64 << 9 = 32KB as a block size.
+    size_t read_buffer_base_block_factor;     
+
+    //If disable Nagle's algorithm in tcp protocol.
+    //default:true
+    bool no_delay;                            
+                                              
+
     RpcServerOptions()
         : work_thread_num(8)
         , max_connection_count(-1)
@@ -73,6 +86,9 @@ struct RpcServerOptions {
         , work_thread_init_func(NULL)
         , work_thread_dest_func(NULL)
         , io_service_pool_size(1)
+        , write_buffer_base_block_factor(4)
+        , read_buffer_base_block_factor(9)
+        , no_delay(true)
     {}
 };
 

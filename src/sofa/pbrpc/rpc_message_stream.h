@@ -738,7 +738,7 @@ private:
             _tran_buf = NULL;
         }
         _tran_buf = reinterpret_cast<char*>(
-                TranBufPool::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR));
+                TranBufPool::malloc(_read_buffer_base_block_factor));
         if(_tran_buf == NULL)
         {
 #if defined( LOG )
@@ -829,6 +829,7 @@ private:
     static const int TOKEN_LOCK = 1;
     volatile int _send_token;
     volatile int _receive_token;
+
 }; // class RpcMessageStream
 
 } // namespace pbrpc
