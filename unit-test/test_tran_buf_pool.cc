@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (64u)
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE (1024u)
 
 #include <gtest/gtest.h>
 #include <sofa/pbrpc/tran_buf_pool.h>
