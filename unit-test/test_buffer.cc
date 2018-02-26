@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_SIZE (64u)
-
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -32,7 +30,7 @@ public:
     ReadBufferTest() {}
     virtual ~ReadBufferTest() {}
     virtual void SetUp() {
-        _block = static_cast<char*>(TranBufPool::malloc());
+        _block = static_cast<char*>(TranBufPool::malloc(4));
         _capacity = TranBufPool::capacity(_block);
         ASSERT_TRUE(_block != NULL);
         rand_str(_block, _capacity);
@@ -86,7 +84,7 @@ TEST_F(ReadBufferTest, Next)
         int block_count = 100;
         for (int i = 0; i < block_count; ++i)
         {
-            char* block = static_cast<char*>(TranBufPool::malloc());
+            char* block = static_cast<char*>(TranBufPool::malloc(4));
             ASSERT_TRUE(block != NULL);
             rand_str(block, _capacity);
             blocks.push_back(block);
@@ -281,7 +279,7 @@ public:
     WriteBufferTest() {}
     virtual ~WriteBufferTest() {}
     virtual void SetUp() {
-        _block = static_cast<char*>(TranBufPool::malloc());
+        _block = static_cast<char*>(TranBufPool::malloc(4));
         _capacity = TranBufPool::capacity(_block);
         ASSERT_TRUE(_block != NULL);
         rand_str(_block, _capacity);
@@ -414,12 +412,15 @@ TEST_F(WriteBufferTest, Reserve)
         ASSERT_EQ(0, os->Reserve(_capacity));
         ASSERT_EQ(_capacity, os->ByteCount());
         ASSERT_EQ(1u, os->_buf_list.size());
+
         ASSERT_EQ(_capacity, os->Reserve(_capacity));
         ASSERT_EQ(_capacity * 2, os->ByteCount());
         ASSERT_EQ(2u, os->_buf_list.size());
+
         ASSERT_EQ(_capacity * 2, os->Reserve(_capacity));
         ASSERT_EQ(_capacity * 3, os->ByteCount());
         ASSERT_EQ(2u, os->_buf_list.size());
+
         ASSERT_EQ(_capacity * 3, os->Reserve(_capacity));
         ASSERT_EQ(_capacity * 4, os->ByteCount());
         ASSERT_EQ(3u, os->_buf_list.size());
@@ -486,7 +487,7 @@ public:
     PBSerDeserTest() {}
     virtual ~PBSerDeserTest() {}
     virtual void SetUp() {
-        _block = static_cast<char*>(TranBufPool::malloc());
+        _block = static_cast<char*>(TranBufPool::malloc(4));
         _capacity = TranBufPool::capacity(_block);
         ASSERT_TRUE(_block != NULL);
 

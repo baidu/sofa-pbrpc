@@ -8,16 +8,7 @@ env:
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 install:
-    - echo | sudo apt-add-repository ppa:boost-latest/ppa
-    - sudo apt-get update
-    - sudo apt-get install libboost-dev
-    - wget https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protobuf-$PROTOBUF_VERSION.tar.gz
-    - tar xf protobuf-$PROTOBUF_VERSION.tar.gz
-    - ( cd protobuf-$PROTOBUF_VERSION && ./configure && make -j4 && sudo make install && sudo ldconfig )
-    - wget https://github.com/google/snappy/releases/download/1.1.4/snappy-1.1.4.tar.gz
-    - tar xf snappy-1.1.4.tar.gz
-    - ( cd snappy-1.1.4 && sh -x ./autogen.sh && ./configure $DEPS_CONFIG && make -j2 && sudo make install && sudo ldconfig )
-    - sudo apt-get install zlib1g-dev
+    - sh -x ./build.sh
     - git clone https://github.com/google/googletest.git
 script:
     - make -j4 && make install

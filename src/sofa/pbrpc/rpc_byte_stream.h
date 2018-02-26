@@ -14,6 +14,7 @@
 
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_endpoint.h>
+#include <sofa/pbrpc/tran_buf_pool.h>
 
 // If SOFA_PBRPC_TCP_NO_DELAY == true, means disable the Nagle algorithm.
 //
@@ -25,9 +26,6 @@
 // Disabling the Nagle algorithm would cause these affacts:
 //   * decrease delay time (positive affact)
 //   * decrease the qps (negative affact)
-#ifndef SOFA_PBRPC_TCP_NO_DELAY
-#define SOFA_PBRPC_TCP_NO_DELAY true
-#endif
 
 namespace sofa {
 namespace pbrpc {
@@ -47,9 +45,42 @@ public:
         , _socket(io_service)
         , _connect_timeout(-1)
         , _status(STATUS_INIT)
+        , _no_delay(true)
+        , _read_buffer_base_block_factor(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR)
+        , _write_buffer_base_block_factor(4)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcByteStream);
         memset(_error_message, 0, sizeof(_error_message));
+    }
+
+    bool no_delay()
+    {
+        return _no_delay;
+    }
+
+    void set_no_delay(bool no_delay)
+    {
+        _no_delay = no_delay;
+    }
+
+    void set_read_buffer_base_block_factor(size_t factor)
+    {
+        _read_buffer_base_block_factor = factor;
+    }
+
+    size_t read_buffer_base_block_factor()
+    {
+        return _read_buffer_base_block_factor;
+    }
+
+    void set_write_buffer_base_block_factor(size_t factor)
+    {
+        _write_buffer_base_block_factor = factor;
+    }
+
+    size_t write_buffer_base_block_factor()
+    {
+        return _write_buffer_base_block_factor;
     }
 
     virtual ~RpcByteStream()
@@ -148,7 +179,7 @@ public:
         _last_rw_ticks = _ticks;
 
         boost::system::error_code ec;
-        _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
+        _socket.set_option(tcp::no_delay(_no_delay), ec);
         if (ec)
         {
 #if defined( LOG )
@@ -329,7 +360,7 @@ private:
         }
 
         boost::system::error_code ec;
-        _socket.set_option(tcp::no_delay(SOFA_PBRPC_TCP_NO_DELAY), ec);
+        _socket.set_option(tcp::no_delay(_no_delay), ec);
         if (ec)
         {
 #if defined( LOG )
@@ -390,6 +421,10 @@ protected:
     char _error_message[128];
     volatile int64 _ticks;
     volatile int64 _last_rw_ticks;
+    bool _no_delay;
+
+    size_t _read_buffer_base_block_factor;
+    size_t _write_buffer_base_block_factor;
 
 private:
     deadline_timer _timer;

@@ -1,6 +1,8 @@
 // Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+#include <algorithm>
 
 #include <sofa/pbrpc/rpc_server_impl.h>
 #include <sofa/pbrpc/rpc_controller_impl.h>
@@ -394,6 +396,16 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)
         stream->close("server not running");
         return;
     }
+    
+    size_t read_base_block_factor = std::min(_options.read_buffer_base_block_factor, 
+                                             (size_t)SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR);
+    stream->set_read_buffer_base_block_factor(read_base_block_factor);
+
+    size_t write_base_block_factor = std::min(_options.write_buffer_base_block_factor, 
+                                              (size_t)SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR);
+    stream->set_write_buffer_base_block_factor(write_base_block_factor);
+
+    stream->set_no_delay(_options.no_delay);
 
     if (_options.max_connection_count != -1 && ConnectionCount() >= _options.max_connection_count)
     {
