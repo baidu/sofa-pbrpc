@@ -22,7 +22,9 @@
 
 bool PROFILING_LINKER_FALSE = false;
 
+#if defined(SOFA_PBRPC_PROFILING)
 void __attribute__((weak)) TCMallocGetHeapSample(std::string* writer);
+#endif // SOFA_PBRPC_PROFILING
 
 namespace sofa {
 namespace pbrpc {
@@ -373,10 +375,7 @@ std::string Profiling::ProfilingPage(ProfilingType profiling_type,
 Profiling::Status Profiling::DoCpuProfiling(OperationType operation_type,
                                             std::string& profiling_file)
 {
-    if (ProfilerStart == NULL)
-    {
-        return DISABLE;
-    }
+#if defined(SOFA_PBRPC_PROFILING)
 
     if (_is_cpu_profiling == true)
     {
@@ -401,15 +400,15 @@ Profiling::Status Profiling::DoCpuProfiling(OperationType operation_type,
                                 &Profiling::CpuProfilingFunc);
     _profiling_thread_group->post(done);
     return OK;
+#else
+    return DISABLE;
+#endif // SOFA_PBRPC_PROFILING
 }
 
 Profiling::Status Profiling::DoMemoryProfiling(OperationType operation_type,
                                                std::string& profiling_file)
 {
-    if (TCMallocGetHeapSample == NULL)
-    {
-        return DISABLE;
-    }
+#if defined(SOFA_PBRPC_PROFILING)
 
     if (_is_mem_profiling == true)
     {
@@ -434,6 +433,9 @@ Profiling::Status Profiling::DoMemoryProfiling(OperationType operation_type,
                                 &Profiling::MemoryProfilingFunc);
     _profiling_thread_group->post(done);
     return OK;
+#else
+    return DISABLE;
+#endif // SOFA_PBRPC_PROFILING
 }
 
 Profiling::Profiling()
@@ -497,6 +499,7 @@ void Profiling::CpuProfilingFunc()
 
 void Profiling::MemoryProfilingFunc()
 {
+#if defined(SOFA_PBRPC_PROFILING)
     if (!IsFileExist(_dir.path + MEMORY_PROFILING_PATH))
     {
         if (!Mkdir(_dir.path + MEMORY_PROFILING_PATH))
@@ -522,12 +525,14 @@ void Profiling::MemoryProfilingFunc()
         return;
     }
     _is_mem_profiling = false;
+#endif // SOFA_PBRPC_PROFILING
 }
 
 std::string Profiling::ShowResult(ProfilingType profiling_type,
                                   const std::string& view_prof, 
                                   const std::string& base_prof)
 {
+#if defined(SOFA_PBRPC_PROFILING)
     std::ostringstream oss;
     std::string path = _dir.path + "/rpc_profiling/pprof.perl";
     if (!IsFileExist(path))
@@ -634,6 +639,9 @@ std::string Profiling::ShowResult(ProfilingType profiling_type,
     oss << "</script>";
 
     return oss.str();
+#else
+    return "";
+#endif // SOFA_PBRPC_PROFILING
 }
 
 } // namespace pbrpc

@@ -9,12 +9,12 @@
 
 #ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE
 // base_block_size = 1K
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE (1024u)
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE (64u)
 #endif
 
 #ifndef SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR
-// max_block_size = 1024<<5 = 32K
-#define SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR 5
+// max_block_size = 64<<9 = 32K
+#define SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR (9u)
 #endif
 
 namespace sofa {

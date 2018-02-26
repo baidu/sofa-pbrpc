@@ -41,6 +41,8 @@ struct RpcClientOptions {
     // default is -1
     int connect_timeout;
 
+    bool no_delay;
+
     RpcClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
@@ -49,6 +51,7 @@ struct RpcClientOptions {
         , max_throughput_in(-1)
         , max_throughput_out(-1)
         , connect_timeout(-1)
+        , no_delay(true)
     {}
 };
 

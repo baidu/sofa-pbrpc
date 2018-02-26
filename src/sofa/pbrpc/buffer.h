@@ -121,6 +121,16 @@ public:
     bool Append(const std::string& data);
     bool Append(const char* data, int size);
 
+    void set_base_block_factor(size_t factor)
+    {
+        _base_block_factor = factor;
+    }
+
+    size_t base_block_factor()
+    {
+        return _base_block_factor;
+    }
+
 private:
     // Add a new block to the end of the buffer.
     bool Extend();
@@ -131,6 +141,7 @@ private:
     int64 _total_capacity; // total capacity in the buffer
     int _last_bytes; // last write bytes
     int64 _write_bytes; // total write bytes
+    size_t _base_block_factor; //base block malloc factor
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(WriteBuffer);
 }; // class WriteBuffer
