@@ -41,13 +41,13 @@ public:
         , _remote_endpoint(endpoint)
         , _ticks(0)
         , _last_rw_ticks(0)
+        , _no_delay(true)
+        , _read_buffer_base_block_factor(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR)
+        , _write_buffer_base_block_factor(4)
         , _timer(io_service)
         , _socket(io_service)
         , _connect_timeout(-1)
         , _status(STATUS_INIT)
-        , _no_delay(true)
-        , _read_buffer_base_block_factor(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR)
-        , _write_buffer_base_block_factor(4)
     {
         SOFA_PBRPC_INC_RESOURCE_COUNTER(RpcByteStream);
         memset(_error_message, 0, sizeof(_error_message));
@@ -422,7 +422,7 @@ protected:
     volatile int64 _ticks;
     volatile int64 _last_rw_ticks;
     bool _no_delay;
-
+    
     size_t _read_buffer_base_block_factor;
     size_t _write_buffer_base_block_factor;
 
