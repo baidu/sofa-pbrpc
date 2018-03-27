@@ -30,7 +30,7 @@ public:
     };
 
 public:
-    RpcRequest() {}
+    RpcRequest():_write_buffer_base_block_factor(4) {}
     virtual ~RpcRequest() {}
 
     // The request type: BINARY or HTTP.
@@ -102,6 +102,16 @@ public:
             const std::string& service_name,
             const std::string& method_name);
 
+    void set_write_buffer_base_block_factor(size_t factor)
+    {
+        _write_buffer_base_block_factor = factor;
+    }
+
+    size_t write_buffer_base_block_factor()
+    {
+        return _write_buffer_base_block_factor;
+    }
+
     void SetLocalEndpoint(const RpcEndpoint& local_endpoint)
     {
         _local_endpoint = local_endpoint;
@@ -136,6 +146,7 @@ protected:
     RpcEndpoint _local_endpoint;
     RpcEndpoint _remote_endpoint;
     PTime _received_time;
+    size_t _write_buffer_base_block_factor;
 }; // class RpcRequest
 
 } // namespace pbrpc

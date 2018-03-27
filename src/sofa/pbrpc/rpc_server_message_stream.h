@@ -638,6 +638,7 @@ private:
             request->SetLocalEndpoint(_local_endpoint);
             request->SetRemoteEndpoint(_remote_endpoint);
             request->SetReceivedTime(ptime_now());
+            request->set_write_buffer_base_block_factor(_write_buffer_base_block_factor);
             received_messages->push_back(request);
             reset_receiving_env();
         }
@@ -712,7 +713,7 @@ private:
         }
 
         _tran_buf = reinterpret_cast<char*>(
-                TranBufPool::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR));
+                TranBufPool::malloc(_read_buffer_base_block_factor));
         if(_tran_buf == NULL)
         {
 #if defined( LOG )

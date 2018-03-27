@@ -13,7 +13,7 @@ class TranBufPoolTest : public ::testing::Test {};
 
 TEST_F(TranBufPoolTest, malloc_free_test)
 {
-    void* data = TranBufPool::malloc();
+    void* data = TranBufPool::malloc(4);
     ASSERT_TRUE(NULL != data);
     ASSERT_EQ(1024, TranBufPool::block_size(data));
     ASSERT_EQ(1024 - sizeof(int) * 2, TranBufPool::capacity(data));
@@ -22,7 +22,7 @@ TEST_F(TranBufPoolTest, malloc_free_test)
 
 TEST_F(TranBufPoolTest, add_ref_test)
 {
-    void* data = TranBufPool::malloc();
+    void* data = TranBufPool::malloc(4);
     ASSERT_TRUE(NULL != data);
     TranBufPool::add_ref(data);
     TranBufPool::free(data);
