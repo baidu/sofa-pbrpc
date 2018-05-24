@@ -652,6 +652,7 @@ bool DynamicRpcChannelImpl::ServerContext::InitBuiltinService(const RpcChannelOp
         // double check
         return true;
     }
+    ScopedLocker<LockType> _auto_ref(channel_init_lock);
     if (!channel) {
         // no channel available
         return false;
