@@ -208,41 +208,41 @@ bool HTTPRpcRequest::ParsePath()
     {
         return false;
     }
-    // decode
-    _decoded_path = StringUtils::decode_url(_original_path,
-            (StringUtils::E_DECODE_RESERVED_CHAR | StringUtils::E_DECODE_PERCENT_SIGN_CHAR));
-#if defined( LOG )
-#else
-        SLOG(DEBUG, "ParsePath(): original_path=[%s], decoded_path=[%s]",
-                _original_path.c_str(), _decoded_path.c_str());
-#endif
     // parse method
     size_t start = 1; // skip first '/'
-    size_t end = _decoded_path.size();
+    size_t end = _original_path.size();
     for (size_t i = start; i != end; ++i)
     {
-        if (_decoded_path[i] == '?' || _decoded_path[i] == '#')
+        if (_original_path[i] == '?' || _original_path[i] == '#')
         {
             end = i;
             break;
         }
     }
-    _path = _decoded_path.substr(0, end);
-    _method = _decoded_path.substr(start, end - start);
+    _path = _original_path.substr(0, end);
+    _method = _original_path.substr(start, end - start);
+#if defined( LOG )
+        LOG(DEBUG) << "ParsePath(): original_path=" <<
+                   << "[" << _original_path << "]"
+                   << ", _method=[" << _method << "]";
+#else
+        SLOG(DEBUG, "ParsePath(): original_path=[%s], _method=[%s]",
+                _original_path.c_str(), _method.c_str());
+#endif
     // parse query
-    if (end < _decoded_path.size() && _decoded_path[end] == '?')
+    if (end < _original_path.size() && _original_path[end] == '?')
     {
         start = end + 1;
-        end = _decoded_path.size();
+        end = _original_path.size();
         for (size_t i = start; i != end; ++i)
         {
-            if (_decoded_path[i] == '#')
+            if (_original_path[i] == '#')
             {
                 end = i;
                 break;
             }
         }
-        _query_string = _decoded_path.substr(start, end - start);
+        _query_string = _original_path.substr(start, end - start);
         if (!_query_string.empty())
         {
             std::vector<std::string> param_list;
@@ -254,16 +254,18 @@ bool HTTPRpcRequest::ParsePath()
                 if (pos != std::string::npos)
                 {
                     std::string key = param.substr(0, pos);
-                    std::string value = param.substr(pos + 1);
-                    _query_params[key] = value;
+                    const std::string& value = param.substr(pos + 1);
+                    const std::string& decoded_value = StringUtils::decode_url(value,
+                        (StringUtils::E_DECODE_RESERVED_CHAR | StringUtils::E_DECODE_PERCENT_SIGN_CHAR));
+                    _query_params[key] = decoded_value;
                 }
             }
         }
     }
     // parse fragment
-    if (end < _decoded_path.size() && _decoded_path[end] == '#')
+    if (end < _original_path.size() && _original_path[end] == '#')
     {
-        _fragment_id = _decoded_path.substr(end + 1);
+        _fragment_id = _original_path.substr(end + 1);
     }
     return true;
 }

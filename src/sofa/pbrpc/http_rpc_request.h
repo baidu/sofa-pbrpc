@@ -93,7 +93,6 @@ private:
     };
     Type                               _type;
     std::string                        _original_path;
-    std::string                        _decoded_path;
     std::string                        _path;
     std::string                        _query_string;
     std::string                        _fragment_id;
