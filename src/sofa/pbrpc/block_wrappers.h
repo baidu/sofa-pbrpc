@@ -40,6 +40,7 @@ class BlockCompressionInputStream : public AbstractCompressedInputStream {
   
   char* _output_buffer;
   size_t _output_buffer_size;
+  size_t _output_buffer_capacity;
   
  private:
 

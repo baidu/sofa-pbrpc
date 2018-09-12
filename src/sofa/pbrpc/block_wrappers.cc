@@ -26,8 +26,8 @@ const size_t BLOCKSIZE = 64 * 1024;
 
 BlockCompressionInputStream::BlockCompressionInputStream(
     ZeroCopyInputStream* sub_stream)
-    : _output_buffer(NULL), _output_buffer_size(0), _sub_stream(NULL), _backed_up_bytes(0), 
-      _byte_count(0) {
+    : _output_buffer(NULL), _output_buffer_size(0), _output_buffer_capacity(0),
+      _sub_stream(NULL), _backed_up_bytes(0), _byte_count(0) {
     _raw_stream = sub_stream;
     _sub_stream = new CodedInputStream(_raw_stream);
     _sub_stream->SetTotalBytesLimit(1 << 30, 1 << 30);
@@ -168,11 +168,12 @@ void SnappyInputStream::RawUncompress(char* input_buffer, uint32_t compressed_si
         input_buffer, compressed_size, &uncompressed_size);
     SCHECK(success);
     
-    if (uncompressed_size > _output_buffer_size) {
+    if (uncompressed_size > _output_buffer_capacity) {
         delete[] _output_buffer;
-        _output_buffer_size = uncompressed_size;
-        _output_buffer = new char[_output_buffer_size];
+        _output_buffer = new char[uncompressed_size];
+        _output_buffer_capacity = uncompressed_size;
     }
+    _output_buffer_size = uncompressed_size;
     success = ::snappy::RawUncompress(input_buffer, compressed_size,
         _output_buffer);
     SCHECK(success);    
@@ -201,6 +202,7 @@ uint32_t SnappyOutputStream::RawCompress(char* input_buffer, size_t input_size,
 void LZ4InputStream::RawUncompress(char* input_buffer, uint32_t compressed_size) {
     if (!_output_buffer) {
         _output_buffer = new char[BLOCKSIZE];
+        _output_buffer_capacity = BLOCKSIZE;
     }
     _output_buffer_size = LZ4_uncompress_unknownOutputSize(input_buffer,
         _output_buffer, compressed_size, BLOCKSIZE);
