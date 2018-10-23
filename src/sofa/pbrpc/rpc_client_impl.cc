@@ -320,11 +320,14 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
         return;
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
-    header.message_size = header.meta_size + header.data_size;
+    ReadBufferPtr request_attach_buffer = cntl->GetRequestAttachBuffer();
+    header.message_size = header.meta_size + header.data_size + request_attach_buffer->TotalCount();
+
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    read_buffer->Append(request_attach_buffer.get());
     cntl->SetRequestBuffer(read_buffer);
 
     // push callback
@@ -439,15 +442,49 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
         SCHECK(cntl->ResponseBuffer());
         ReadBufferPtr buffer = cntl->ResponseBuffer();
         CompressType compress_type = cntl->ResponseCompressType();
+        int data_size = cntl->ResponseSize();
         bool parse_response_return = false;
         if (compress_type == CompressTypeNone)
         {
-            parse_response_return = response->ParseFromZeroCopyStream(buffer.get());
+            parse_response_return = response->ParseFromBoundedZeroCopyStream(buffer.get(), data_size);
         }
         else
         {
+            ReadBufferPtr read_buffer(new ReadBuffer());
+            int bytes_read = 0;
+            while (bytes_read < data_size)
+            {
+                const char* read_pos = NULL;
+                int cur_size;
+                int bytes_remain = data_size - bytes_read;
+                int handle_offset = buffer->CurrentHandleOffset();
+                if (!buffer->Next(reinterpret_cast<const void**>(&read_pos), &cur_size))
+                {
+#if defined ( LOG )
+                    LOG(ERROR) << "DoneCallback(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+                               << ": bad response buffer";
+#else
+                    SLOG(ERROR, "DoneCallback(): %s: bad response buffer",
+                               RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
+#endif
+                    cntl->SetFailed(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "bad response buffer");
+                    return;
+                }
+                char* handle_data = const_cast<char*>(read_pos) - handle_offset;
+                if (bytes_remain >= cur_size)
+                {
+                    read_buffer->Append(BufHandle(handle_data, cur_size, handle_offset));
+                    bytes_read += cur_size;
+                }
+                else
+                {
+                    buffer->BackUp(cur_size - bytes_remain);
+                    read_buffer->Append(BufHandle(handle_data, bytes_remain, handle_offset));
+                    bytes_read += bytes_remain;
+                }
+            }
             ::sofa::pbrpc::scoped_ptr<AbstractCompressedInputStream> is(
-                    get_compressed_input_stream(buffer.get(), compress_type));
+                    get_compressed_input_stream(read_buffer.get(), compress_type));
             parse_response_return = response->ParseFromZeroCopyStream(is.get());
         }
         if (!parse_response_return)
@@ -460,7 +497,9 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
                     RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
 #endif
             cntl->SetFailed(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "parse response message pb failed");
+            return;
         }
+        cntl->SetResponseAttachBuffer(buffer);
     }
 }
 

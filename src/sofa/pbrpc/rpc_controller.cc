@@ -117,6 +117,26 @@ void RpcController::NotifyOnCancel(google::protobuf::Closure* callback)
     _impl->NotifyOnCancel(callback);
 }
 
+bool RpcController::SetRequestAttachment(RpcAttachment* request_attachment)
+{
+    return _impl->SetRequestAttachment(request_attachment);
+}
+
+bool RpcController::GetRequestAttachment(RpcAttachment* request_attachment)
+{
+    return _impl->GetRequestAttachment(request_attachment);
+}
+
+bool RpcController::SetResponseAttachment(RpcAttachment* response_attachment)
+{
+    return _impl->SetResponseAttachment(response_attachment);
+}
+
+bool RpcController::GetResponseAttachment(RpcAttachment* response_attachment)
+{
+    return _impl->GetResponseAttachment(response_attachment);
+}
+
 } // namespace pbrpc
 } // namespace sofa
 

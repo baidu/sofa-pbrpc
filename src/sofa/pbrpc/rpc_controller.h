@@ -9,6 +9,7 @@
 
 #include <sofa/pbrpc/common.h>
 #include <sofa/pbrpc/rpc_option.pb.h>
+#include <sofa/pbrpc/rpc_attachment.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -121,6 +122,14 @@ public:
     //
     // Not supported now.
     virtual void StartCancel();
+    
+    // If true, indicates that the attachment data on the client side has been 
+    // serialized successfully.
+    bool SetRequestAttachment(RpcAttachment* request_attachment);
+
+    // If true, indicates that the attachment data from the server side has been 
+    // deserialized successfully.
+    bool GetResponseAttachment(RpcAttachment* response_attachment);
 
     // -------- used only by server side ---------
     // These calls should be made from the server side only.  Their results
@@ -161,6 +170,14 @@ public:
     //
     // NotifyOnCancel() must be called no more than once per request.
     virtual void NotifyOnCancel(google::protobuf::Closure* callback);
+
+    // If true, indicates that the attachment data from the client side has been
+    // deserialized successfully.
+    bool GetRequestAttachment(RpcAttachment* request_attachment);
+
+    // If true, indicates that the attachment data on the server side has been
+    // serialized successfully.
+    bool SetResponseAttachment(RpcAttachment* response_attachment);
 
 public:
     const sofa::pbrpc::shared_ptr<RpcControllerImpl>& impl() const

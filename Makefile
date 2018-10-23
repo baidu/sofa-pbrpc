@@ -33,8 +33,11 @@ CXXFLAGS ?= -DSOFA_PBRPC_ENABLE_DETAILED_LOGGING
 include depends.mk
 
 LIB=libsofa-pbrpc.a
+LIB_FULL=libsofa-pbrpc-full.a
 LIB_SRC=$(wildcard src/sofa/pbrpc/*.cc)
+PLUGIN_SRC=$(wildcard src/sofa/pbrpc/plugin/*/*.cc)
 LIB_OBJ=$(patsubst %.cc,%.o,$(LIB_SRC))
+PLUGIN_OBJ=$(patsubst %.cc,%.o,$(PLUGIN_SRC))
 PROTO=$(wildcard src/sofa/pbrpc/*.proto)
 PROTO_SRC=$(patsubst %.proto,%.pb.cc,$(PROTO))
 PROTO_HEADER=$(patsubst %.proto,%.pb.h,$(PROTO))
@@ -54,6 +57,7 @@ PUB_INC=src/sofa/pbrpc/pbrpc.h src/sofa/pbrpc/closure_helper.h src/sofa/pbrpc/cl
 	src/sofa/pbrpc/fast_lock.h src/sofa/pbrpc/rw_lock.h src/sofa/pbrpc/scoped_locker.h \
 	src/sofa/pbrpc/condition_variable.h src/sofa/pbrpc/wait_event.h src/sofa/pbrpc/http.h \
 	src/sofa/pbrpc/buffer.h src/sofa/pbrpc/buf_handle.h src/sofa/pbrpc/profiling_linker.h \
+	src/sofa/pbrpc/rpc_attachment.h \
 	$(PROTO) $(PROTO_HEADER)
 
 #-----------------------------------------------
@@ -96,7 +100,7 @@ check_depends:
 	@if [ ! -f "$(SNAPPY_DIR)/lib/libsnappy.a" ]; then echo "ERROR: need snappy lib"; exit 1; fi
 
 clean:
-	rm -f $(LIB) $(BIN) $(LIB_OBJ) $(PROTO_OBJ) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
+	rm -f $(LIB) $(LIB_FULL) $(BIN) $(LIB_OBJ) $(PLUGIN_OBJ) $(PROTO_OBJ) $(BIN_OBJ) $(PROTO_HEADER) $(PROTO_SRC)
 
 rebuild: clean all
 
@@ -107,6 +111,9 @@ $(LIB_OBJ): $(PROTO_HEADER)
 $(LIB): $(LIB_OBJ) $(PROTO_OBJ)
 	ar crs $@ $(LIB_OBJ) $(PROTO_OBJ)
 
+$(LIB_FULL): $(PLUGIN_OBJ) $(LIB_OBJ) $(PROTO_OBJ)
+	ar crs $@ $(PLUGIN_OBJ) $(LIB_OBJ) $(PROTO_OBJ)
+
 $(BIN): $(LIB) $(BIN_OBJ)
 	$(CXX) $(BIN_OBJ) -o $@ $(LIB) $(LDFLAGS)
 
@@ -116,19 +123,22 @@ $(BIN): $(LIB) $(BIN_OBJ)
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-build: $(LIB) $(BIN)
+build: $(LIB) $(LIB_FULL) $(BIN)
 	@echo
 	@echo 'Build succeed, run "make install" to install sofa-pbrpc to "'$(PREFIX)'".'
 
-install: $(LIB) $(BIN)
+install: $(LIB) $(LIB_FULL) $(BIN)
 	mkdir -p $(PREFIX)/include/sofa/pbrpc
 	cp -r $(PUB_INC) $(TARGET_DIRECTORY) $(PREFIX)/include/sofa/pbrpc/
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	cp src/sofa/pbrpc/smart_ptr/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr
 	mkdir -p $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
 	cp src/sofa/pbrpc/smart_ptr/detail/*.hpp $(PREFIX)/include/sofa/pbrpc/smart_ptr/detail
+	mkdir -p $(PREFIX)/include/sofa/pbrpc/plugin/cookie
+	cp src/sofa/pbrpc/plugin/cookie/*.h $(PREFIX)/include/sofa/pbrpc/plugin/cookie
 	mkdir -p $(PREFIX)/lib
 	cp $(LIB) $(PREFIX)/lib/
+	cp $(LIB_FULL) $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/bin
 	cp $(BIN) $(PREFIX)/bin/
 	@echo
