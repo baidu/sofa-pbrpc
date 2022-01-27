@@ -24,7 +24,7 @@ INCPATH=-I. -I../src -I$(BOOST_HEADER_DIR) -I$(PROTOBUF_DIR)/include \
 		-I$(SNAPPY_DIR)/include -I$(ZLIB_DIR)/include -I$(GTEST_DIR)/include
 CXXFLAGS += $(OPT) -pipe -W -Wall -fPIC -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -fno-access-control $(INCPATH)
 
-LDFLAGS += -L.. -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lsofa-pbrpc -lprotobuf -lsnappy -lpthread -lz
+LDFLAGS += -Wl,-rpath,$(PROTOBUF_DIR)/lib -L.. -L$(ZLIB_DIR)/lib -L$(PROTOBUF_DIR)/lib/ -L$(SNAPPY_DIR)/lib/ -lsofa-pbrpc -lprotobuf -lsnappy -lpthread -lz
 ifeq ($(OS),Windows_NT)
     LDFLAGS += -lrt
 else
