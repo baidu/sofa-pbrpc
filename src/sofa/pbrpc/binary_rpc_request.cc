@@ -81,12 +81,48 @@ void BinaryRpcRequest::ProcessRequest(
     bool parse_request_return = false;
     if (compress_type == CompressTypeNone)
     {
-        parse_request_return = request->ParseFromZeroCopyStream(_req_body.get());
+        parse_request_return = 
+            request->ParseFromBoundedZeroCopyStream(_req_body.get(), _req_header.data_size);
     }
     else
     {
+        ReadBufferPtr read_buffer(new ReadBuffer());
+        int bytes_read = 0;
+        while (bytes_read < _req_header.data_size)
+        {
+            const char* read_pos = NULL;
+            int cur_size;
+            int bytes_remain = _req_header.data_size - bytes_read;
+            int handle_offset = _req_body->CurrentHandleOffset();
+            if (!_req_body->Next(reinterpret_cast<const void**>(&read_pos), &cur_size))
+            {
+#if defined( LOG )
+                LOG(ERROR) << "ProcessRequest(): " << RpcEndpointToString(_remote_endpoint)
+                           << ": {" << _req_meta.sequence_id() << "}"
+                           << ": bad request buffer";
+#else
+                SLOG(ERROR, "ProcessRequest(): %s: {%lu}: bad request buffer",
+                           RpcEndpointToString(_remote_endpoint).c_str(),
+                           _req_meta.sequence_id());
+#endif
+                SendFailedResponse(stream, RPC_ERROR_PARSE_REQUEST_MESSAGE, "bad request buffer");
+                return;
+            }
+            char* handle_data = const_cast<char*>(read_pos) - handle_offset;
+            if (bytes_remain >= cur_size)
+            {
+                read_buffer->Append(BufHandle(handle_data, cur_size, handle_offset));
+                bytes_read += cur_size;
+            }
+            else
+            {
+                _req_body->BackUp(cur_size - bytes_remain);
+                read_buffer->Append(BufHandle(handle_data, bytes_remain, handle_offset));
+                bytes_read += bytes_remain;
+            }
+        }
         sofa::pbrpc::scoped_ptr<AbstractCompressedInputStream> is(
-                get_compressed_input_stream(_req_body.get(), compress_type));
+                get_compressed_input_stream(read_buffer.get(), compress_type));
         parse_request_return = request->ParseFromZeroCopyStream(is.get());
     }
     if (!parse_request_return)
@@ -120,6 +156,9 @@ void BinaryRpcRequest::ProcessRequest(
     cntl->SetRequestReceivedTime(_received_time);
     cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
             _req_meta.expected_response_compress_type() : CompressTypeNone);
+
+    cntl->SetRequestSize(_req_header.data_size);
+    cntl->SetRequestAttachBuffer(_req_body);
 
     CallMethod(method_board, controller, request, response);
 }
@@ -170,11 +209,14 @@ ReadBufferPtr BinaryRpcRequest::AssembleSucceedResponse(
         return ReadBufferPtr();
     }
     header.data_size = write_buffer.ByteCount() - header_pos - header_size - header.meta_size;
-    header.message_size = header.meta_size + header.data_size;
+    ReadBufferPtr response_attach_buffer = cntl->GetResponseAttachBuffer();
+    header.message_size = header.meta_size + header.data_size + response_attach_buffer->TotalCount();
+
     write_buffer.SetData(header_pos, reinterpret_cast<const char*>(&header), header_size);
 
     ReadBufferPtr read_buffer(new ReadBuffer());
     write_buffer.SwapOut(read_buffer.get());
+    read_buffer->Append(response_attach_buffer.get());
 
     return read_buffer;
 }

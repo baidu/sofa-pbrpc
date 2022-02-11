@@ -56,6 +56,10 @@ public:
 
     // implements ZeroCopyInputStream ----------------------------------
     bool Next(const void** data, int* size);
+    
+    // Get the offset of current buffer handle.
+    int CurrentHandleOffset();
+
     void BackUp(int count);
     bool Skip(int count);
     int64 ByteCount() const;

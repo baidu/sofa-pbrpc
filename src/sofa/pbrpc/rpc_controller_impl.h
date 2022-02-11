@@ -17,6 +17,7 @@
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/rpc_option.pb.h>
 #include <sofa/pbrpc/wait_event.h>
+#include <sofa/pbrpc/rpc_attachment.h>
 
 namespace sofa {
 namespace pbrpc {
@@ -43,6 +44,8 @@ public:
         , _http_path(NULL)
         , _http_query_params(NULL)
         , _http_headers(NULL)
+        , _request_attach_buffer(new ReadBuffer())
+        , _response_attach_buffer(new ReadBuffer())
     {}
 
     virtual ~RpcControllerImpl() {}
@@ -328,6 +331,50 @@ public:
         return _response_buffer;
     }
 
+    bool SetRequestAttachment(RpcAttachment* request_attachment)
+    {
+        SCHECK(request_attachment);
+        return request_attachment->Serialize(_request_attach_buffer);
+    }
+
+    bool GetRequestAttachment(RpcAttachment* request_attachment)
+    {
+        SCHECK(request_attachment);
+        return request_attachment->Deserialize(_request_attach_buffer);
+    }
+
+    bool SetResponseAttachment(RpcAttachment* response_attachment)
+    {
+        SCHECK(response_attachment);
+        return response_attachment->Serialize(_response_attach_buffer);
+    }
+
+    bool GetResponseAttachment(RpcAttachment* response_attachment)
+    {
+        SCHECK(response_attachment);
+        return response_attachment->Deserialize(_response_attach_buffer);;
+    }
+
+    void SetRequestAttachBuffer(const ReadBufferPtr& request_attach_buffer)
+    {
+        _request_attach_buffer = request_attach_buffer;
+    }
+
+    const ReadBufferPtr& GetRequestAttachBuffer()
+    {
+        return _request_attach_buffer;
+    }
+
+    void SetResponseAttachBuffer(const ReadBufferPtr& response_attach_buffer)
+    {
+        _response_attach_buffer = response_attach_buffer;
+    }
+
+    const ReadBufferPtr& GetResponseAttachBuffer()
+    {
+        return _response_attach_buffer;
+    }
+
     void NotifyRequestSent(const RpcEndpoint& local_endpoint, int64 sent_bytes)
     {
         _is_request_sent = true;
@@ -433,6 +480,26 @@ public:
         return *_http_headers;
     }
 
+    void SetRequestSize(int request_size)
+    {
+        _request_size = request_size;
+    }
+    
+    int RequestSize()
+    {
+        return _request_size;
+    }
+
+    void SetResponseSize(int response_size)
+    {
+        _response_size = response_size;
+    }
+    
+    int ResponseSize()
+    {
+        return _response_size;
+    }
+
 private:
     uint64 _sequence_id;
     std::string _method_id;
@@ -481,6 +548,12 @@ private:
     const std::string* _http_path;
     const std::map<std::string, std::string>* _http_query_params;
     const std::map<std::string, std::string>* _http_headers;
+
+    ReadBufferPtr _request_attach_buffer;
+    ReadBufferPtr _response_attach_buffer;
+
+    int _request_size;
+    int _response_size;
 
     SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcControllerImpl);
 }; // class RpcControllerImpl

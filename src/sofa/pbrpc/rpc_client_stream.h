@@ -156,7 +156,8 @@ private:
     virtual void on_received(
             const ReadBufferPtr& message,
             int meta_size,
-            int64 data_size)
+            int64 data_size,
+            int attach_size)
     {
         SOFA_PBRPC_FUNCTION_TRACE;
 
@@ -278,8 +279,9 @@ private:
         }
         else // !meta.failed()
         {
-            SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
+            SCHECK_EQ(data_size + attach_size, message->TotalCount() - message->ByteCount());
             cntl->SetResponseBuffer(message);
+            cntl->SetResponseSize(data_size);
             cntl->SetResponseCompressType(meta.has_compress_type() ?
                     meta.compress_type() : CompressTypeNone);
             cntl->Done(RPC_SUCCESS, "succeed");
