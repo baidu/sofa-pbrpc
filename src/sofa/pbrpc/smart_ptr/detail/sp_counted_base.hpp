@@ -13,7 +13,7 @@
 #ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
 #define _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
 
-#include <sofa/pbrpc/smart_ptr/detail/sp_counted_base_gcc_x86.hpp>
+#include <sofa/pbrpc/smart_ptr/detail/sp_counted_base_gcc_loongarch64.hpp>
 
 #endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
 
