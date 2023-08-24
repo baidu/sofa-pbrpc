@@ -9,11 +9,11 @@
 #include "internal/stack.h"
 #include <csetjmp>
 
-#ifdef RAPIDJSON_SSE42
-#include <nmmintrin.h>
-#elif defined(RAPIDJSON_SSE2)
-#include <emmintrin.h>
-#endif
+//#ifdef RAPIDJSON_SSE42
+//#include <nmmintrin.h>
+//#elif defined(RAPIDJSON_SSE2)
+//#include <emmintrin.h>
+//#endif
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -105,80 +105,80 @@ void SkipWhitespace(Stream& stream) {
 	stream = s;
 }
 
-#ifdef RAPIDJSON_SSE42
+//#ifdef RAPIDJSON_SSE42
 //! Skip whitespace with SSE 4.2 pcmpistrm instruction, testing 16 8-byte characters at once.
-inline const char *SkipWhitespace_SIMD(const char* p) {
-	static const char whitespace[16] = " \n\r\t";
-	__m128i w = _mm_loadu_si128((const __m128i *)&whitespace[0]);
+//inline const char *SkipWhitespace_SIMD(const char* p) {
+//	static const char whitespace[16] = " \n\r\t";
+//	__m128i w = _mm_loadu_si128((const __m128i *)&whitespace[0]);
+//
+//	for (;;) {
+//		__m128i s = _mm_loadu_si128((const __m128i *)p);
+//		unsigned r = _mm_cvtsi128_si32(_mm_cmpistrm(w, s, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK | _SIDD_NEGATIVE_POLARITY));
+//		if (r == 0)	// all 16 characters are whitespace
+//			p += 16;
+//		else {		// some of characters may be non-whitespace
+//#ifdef _MSC_VER		// Find the index of first non-whitespace
+//			unsigned long offset;
+//			if (_BitScanForward(&offset, r))
+//				return p + offset;
+//#else
+//			if (r != 0)
+//				return p + __builtin_ffs(r) - 1;
+//#endif
+//		}
+//	}
+//}
 
-	for (;;) {
-		__m128i s = _mm_loadu_si128((const __m128i *)p);
-		unsigned r = _mm_cvtsi128_si32(_mm_cmpistrm(w, s, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK | _SIDD_NEGATIVE_POLARITY));
-		if (r == 0)	// all 16 characters are whitespace
-			p += 16;
-		else {		// some of characters may be non-whitespace
-#ifdef _MSC_VER		// Find the index of first non-whitespace
-			unsigned long offset;
-			if (_BitScanForward(&offset, r))
-				return p + offset;
-#else
-			if (r != 0)
-				return p + __builtin_ffs(r) - 1;
-#endif
-		}
-	}
-}
-
-#elif defined(RAPIDJSON_SSE2)
+//#elif defined(RAPIDJSON_SSE2)
 
 //! Skip whitespace with SSE2 instructions, testing 16 8-byte characters at once.
-inline const char *SkipWhitespace_SIMD(const char* p) {
-	static const char whitespaces[4][17] = {
-		"                ",
-		"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-		"\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r",
-		"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"};
+//inline const char *SkipWhitespace_SIMD(const char* p) {
+//	static const char whitespaces[4][17] = {
+//		"                ",
+//		"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+//		"\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r",
+//		"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"};
 
-	__m128i w0 = _mm_loadu_si128((const __m128i *)&whitespaces[0][0]);
-	__m128i w1 = _mm_loadu_si128((const __m128i *)&whitespaces[1][0]);
-	__m128i w2 = _mm_loadu_si128((const __m128i *)&whitespaces[2][0]);
-	__m128i w3 = _mm_loadu_si128((const __m128i *)&whitespaces[3][0]);
+//	__m128i w0 = _mm_loadu_si128((const __m128i *)&whitespaces[0][0]);
+//	__m128i w1 = _mm_loadu_si128((const __m128i *)&whitespaces[1][0]);
+//	__m128i w2 = _mm_loadu_si128((const __m128i *)&whitespaces[2][0]);
+//	__m128i w3 = _mm_loadu_si128((const __m128i *)&whitespaces[3][0]);
+//
+//	for (;;) {
+//		__m128i s = _mm_loadu_si128((const __m128i *)p);
+//		__m128i x = _mm_cmpeq_epi8(s, w0);
+//		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w1));
+//		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w2));
+//		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w3));
+//		unsigned short r = ~_mm_movemask_epi8(x);
+//		if (r == 0)	// all 16 characters are whitespace
+//			p += 16;
+//		else {		// some of characters may be non-whitespace
+//#ifdef _MSC_VER		// Find the index of first non-whitespace
+//			unsigned long offset;
+//			if (_BitScanForward(&offset, r))
+//				return p + offset;
+//#else
+//			if (r != 0)
+//				return p + __builtin_ffs(r) - 1;
+//#endif
+//		}
+//	}
+//}
+//
+//#endif // RAPIDJSON_SSE2
 
-	for (;;) {
-		__m128i s = _mm_loadu_si128((const __m128i *)p);
-		__m128i x = _mm_cmpeq_epi8(s, w0);
-		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w1));
-		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w2));
-		x = _mm_or_si128(x, _mm_cmpeq_epi8(s, w3));
-		unsigned short r = ~_mm_movemask_epi8(x);
-		if (r == 0)	// all 16 characters are whitespace
-			p += 16;
-		else {		// some of characters may be non-whitespace
-#ifdef _MSC_VER		// Find the index of first non-whitespace
-			unsigned long offset;
-			if (_BitScanForward(&offset, r))
-				return p + offset;
-#else
-			if (r != 0)
-				return p + __builtin_ffs(r) - 1;
-#endif
-		}
-	}
-}
-
-#endif // RAPIDJSON_SSE2
-
-#ifdef RAPIDJSON_SIMD
+//#ifdef RAPIDJSON_SIMD
 //! Template function specialization for InsituStringStream
-template<> inline void SkipWhitespace(InsituStringStream& stream) { 
-	stream.src_ = const_cast<char*>(SkipWhitespace_SIMD(stream.src_));
-}
+//template<> inline void SkipWhitespace(InsituStringStream& stream) { 
+//	stream.src_ = const_cast<char*>(SkipWhitespace_SIMD(stream.src_));
+//}
 
 //! Template function specialization for StringStream
-template<> inline void SkipWhitespace(StringStream& stream) {
-	stream.src_ = SkipWhitespace_SIMD(stream.src_);
-}
-#endif // RAPIDJSON_SIMD
+//template<> inline void SkipWhitespace(StringStream& stream) {
+//	stream.src_ = SkipWhitespace_SIMD(stream.src_);
+//}
+//#endif // RAPIDJSON_SIMD
 
 ///////////////////////////////////////////////////////////////////////////////
 // GenericReader
